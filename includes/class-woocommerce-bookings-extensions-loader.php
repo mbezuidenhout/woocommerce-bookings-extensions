@@ -59,7 +59,7 @@ class Woocommerce_Bookings_Extensions_Loader {
 
 		$this->actions = array();
 		$this->filters = array();
-
+		$this->remove_actions = array();
 	}
 
 	/**

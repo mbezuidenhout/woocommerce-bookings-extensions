@@ -179,6 +179,9 @@ class Woocommerce_Bookings_Extensions {
 		$this->loader->add_action( 'wp_ajax_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
 		//$this->loader->remove_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
+
+		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
+		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 	}
 
 	/**
@@ -223,6 +226,7 @@ class Woocommerce_Bookings_Extensions {
 
 	public function load_extensions() {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-product-booking.php';
+		//require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-form.php';
 	}
 
 }

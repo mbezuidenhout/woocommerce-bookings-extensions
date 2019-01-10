@@ -178,4 +178,69 @@ class Woocommerce_Bookings_Extensions_Public {
 		die( $block_html );
 	}
 
+	/**
+	 * Calculate costs.
+	 *
+	 * Take posted booking form values and then use these to quote a price for what has been chosen.
+	 * Returns a string which is appended to the booking form.
+	 */
+	public function calculate_costs() {
+		$posted = array();
+
+		parse_str( $_POST['form'], $posted );
+
+		$booking_id = $posted['add-to-cart'];
+		$product    = wc_get_product( $booking_id );
+
+		if ( ! $product ) {
+			wp_send_json( array(
+				'result' => 'ERROR',
+				'html'   => apply_filters( 'woocommerce_bookings_calculated_booking_cost_error_output', '<span class="booking-error">' . __( 'This booking is unavailable.', 'woocommerce-bookings' ) . '</span>', null, null ),
+			) );
+		}
+
+		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
+
+		$booking_form     = new WC_Booking_Form( $product );
+		$cost             = $booking_form->calculate_booking_cost( $posted );
+
+		if ( is_wp_error( $cost ) ) {
+			wp_send_json( array(
+				'result' => 'ERROR',
+				'html'   => apply_filters( 'woocommerce_bookings_calculated_booking_cost_error_output', '<span class="booking-error">' . $cost->get_error_message() . '</span>', $cost, $product ),
+			) );
+		}
+
+		$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
+
+		if ( 'incl' === get_option( 'woocommerce_tax_display_shop' ) ) {
+			if ( function_exists( 'wc_get_price_excluding_tax' ) ) {
+				$display_price = wc_get_price_including_tax( $product, array( 'price' => $cost ) );
+			} else {
+				$display_price = $product->get_price_including_tax( 1, $cost );
+			}
+		} else {
+			if ( function_exists( 'wc_get_price_excluding_tax' ) ) {
+				$display_price = wc_get_price_excluding_tax( $product, array( 'price' => $cost ) );
+			} else {
+				$display_price = $product->get_price_excluding_tax( 1, $cost );
+			}
+		}
+
+		if ( version_compare( WC_VERSION, '2.4.0', '>=' ) ) {
+			$price_suffix = $product->get_price_suffix( $cost, 1 );
+		} else {
+			$price_suffix = $product->get_price_suffix();
+		}
+
+		// Build the output
+		$output = apply_filters( 'woocommerce_bookings_booking_cost_string', __( 'Booking cost', 'woocommerce-bookings' ), $product ) . ': <strong>' . wc_price( $display_price ) . $price_suffix . '</strong>';
+
+		// Send the output
+		wp_send_json( array(
+			'result' => 'SUCCESS',
+			'html'   => apply_filters( 'woocommerce_bookings_calculated_booking_cost_success_output', $output, $display_price, $product ),
+		) );
+	}
+
 }
