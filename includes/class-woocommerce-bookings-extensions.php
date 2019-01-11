@@ -156,6 +156,10 @@ class Woocommerce_Bookings_Extensions {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'woocommerce_product_options_general_product_data', $plugin_admin, 'booking_extensions_data' );
+
+		// Saving data.
+		$this->loader->add_action( 'woocommerce_process_product_meta', $plugin_admin, 'add_extra_props');
 
 	}
 

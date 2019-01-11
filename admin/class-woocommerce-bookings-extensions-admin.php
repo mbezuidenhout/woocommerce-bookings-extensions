@@ -122,4 +122,29 @@ class Woocommerce_Bookings_Extensions_Admin {
 
 	}
 
+	public function booking_extensions_data() {
+		global $post, $bookable_product;
+
+		if ( empty( $bookable_product ) || $bookable_product->get_id() !== $post->ID ) {
+			$bookable_product = new WC_Booking_Extensions_Product_Booking( $post->ID );
+		}
+
+		include( 'partials/html-booking-extensions-data.php' );
+    }
+
+	/**
+	 * Set data in 3.0.x
+	 *
+	 * @version  1.10.7
+	 * @param    WC_Product_Booking|WC_Booking_Extensions_Product_Booking $product
+     * @param    WC_Data_Store $product_data
+     * @return   WC_Product_Booking
+	 */
+	public function add_extra_props( $post_id ) {
+		$product = wc_get_product( $post_id );
+		$block_start = isset( $_POST['_wc_booking_extensions_block_start'] ) ? $_POST['_wc_booking_extensions_block_start'] : '';
+		$product->update_meta_data( 'block_starts', wc_clean( $block_start ) );
+		$product->save();
+	}
+
 }

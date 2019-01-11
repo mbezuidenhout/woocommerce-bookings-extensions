@@ -12,7 +12,11 @@ class WC_Booking_Extensions_Product_Booking extends WC_Product_Booking {
 
 	public function __construct( $product = 0 ) {
 		$this->defaults['block_starts'] = 'on_the_half_hour';
+		if( is_integer( intval( $product ) ) )
+			$product = wc_get_product( $product );
 		parent::__construct( $product );
+		if( is_a( $product, 'WC_Product'))
+			$this->data['block_starts'] = $product->get_meta('block_starts');
 	}
 
 	protected function get_bookable_minute_blocks_for_date( $check_date, $start_date, $end_date, $bookable_ranges, $intervals, $resource_id, $minutes_not_available ) {
@@ -122,5 +126,15 @@ class WC_Booking_Extensions_Product_Booking extends WC_Product_Booking {
 		}
 
 		return  $blocks;
+	}
+
+	/**
+	 * Get block_starts.
+	 *
+	 * @param  string $context
+	 * @return string
+	 */
+	public function get_block_starts( $context = 'view' ) {
+		return $this->get_prop( 'block_starts', $context );
 	}
 }
