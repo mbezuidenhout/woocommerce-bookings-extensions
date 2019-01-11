@@ -10,9 +10,13 @@ new WC_Bookings_Custom;
 
 class WC_Booking_Extensions_Product_Booking extends WC_Product_Booking {
 
-	public function get_bookable_minute_blocks_for_date( $check_date, $start_date, $end_date, $bookable_ranges, $intervals, $resource_id, $minutes_not_available ) {
-		$block_starts = 'on_the_half_hour';
-		switch($block_starts) {
+	public function __construct( $product = 0 ) {
+		$this->defaults['block_starts'] = 'on_the_half_hour';
+		parent::__construct( $product );
+	}
+
+	protected function get_bookable_minute_blocks_for_date( $check_date, $start_date, $end_date, $bookable_ranges, $intervals, $resource_id, $minutes_not_available ) {
+		switch($this->data['block_starts']) {
 			case 'on_the_hour':
 				$intervals[1] = 60;
 				break;
@@ -47,21 +51,6 @@ class WC_Booking_Extensions_Product_Booking extends WC_Product_Booking {
 		$available_qty      = $this->get_available_quantity( $resource_id );
 		$current_time_stamp = current_time( 'timestamp' );
 		$availability       = $this->get_default_availability();
-
-		// if we have a buffer, we will shift all times accordingly by changing the from_interval
-		// e.g. 60 min buffer shifts [ 480, 600, 720 ] into [ 480, 660, 840 ]
-		$buffer = $this->get_buffer_period_minutes() ?: 0;
-
-		// For customers using buffers _and_ customer defined time slots, include the interval
-		// in the buffer so that times are shifted accordingly, if we already have a buffer.
-		if ( $buffer && 'customer' == $this->get_duration_type() ) {
-			$buffer += $interval;
-		}
-
-		// if adjacency is enabled, multiply the buffer by 2 (see https://docs.woocommerce.com/document/creating-a-bookable-product/#section-8)
-		if ( $this->get_apply_adjacent_buffer() ) {
-			$buffer *= 2;
-		}
 
 		// Loop ranges looking for slots within
 		foreach ( $bookable_ranges as $minutes ) {
