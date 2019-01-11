@@ -51,6 +51,15 @@ class Woocommerce_Bookings_Extensions_Loader {
 	protected $filters;
 
 	/**
+	 * The array of filters to remove from WordPress.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 * @var      array    $remove_filters   The filters to remove from WordPress to fire when the plugin loads.
+	 */
+	protected $remove_filters;
+
+	/**
 	 * Initialize the collections used to maintain the actions and filters.
 	 *
 	 * @since    1.0.0
@@ -60,6 +69,7 @@ class Woocommerce_Bookings_Extensions_Loader {
 		$this->actions = array();
 		$this->filters = array();
 		$this->remove_actions = array();
+		$this->remove_filters = array();
 	}
 
 	/**
@@ -92,6 +102,10 @@ class Woocommerce_Bookings_Extensions_Loader {
 	 */
 	public function add_filter( $hook, $component, $callback, $priority = 10, $accepted_args = 1 ) {
 		$this->filters = $this->add( $this->filters, $hook, $component, $callback, $priority, $accepted_args );
+	}
+
+	public function remove_filter( $hook, $component, $callback, $priority = 10 ) {
+		$this->remove_filters = $this->add( $this->remove_filters, $hook, $component, $callback, $priority, null );
 	}
 
 	/**
@@ -131,6 +145,10 @@ class Woocommerce_Bookings_Extensions_Loader {
 
 		foreach ( $this->remove_actions as $hook ) {
 			remove_action( $hook['hook'],  array( $hook['component'], $hook['callback'] ), $hook['priority'] );
+		}
+
+		foreach ( $this->remove_filters as $hook ) {
+			remove_filter( $hook['hook'],  array( $hook['component'], $hook['callback'] ), $hook['priority'] );
 		}
 
 		foreach ( $this->filters as $hook ) {

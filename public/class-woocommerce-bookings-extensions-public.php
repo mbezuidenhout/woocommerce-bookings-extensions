@@ -243,4 +243,56 @@ class Woocommerce_Bookings_Extensions_Public {
 		) );
 	}
 
+	/**
+	 * When a booking is added to the cart, validate it
+	 *
+	 * @param mixed $passed
+	 * @param mixed $product_id
+	 * @param mixed $qty
+	 * @return bool
+	 */
+	public function validate_add_cart_item( $passed, $product_id, $qty ) {
+		$product = wc_get_product( $product_id );
+		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
+
+		if ( ! is_wc_booking_product( $product ) ) {
+			return $passed;
+		}
+
+		$booking_form = new WC_Booking_Form( $product );
+		$data         = $booking_form->get_posted_data();
+		$validate     = $booking_form->is_bookable( $data );
+
+		if ( is_wp_error( $validate ) ) {
+			wc_add_notice( $validate->get_error_message(), 'error' );
+			return false;
+		}
+
+		return $passed;
+	}
+
+	public function add_cart_item_data( $cart_item_meta, $product_id ) {
+		$product = wc_get_product( $product_id );
+		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
+
+		if ( ! is_wc_booking_product( $product ) ) {
+			return $cart_item_meta;
+		}
+
+		$booking_form                       = new WC_Booking_Form( $product );
+		$cart_item_meta['booking']          = $booking_form->get_posted_data( $_POST );
+		$cart_item_meta['booking']['_cost'] = $booking_form->calculate_booking_cost( $_POST );
+
+		// Create the new booking
+		$new_booking = $this->create_booking_from_cart_data( $cart_item_meta, $product_id );
+
+		// Store in cart
+		$cart_item_meta['booking']['_booking_id'] = $new_booking->get_id();
+
+		// Schedule this item to be removed from the cart if the user is inactive.
+		$this->schedule_cart_removal( $new_booking->get_id() );
+
+		return $cart_item_meta;
+	}
+
 }
