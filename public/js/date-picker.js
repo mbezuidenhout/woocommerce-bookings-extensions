@@ -59,7 +59,7 @@ jQuery( function( $ ) {
                         }
                     }
 
-                    form.find( '#wc_bookings_field_duration' ).val( days ).change();
+                    form.find( 'select.wc_bookings_field_duration' ).val( days ).change();
                 } );
 
             },
@@ -241,12 +241,12 @@ jQuery( function( $ ) {
             get_number_of_days: function( defaultNumberOfDays, $form, $picker, wc_bookings_booking_form ){
                 var number_of_days = defaultNumberOfDays;
                 var wcbf = wc_bookings_booking_form;
-                if ( $form.find('#wc_bookings_field_duration').length > 0
+                if ( $form.find('select.wc_bookings_field_duration').length > 0
                     && wcbf.duration_unit != 'minute'
                     && wcbf.duration_unit != 'hour'
                     && ! $picker.data( 'is_range_picker_enabled' ) )
                 {
-                    var user_duration = $form.find('#wc_bookings_field_duration').val();
+                    var user_duration = $form.find('select.wc_bookings_field_duration').val();
                     number_of_days   = number_of_days * user_duration;
                 }
 
@@ -936,7 +936,7 @@ jQuery( function( $ ) {
             selectable	: true,
         }
 
-        var resource_id = ( this.$form.find( 'select#wc_bookings_field_resource' ).val() > 0 ) ? this.$form.find( 'select#wc_bookings_field_resource' ).val() : 0;
+        var resource_id = ( this.$form.find( 'select.wc_bookings_field_resource' ).val() > 0 ) ? this.$form.find( 'select.wc_bookings_field_resource' ).val() : 0;
         var year        = date.getFullYear();
         var month       = date.getMonth() + 1;
         var day         = date.getDate();
