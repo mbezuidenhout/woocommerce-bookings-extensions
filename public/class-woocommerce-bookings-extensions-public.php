@@ -41,16 +41,26 @@ class Woocommerce_Bookings_Extensions_Public {
 	private $version;
 
 	/**
+	 * This plugin's uri
+	 *
+	 * @since   1.1.0
+	 * @access  protected
+	 * @var     string  $uri    The uri of this plugin.
+	 */
+	protected $uri;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct( $plugin_name, $version, $uri ) {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->uri = $uri;
 
 	}
 
@@ -417,6 +427,19 @@ class Woocommerce_Bookings_Extensions_Public {
 		$this->schedule_cart_removal( $new_booking->get_id() );
 
 		return $cart_item_meta;
+	}
+
+
+	public function replace_booking_scripts() {
+		$wc_bookings_date_picker_args = array(
+			'ajax_url'                   => WC_AJAX::get_endpoint( 'wc_bookings_find_booked_day_blocks' ),
+		);
+
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+		wp_deregister_script( 'wc-bookings-date-picker' );
+		wp_register_script( 'wc-bookings-date-picker', $this->uri . '/public/js/date-picker' . $suffix . '.js', array( 'wc-bookings-booking-form', 'jquery-ui-datepicker', 'underscore' ), WC_BOOKINGS_VERSION, true );
+		wp_localize_script( 'wc-bookings-date-picker', 'wc_bookings_date_picker_args', $wc_bookings_date_picker_args );
 	}
 
 }

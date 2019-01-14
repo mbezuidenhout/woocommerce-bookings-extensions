@@ -9,16 +9,16 @@
  * that starts the plugin.
  *
  * @link              https://tripturbine.com/
- * @since             1.0.0
+ * @since             1.1.0
  * @package           Woocommerce_Bookings_Extensions
  *
  * @wordpress-plugin
  * Plugin Name:       WooCommerce Bookings Extensions
  * Plugin URI:        https://github.com/mbezuidenhout/wocommerce-bookings-extensions
  * Description:       Adds or replaces functionality in the WooCommerce Bookings plugin.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            Marius Bezuidenhout
- * Author URI:        https://tripturbine.com/
+ * Author URI:        https://plus.google.com/+MariusBezuidenhout31337
  * License:           GNU General Public License v3.0
  * License URI:       http://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain:       woocommerce-bookings-extensions

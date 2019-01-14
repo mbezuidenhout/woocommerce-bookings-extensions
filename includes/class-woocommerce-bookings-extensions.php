@@ -58,6 +58,15 @@ class Woocommerce_Bookings_Extensions {
 	protected $version;
 
 	/**
+	 * This plugin's uri
+	 *
+	 * @since   1.1.0
+	 * @access  protected
+	 * @var     string  $uri    The uri of this plugin.
+	 */
+	protected $uri;
+
+	/**
 	 * Define the core functionality of the plugin.
 	 *
 	 * Set the plugin name and the plugin version that can be used throughout the plugin.
@@ -73,6 +82,8 @@ class Woocommerce_Bookings_Extensions {
 			$this->version = '1.0.0';
 		}
 		$this->plugin_name = 'woocommerce-bookings-extensions';
+
+		$this->uri = plugin_dir_url( dirname( __FILE__  ) );
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -172,7 +183,7 @@ class Woocommerce_Bookings_Extensions {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Woocommerce_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version() );
+		$plugin_public = new Woocommerce_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
@@ -187,8 +198,7 @@ class Woocommerce_Bookings_Extensions {
 		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 
-//		$this->loader->remove_filter( 'woocommerce_add_to_cart_validation', '', 'validate_add_cart_item', 10 );
-//		$this->loader->add_filter( 'woocommerce_add_to_cart_validation', $plugin_public, 'validate_add_cart_item', 10, 3 );
+		$this->loader->add_action( 'woocommerce_booking_add_to_cart', $plugin_public, 'replace_booking_scripts', 31);
 	}
 
 	/**
@@ -253,7 +263,7 @@ class Woocommerce_Bookings_Extensions {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-product-booking.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-cart-manager.php';
 
-		$plugin_public = new Woocommerce_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version() );
+		$plugin_public = new Woocommerce_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
 		$cart_manager = new WC_Booking_Extensions_Cart_Manager();
 
 		$this->remove_filter_by_class( 'woocommerce_add_to_cart_validation', 'WC_Booking_Cart_Manager', 'validate_add_cart_item', 10 );
@@ -262,5 +272,4 @@ class Woocommerce_Bookings_Extensions {
 		$this->remove_filter_by_class( 'woocommerce_add_cart_item_data', 'WC_Booking_Cart_Manager', 'add_cart_item_data', 10);
 		add_filter( 'woocommerce_add_cart_item_data', array( $cart_manager, 'add_cart_item_data' ), 10, 3 );
 	}
-
 }
