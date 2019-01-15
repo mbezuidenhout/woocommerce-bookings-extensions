@@ -3,7 +3,6 @@
 /**
  * The public-facing functionality of the plugin.
  *
- * @link       https://tripturbine.com/
  * @since      1.0.0
  *
  * @package    Woocommerce_Bookings_Extensions
@@ -110,6 +109,9 @@ class Woocommerce_Bookings_Extensions_Public {
 
 	}
 
+	/**
+	 * Get a list of time blocks available on a date.
+	 */
 	public function get_time_blocks_for_date() {
 
 		// clean posted data
@@ -189,6 +191,17 @@ class Woocommerce_Bookings_Extensions_Public {
 		die( $block_html );
 	}
 
+	/**
+	 * Find available blocks and return HTML for the user to choose a block. Used in class-wc-bookings-ajax.php.
+	 *
+	 * @param \WC_Product_Booking $bookable_product
+	 * @param  array  $blocks
+	 * @param  array  $intervals
+	 * @param  integer $resource_id
+	 * @param  integer $from The starting date for the set of blocks
+	 * @param  integer $to
+	 * @return string
+	 */
 	private function get_time_slots_html( $bookable_product, $blocks, $intervals = array(), $resource_id = 0, $from = 0, $to = 0 ) {
 		$available_blocks = $this->get_time_slots( $bookable_product, $blocks, $intervals, $resource_id, $from, $to );
 		$block_html       = '';
@@ -404,6 +417,13 @@ class Woocommerce_Bookings_Extensions_Public {
 		return $passed;
 	}
 
+	/**
+	 * Add posted data to the cart item
+	 *
+	 * @param mixed $cart_item_meta
+	 * @param mixed $product_id
+	 * @return array $cart_item_meta
+	 */
 	public function add_cart_item_data( $cart_item_meta, $product_id ) {
 		$product = wc_get_product( $product_id );
 
@@ -427,6 +447,10 @@ class Woocommerce_Bookings_Extensions_Public {
 		$this->schedule_cart_removal( $new_booking->get_id() );
 
 		return $cart_item_meta;
+	}
+
+	public function global_search_shortcode() {
+
 	}
 
 }

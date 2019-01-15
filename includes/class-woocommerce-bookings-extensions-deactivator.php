@@ -3,7 +3,6 @@
 /**
  * Fired during plugin deactivation
  *
- * @link       https://tripturbine.com/
  * @since      1.0.0
  *
  * @package    Woocommerce_Bookings_Extensions

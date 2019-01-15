@@ -8,7 +8,6 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              https://tripturbine.com/
  * @since             1.0.0
  * @package           Woocommerce_Bookings_Extensions
  *
@@ -16,7 +15,7 @@
  * Plugin Name:       WooCommerce Bookings Extensions
  * Plugin URI:        https://github.com/mbezuidenhout/wocommerce-bookings-extensions
  * Description:       Adds or replaces functionality in the WooCommerce Bookings plugin.
- * Version:           1.1.1
+ * Version:           1.2.0
  * Author:            Marius Bezuidenhout
  * Author URI:        https://plus.google.com/+MariusBezuidenhout31337
  * License:           GNU General Public License v3.0
@@ -35,7 +34,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION', '1.1.1' );
+define( 'WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION', '1.2.0' );
 
 /**
  * The code that runs during plugin activation.

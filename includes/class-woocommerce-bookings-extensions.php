@@ -6,7 +6,6 @@
  * A class definition that includes attributes and functions used across both the
  * public-facing side of the site and the admin area.
  *
- * @link       https://tripturbine.com/
  * @since      1.0.0
  *
  * @package    Woocommerce_Bookings_Extensions
@@ -197,6 +196,8 @@ class Woocommerce_Bookings_Extensions {
 
 		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
+
+		$this->loader->add_shortcode( $this->get_plugin_name() . '_search', $plugin_public, 'global_search_shortcode' );
 	}
 
 	/**

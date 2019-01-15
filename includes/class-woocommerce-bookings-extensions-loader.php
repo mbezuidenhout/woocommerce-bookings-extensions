@@ -3,7 +3,6 @@
 /**
  * Register all actions and filters for the plugin
  *
- * @link       https://tripturbine.com/
  * @since      1.0.0
  *
  * @package    Woocommerce_Bookings_Extensions
@@ -60,6 +59,15 @@ class Woocommerce_Bookings_Extensions_Loader {
 	protected $remove_filters;
 
 	/**
+	 * The array of filters to remove from WordPress.
+	 *
+	 * @since    1.2.0
+	 * @access   protected
+	 * @var      array    $shortcodes   Shortcodes provided by this plugin
+	 */
+	protected $shortcodes;
+
+	/**
 	 * Initialize the collections used to maintain the actions and filters.
 	 *
 	 * @since    1.0.0
@@ -70,6 +78,7 @@ class Woocommerce_Bookings_Extensions_Loader {
 		$this->filters = array();
 		$this->remove_actions = array();
 		$this->remove_filters = array();
+		$this->shortcodes = array();
 	}
 
 	/**
@@ -86,8 +95,12 @@ class Woocommerce_Bookings_Extensions_Loader {
 		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
 	}
 
+	public function add_shortcode( $hook, $component, $callback ) {
+		$this->shortcodes = $this->add( $this->shortcodes, $hook, $component, $callback );
+	}
+
 	public function remove_action( $hook, $component, $callback, $priority = 10 ) {
-		$this->remove_actions = $this->add( $this->remove_actions, $hook, $component, $callback, $priority, null );
+		$this->remove_actions = $this->add( $this->remove_actions, $hook, $component, $callback, $priority );
 	}
 
 	/**
@@ -105,7 +118,7 @@ class Woocommerce_Bookings_Extensions_Loader {
 	}
 
 	public function remove_filter( $hook, $component, $callback, $priority = 10 ) {
-		$this->remove_filters = $this->add( $this->remove_filters, $hook, $component, $callback, $priority, null );
+		$this->remove_filters = $this->add( $this->remove_filters, $hook, $component, $callback, $priority );
 	}
 
 	/**
@@ -118,19 +131,23 @@ class Woocommerce_Bookings_Extensions_Loader {
 	 * @param    string               $hook             The name of the WordPress filter that is being registered.
 	 * @param    object               $component        A reference to the instance of the object on which the filter is defined.
 	 * @param    string               $callback         The name of the function definition on the $component.
-	 * @param    int                  $priority         The priority at which the function should be fired.
-	 * @param    int                  $accepted_args    The number of arguments that should be passed to the $callback.
+	 * @param    int|null             $priority         The priority at which the function should be fired.
+	 * @param    int|null             $accepted_args    The number of arguments that should be passed to the $callback.
 	 * @return   array                                  The collection of actions and filters registered with WordPress.
 	 */
-	private function add( $hooks, $hook, $component, $callback, $priority, $accepted_args ) {
-
-		$hooks[] = array(
+	private function add( $hooks, $hook, $component, $callback, $priority = null, $accepted_args = null ) {
+		$entity = array(
 			'hook'          => $hook,
 			'component'     => $component,
-			'callback'      => $callback,
-			'priority'      => $priority,
-			'accepted_args' => $accepted_args
+			'callback'      => $callback
 		);
+
+		if( null !== $priority )
+			$entity['priority'] = $priority;
+		if ( null !== $accepted_args )
+			$entity['accepted_args'] = $accepted_args;
+
+		$hooks[] = $entity;
 
 		return $hooks;
 
@@ -157,6 +174,10 @@ class Woocommerce_Bookings_Extensions_Loader {
 
 		foreach ( $this->actions as $hook ) {
 			add_action( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
+		}
+
+		foreach ( $this->shortcodes as $hook ) {
+			add_shortcode( $hook['hook'], array( $hook['component'], $hook['callback'] ) );
 		}
 
 	}

@@ -6,7 +6,6 @@
  * Loads and defines the internationalization files for this plugin
  * so that it is ready for translation.
  *
- * @link       https://tripturbine.com/
  * @since      1.0.0
  *
  * @package    Woocommerce_Bookings_Extensions
