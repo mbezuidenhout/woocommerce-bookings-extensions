@@ -15,11 +15,11 @@ class WC_Booking_Extensions_Cart_Manager extends WC_Booking_Cart_Manager {
 	 */
 	public function add_cart_item_data( $cart_item_meta, $product_id ) {
 		$product = wc_get_product( $product_id );
-		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
-
 		if ( ! is_wc_booking_product( $product ) ) {
 			return $cart_item_meta;
 		}
+
+		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
 
 		$booking_form                       = new WC_Booking_Form( $product );
 		$cart_item_meta['booking']          = $booking_form->get_posted_data( $_POST );

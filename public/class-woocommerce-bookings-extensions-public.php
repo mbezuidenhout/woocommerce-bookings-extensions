@@ -385,11 +385,12 @@ class Woocommerce_Bookings_Extensions_Public {
 	 */
 	public function validate_add_cart_item( $passed, $product_id, $qty ) {
 		$product = wc_get_product( $product_id );
-		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
 
 		if ( ! is_wc_booking_product( $product ) ) {
 			return $passed;
 		}
+
+		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
 
 		$booking_form = new WC_Booking_Form( $product );
 		$data         = $booking_form->get_posted_data();
@@ -405,11 +406,12 @@ class Woocommerce_Bookings_Extensions_Public {
 
 	public function add_cart_item_data( $cart_item_meta, $product_id ) {
 		$product = wc_get_product( $product_id );
-		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
 
 		if ( ! is_wc_booking_product( $product ) ) {
 			return $cart_item_meta;
 		}
+
+		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
 
 		$booking_form                       = new WC_Booking_Form( $product );
 		$cart_item_meta['booking']          = $booking_form->get_posted_data( $_POST );
