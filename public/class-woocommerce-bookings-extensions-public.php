@@ -345,8 +345,6 @@ class Woocommerce_Bookings_Extensions_Public {
 			) );
 		}
 
-		$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
-
 		if ( 'incl' === get_option( 'woocommerce_tax_display_shop' ) ) {
 			if ( function_exists( 'wc_get_price_excluding_tax' ) ) {
 				$display_price = wc_get_price_including_tax( $product, array( 'price' => $cost ) );
@@ -427,46 +425,6 @@ class Woocommerce_Bookings_Extensions_Public {
 		$this->schedule_cart_removal( $new_booking->get_id() );
 
 		return $cart_item_meta;
-	}
-
-
-	public function replace_booking_scripts() {
-		$wc_bookings_date_picker_args = array(
-			'ajax_url'                   => WC_AJAX::get_endpoint( 'wc_bookings_find_booked_day_blocks' ),
-		);
-
-		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-
-		// Variables for JS scripts
-		$booking_form_params = array(
-			'cache_ajax_requests'        => 'false',
-			'ajax_url'                   => admin_url( 'admin-ajax.php' ),
-			'i18n_date_unavailable'      => __( 'This date is unavailable', 'woocommerce-bookings' ),
-			'i18n_date_fully_booked'     => __( 'This date is fully booked and unavailable', 'woocommerce-bookings' ),
-			'i18n_date_partially_booked' => __( 'This date is partially booked - but bookings still remain', 'woocommerce-bookings' ),
-			'i18n_date_available'        => __( 'This date is available', 'woocommerce-bookings' ),
-			'i18n_start_date'            => __( 'Choose a Start Date', 'woocommerce-bookings' ),
-			'i18n_end_date'              => __( 'Choose an End Date', 'woocommerce-bookings' ),
-			'i18n_dates'                 => __( 'Dates', 'woocommerce-bookings' ),
-			'i18n_choose_options'        => __( 'Please select the options for your booking and make sure duration rules apply.', 'woocommerce-bookings' ),
-			'i18n_clear_date_selection'  => __( 'To clear selection, pick a new start date', 'woocommerce-bookings' ),
-			'pao_pre_30'                 => ( defined( 'WC_PRODUCT_ADDONS_VERSION' ) && version_compare( WC_PRODUCT_ADDONS_VERSION, '3.0', '<' ) ) ? 'true' : 'false',
-			'pao_active'                 => class_exists( 'WC_Product_Addons' ),
-			'timezone_conversion'        => wc_should_convert_timezone(),
-			'client_firstday'            => 'yes' === get_option( 'woocommerce_bookings_client_firstday', 'no' ),
-			'server_timezone'            => wc_booking_get_timezone_string(),
-		);
-
-		//wp_deregister_script( 'wc-bookings-booking-form' );
-		//wp_enqueue_script( 'wc-bookings-booking-form', $this->uri . '/public/js/booking-form' . $suffix . '.js', array( 'jquery', 'jquery-blockui' ), $this->version, true );
-		//wp_localize_script( 'wc-bookings-booking-form', 'booking_form_params', apply_filters( 'booking_form_params', $booking_form_params ) );
-
-		wp_deregister_script( 'wc-bookings-date-picker' );
-		wp_register_script( 'wc-bookings-date-picker', $this->uri . '/public/js/date-picker' . $suffix . '.js', array( 'wc-bookings-booking-form', 'jquery-ui-datepicker', 'underscore' ), $this->version, true );
-		wp_localize_script( 'wc-bookings-date-picker', 'wc_bookings_date_picker_args', $wc_bookings_date_picker_args );
-
-		wp_deregister_script( 'wc-bookings-time-picker' );
-		wp_register_script( 'wc-bookings-time-picker', $this->uri . '/public/js/time-picker' . $suffix . '.js', array( 'wc-bookings-booking-form' ), $this->version, true );
 	}
 
 }

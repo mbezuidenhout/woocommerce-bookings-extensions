@@ -197,8 +197,6 @@ class Woocommerce_Bookings_Extensions {
 
 		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
-
-		$this->loader->add_action( 'woocommerce_booking_add_to_cart', $plugin_public, 'replace_booking_scripts', 31);
 	}
 
 	/**
