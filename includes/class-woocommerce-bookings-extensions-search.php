@@ -428,9 +428,25 @@ class WC_Booking_Extensions_Bookings_Search {
 			}
 		}
 
+		if(empty($available_products))
+			return false;
+
+		$available_blocks = array();
+
+		$intervals = array($available_products[0]->get_duration() * $duration, $available_products[0]->get_duration());
+
+		foreach( $available_products as $product ) {
+			$custom_product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
+			$block_in_range = $custom_product->get_blocks_in_range( $date, $date + 60 * 60 * 24, $intervals ); // TODO: Specify correct end date
+			if( ! empty($block_in_range) )
+				$available_blocks[$product->get_id()] = $block_in_range;
+		}
+
 		$html_block = '';
-		foreach( $available_products as $product )
-			$html_block .= sprintf('<li>Slug: %s Thumbnail: %s Name: </li>', $product->get_slug(), '', $product->get_name() );
+		foreach( $available_products as $product ) {
+			if( in_array( $product->get_id(), array_keys($available_blocks) ) )
+			$html_block .= sprintf( '<li><div class="search-result-slug">Slug: %s</div><div class=""search-result-thumbnail">%s</div><div class="search-result-name">Name: %s</div></li>', $product->get_slug(), $product->get_image(), $product->get_name() );
+		}
 
 		return $html_block;
 	}
