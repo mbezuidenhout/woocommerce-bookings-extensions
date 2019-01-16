@@ -22,5 +22,10 @@ $nonce = wp_create_nonce( 'search-bookings' );
 
 		<?php $bookings_search_form->output(); ?>
 
+        <div class="wc-booking-extensions-search-result" style="display:none">
+            <ul class="wc-booking-extensions-result-list">
+
+            </ul>
+        </div>
 	</div>
 </form>

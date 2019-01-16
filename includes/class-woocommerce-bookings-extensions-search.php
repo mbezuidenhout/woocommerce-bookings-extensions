@@ -78,6 +78,27 @@ class WC_Booking_Extensions_Bookings_Search {
 			wc_get_template( 'booking-form/' . $field['type'] . '.php', array( 'field' => $field ), 'woocommerce-bookings', WC_BOOKINGS_TEMPLATE_PATH );
 		}
 
+		$hidden_fields = array(array(
+			'name' => 'ids',
+			'value' => implode(',', $this->get_ids())
+		),array(
+			'name' => 'duration',
+			'value' => $this->duration
+		),array(
+			'name' => 'duration_unit',
+			'value' => $this->duration_unit
+		));
+		foreach( $hidden_fields as $key => $field ) {
+			wc_get_template( 'hidden-field.php', array( 'field' => $field ), 'woocommerce-booking-extensions', untrailingslashit( plugin_dir_path( __DIR__ ) ) . '/templates/' );
+		}
+
+	}
+
+	public function get_ids() {
+		$ids = array();
+		foreach( $this->products as $product )
+			$ids[] = $product->get_id();
+		return $ids;
 	}
 
 	protected function scripts() {
@@ -112,7 +133,7 @@ class WC_Booking_Extensions_Bookings_Search {
 		wp_enqueue_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
 		wp_enqueue_script( 'wc-bookings-moment-timezone', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-timezone-with-data' . $suffix . '.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
 
-		wp_enqueue_script( 'wc-bookings-booking-form', WC_BOOKINGS_PLUGIN_URL . '/assets/js/booking-form' . $suffix . '.js', array( 'jquery', 'jquery-blockui' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+		wp_enqueue_script( 'wc-bookings-booking-form', plugin_dir_url( __DIR__ ) . 'public/js/search-form' . $suffix . '.js', array( 'jquery', 'jquery-blockui' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
 		wp_localize_script( 'wc-bookings-booking-form', 'wc_bookings_booking_form', $wc_bookings_booking_form_args );
 
 		wp_register_script( 'wc-bookings-date-picker', WC_BOOKINGS_PLUGIN_URL . '/assets/js/date-picker' . $suffix . '.js', array( 'wc-bookings-moment', 'wc-bookings-booking-form', 'jquery-ui-datepicker', 'underscore' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
@@ -392,6 +413,26 @@ class WC_Booking_Extensions_Bookings_Search {
 		);
 
 		return strtr( $format, $replacements );
+	}
+
+	public function get_availability_html( $date, $duration, $persons = null ) {
+
+		$available_products = $this->products;
+
+		// Remove bookable products that cannot accommodate the specified nr of persons
+		if( null !== $persons ) {
+			foreach ( $available_products as $key => $product ) {
+				if ( $product->get_has_persons() && $persons < $product->get_min_persons() || $persons > $product->get_max_persons() ) {
+					unset( $available_products[ $key ] );
+				}
+			}
+		}
+
+		$html_block = '';
+		foreach( $available_products as $product )
+			$html_block .= sprintf('<li>Slug: %s Thumbnail: %s Name: </li>', $product->get_slug(), '', $product->get_name() );
+
+		return $html_block;
 	}
 
 }
