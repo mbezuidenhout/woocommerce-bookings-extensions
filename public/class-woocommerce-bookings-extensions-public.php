@@ -481,4 +481,23 @@ class Woocommerce_Bookings_Extensions_Public {
 
 	}
 
+	public function search_booking_products() {
+		$request = $_GET;
+
+		//parse_str( $_POST['form'], $posted );
+
+		$data = array(
+			'availability_rules' => array(),
+			'buffer_days'        => array(),
+			'fully_booked_days'  => array(),
+			'max_date'           => strtotime($request['max_date']),
+			'min_date'           => strtotime($request['min_date']),
+			'partially_booked_days' => array(),
+			'restricted_days'    => false,
+			'unavailable_days'   => array()
+		);
+
+		wp_send_json( $data );
+	}
+
 }

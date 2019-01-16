@@ -200,8 +200,12 @@ class Woocommerce_Bookings_Extensions {
 		//$this->loader->remove_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
 
+		/** @see Woocommerce_Bookings_Extensions_Public::calculate_costs */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
+
+		/** @see Woocommerce_Bookings_Extensions_Public::search_booking_products */
+		$this->loader->add_action( 'wp_ajax_wc_booking_extensions_search', $plugin_public, 'search_booking_products' );
 
 		if (! is_admin()) {
 			/** @see Woocommerce_Bookings_Extensions_Public::global_search_shortcode() */

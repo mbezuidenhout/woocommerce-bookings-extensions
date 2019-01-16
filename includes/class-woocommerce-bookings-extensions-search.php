@@ -8,10 +8,17 @@ class WC_Booking_Extensions_Bookings_Search {
 	/** @var array Array of fields to display on search form */
 	protected $fields;
 
+	/** @var int Duration block sizes */
 	protected $duration;
 
+	/** @var string Duration unit of month|day|hour|minuet */
 	protected $duration_unit;
 
+	/** @var array Date picker min date */
+	protected $min_date;
+
+	/** @var array Date picker max date */
+	protected $max_date;
 	/**
 	 *
 	 *
@@ -74,7 +81,65 @@ class WC_Booking_Extensions_Bookings_Search {
 	}
 
 	protected function scripts() {
-		// wp_enqueue_script();
+		global $wp_locale;
+
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+		$wc_bookings_booking_form_args = array(
+			'closeText'                  => __( 'Close', 'woocommerce-bookings' ),
+			'currentText'                => __( 'Today', 'woocommerce-bookings' ),
+			'prevText'                   => __( 'Previous', 'woocommerce-bookings' ),
+			'nextText'                   => __( 'Next', 'woocommerce-bookings' ),
+			'monthNames'                 => array_values( $wp_locale->month ),
+			'monthNamesShort'            => array_values( $wp_locale->month_abbrev ),
+			'dayNames'                   => array_values( $wp_locale->weekday ),
+			'dayNamesShort'              => array_values( $wp_locale->weekday_abbrev ),
+			'dayNamesMin'                => array_values( $wp_locale->weekday_initial ),
+			'firstDay'                   => get_option( 'start_of_week' ),
+			'current_time'               => date( 'Ymd', current_time( 'timestamp' ) ),
+			'check_availability_against' => '',
+			'duration_unit'              => $this->duration_unit,
+			'resources_assignment'       => 'customer',
+			'isRTL'                      => is_rtl(),
+			'default_availability'       => $this->get_default_availability(),
+		);
+
+		$wc_bookings_date_picker_args = array(
+			//'ajax_url'                   => WC_AJAX::get_endpoint( 'wc_booking_extensions_search' ),
+			'ajax_url'                     => admin_url('admin-ajax.php?action=wc_booking_extensions_search'),
+		);
+
+		wp_enqueue_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+		wp_enqueue_script( 'wc-bookings-moment-timezone', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-timezone-with-data' . $suffix . '.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+
+		wp_enqueue_script( 'wc-bookings-booking-form', WC_BOOKINGS_PLUGIN_URL . '/assets/js/booking-form' . $suffix . '.js', array( 'jquery', 'jquery-blockui' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+		wp_localize_script( 'wc-bookings-booking-form', 'wc_bookings_booking_form', $wc_bookings_booking_form_args );
+
+		wp_register_script( 'wc-bookings-date-picker', WC_BOOKINGS_PLUGIN_URL . '/assets/js/date-picker' . $suffix . '.js', array( 'wc-bookings-moment', 'wc-bookings-booking-form', 'jquery-ui-datepicker', 'underscore' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+		wp_localize_script( 'wc-bookings-date-picker', 'wc_bookings_date_picker_args', $wc_bookings_date_picker_args );
+
+		// Variables for JS scripts
+		$booking_form_params = array(
+			'cache_ajax_requests'        => 'false',
+			'ajax_url'                   => admin_url( 'admin-ajax.php' ),
+			'i18n_date_unavailable'      => __( 'This date is unavailable', 'woocommerce-bookings' ),
+			'i18n_date_fully_booked'     => __( 'This date is fully booked and unavailable', 'woocommerce-bookings' ),
+			'i18n_date_partially_booked' => __( 'This date is partially booked - but bookings still remain', 'woocommerce-bookings' ),
+			'i18n_date_available'        => __( 'This date is available', 'woocommerce-bookings' ),
+			'i18n_start_date'            => __( 'Choose a Start Date', 'woocommerce-bookings' ),
+			'i18n_end_date'              => __( 'Choose an End Date', 'woocommerce-bookings' ),
+			'i18n_dates'                 => __( 'Dates', 'woocommerce-bookings' ),
+			'i18n_choose_options'        => __( 'Please select the options for your booking and make sure duration rules apply.', 'woocommerce-bookings' ),
+			'i18n_clear_date_selection'  => __( 'To clear selection, pick a new start date', 'woocommerce-bookings' ),
+			'pao_pre_30'                 => ( defined( 'WC_PRODUCT_ADDONS_VERSION' ) && version_compare( WC_PRODUCT_ADDONS_VERSION, '3.0', '<' ) ) ? 'true' : 'false',
+			'pao_active'                 => class_exists( 'WC_Product_Addons' ),
+			'timezone_conversion'        => wc_should_convert_timezone(),
+			'client_firstday'            => 'yes' === get_option( 'woocommerce_bookings_client_firstday', 'no' ),
+			'server_timezone'            => wc_booking_get_timezone_string(),
+			'server_time_format'         => $this->convert_to_moment_format( get_option( 'time_format' ) ),
+		);
+
+		wp_localize_script( 'wc-bookings-booking-form', 'booking_form_params', apply_filters( 'booking_form_params', $booking_form_params ) );
 	}
 
 	protected function prepare_fields() {
@@ -180,6 +245,54 @@ class WC_Booking_Extensions_Bookings_Search {
 		}
 	}
 
+	public function get_min_date() {
+		if( ! empty( $this->min_date ) )
+			return $this->min_date;
+
+		$min = array('value' => 0, 'unit' => 'day');
+		$this->min_date = $min;
+		return $this->min_date;
+	}
+
+	public function get_max_date() {
+		if ( !empty( $this->max_date ) )
+			return $this->max_date;
+
+		$max = array('value' => 12, 'unit' => 'month');
+		$this->max_date = $max;
+		return $this->max_date;
+	}
+
+	public function get_default_availability() {
+		$availability = false;
+		foreach($this->products as $product)
+			$availability |= $product->get_default_availability();
+		return $availability;
+	}
+
+	public function get_duration_type() {
+		return $this->duration;
+	}
+
+	public function get_duration_unit() {
+		return $this->duration_unit;
+	}
+
+	public function is_range_picker_enabled() {
+		$enable = false;
+		foreach($this->products as $product)
+			$enable |= $product->get_enable_range_picker();
+		return $enable;
+	}
+
+	public function get_calendar_display_mode() {
+		return 'always_visible';
+	}
+
+	public function get_type() {
+		return 'booking';
+	}
+
 	protected function date_field() {
 		$picker = null;
 
@@ -190,13 +303,10 @@ class WC_Booking_Extensions_Bookings_Search {
 				//$picker = new WC_Booking_Form_Month_Picker( $this );
 				break;
 			case 'day':
-				//include_once( 'class-wc-booking-form-date-picker.php' );
-				//$picker = new WC_Booking_Form_Date_Picker( $this );
-				break;
 			case 'minute':
 			case 'hour':
-				//include_once( 'class-wc-booking-form-datetime-picker.php' );
-				//$picker = new WC_Booking_Form_Datetime_Picker( $this );
+				include_once( 'class-woocommerce-bookings-extensions-date-picker.php' );
+				$picker = new WC_Booking_Extensions_Bookings_Date_Picker( $this );
 				break;
 			default:
 				break;
@@ -233,4 +343,55 @@ class WC_Booking_Extensions_Bookings_Search {
 
 		$this->fields[ sanitize_title( $field['name'] ) ] = $field;
 	}
+
+	/**
+	 * Attempt to convert a date formatting string from PHP to Moment
+	 *
+	 * @param string $format
+	 * @return string
+	 */
+	protected function convert_to_moment_format( $format ) {
+		$replacements = array(
+			'd' => 'DD',
+			'D' => 'ddd',
+			'j' => 'D',
+			'l' => 'dddd',
+			'N' => 'E',
+			'S' => 'o',
+			'w' => 'e',
+			'z' => 'DDD',
+			'W' => 'W',
+			'F' => 'MMMM',
+			'm' => 'MM',
+			'M' => 'MMM',
+			'n' => 'M',
+			't' => '', // no equivalent
+			'L' => '', // no equivalent
+			'o' => 'YYYY',
+			'Y' => 'YYYY',
+			'y' => 'YY',
+			'a' => 'a',
+			'A' => 'A',
+			'B' => '', // no equivalent
+			'g' => 'h',
+			'G' => 'H',
+			'h' => 'hh',
+			'H' => 'HH',
+			'i' => 'mm',
+			's' => 'ss',
+			'u' => 'SSS',
+			'e' => 'zz', // deprecated since version 1.6.0 of moment.js
+			'I' => '', // no equivalent
+			'O' => '', // no equivalent
+			'P' => '', // no equivalent
+			'T' => '', // no equivalent
+			'Z' => '', // no equivalent
+			'c' => '', // no equivalent
+			'r' => '', // no equivalent
+			'U' => 'X',
+		);
+
+		return strtr( $format, $replacements );
+	}
+
 }
