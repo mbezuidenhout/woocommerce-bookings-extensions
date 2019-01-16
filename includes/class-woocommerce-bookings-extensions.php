@@ -132,6 +132,12 @@ class Woocommerce_Bookings_Extensions {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-woocommerce-bookings-extensions-public.php';
 
+		/**
+		 * The class responsible for display the global search form that occur by using the
+		 * shortcode
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-search.php';
+
 		$this->loader = new Woocommerce_Bookings_Extensions_Loader();
 
 	}
@@ -197,7 +203,10 @@ class Woocommerce_Bookings_Extensions {
 		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 
-		$this->loader->add_shortcode( $this->get_plugin_name() . '_search', $plugin_public, 'global_search_shortcode' );
+		if (! is_admin()) {
+			/** @see Woocommerce_Bookings_Extensions_Public::global_search_shortcode() */
+			$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
+		}
 	}
 
 	/**

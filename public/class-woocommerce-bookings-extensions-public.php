@@ -449,7 +449,35 @@ class Woocommerce_Bookings_Extensions_Public {
 		return $cart_item_meta;
 	}
 
-	public function global_search_shortcode() {
+	/**
+	 * Processes the shortcode wcbooking_search
+	 *
+	 * Usage: wcbooking_search duration_unit="month|day|hour|minute" duration="<Integer value of unit size>" [method="include|exclude" ids="<List of product ids>"]
+	 *
+	 * The search will only include products of type Bookable Product/WC_Bookings
+	 *
+	 * @param array $atts Attributes passed by the shortcode
+	 */
+	public function global_search_shortcode( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'method'        => 'exclude',
+				'ids'           => array(),
+				'duration_unit' => 'day',
+				'duration'      => 1
+			), $atts, 'wcbooking_search'
+		);
+
+		$ids = array_unique( explode( ',', preg_replace( '/[^0-9,]/', '', $atts['ids'] ) ) );
+		$key = array_search( '', $ids );
+		if( false !== $key )
+			unset( $ids[$key] );
+
+		$ids = array_values( $ids );
+
+		$search_form = new WC_Booking_Extensions_Bookings_Search( $atts['method'], $ids , $atts['duration_unit'], $atts['duration'] );
+
+		wc_get_template( 'globalsearch.php', array('bookings_search_form' => $search_form), 'woocommerce-bookings-extensions', plugin_dir_path(  __DIR__ ) . 'templates/' );
 
 	}
 
