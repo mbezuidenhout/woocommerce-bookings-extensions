@@ -212,6 +212,9 @@ class Woocommerce_Bookings_Extensions {
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 
+		/** @see Woocommerce_Bookings_Extensions_Public::show_booking_dependencies_options */
+		$this->loader->add_action( 'woocommerce_product_options_related', $plugin_public, 'show_booking_dependencies_options' );
+
 		if (! is_admin()) {
 			/** @see Woocommerce_Bookings_Extensions_Public::global_search_shortcode() */
 			$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );

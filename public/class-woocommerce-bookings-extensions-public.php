@@ -524,4 +524,13 @@ class Woocommerce_Bookings_Extensions_Public {
 		wp_send_json( $res );
 	}
 
+	public function show_booking_dependencies_options( ) {
+		$post = get_post( intval( $_GET['post'] ) );
+		$product = wc_get_product( $post->ID );
+		$action = sanitize_text_field( $_GET['action'] );
+
+		if( 'edit' == $action && 'booking' == $product->get_type() )
+			wc_get_template( 'dependencies.php', array(), 'woocommerce-bookings-extensions', plugin_dir_path(  __DIR__ ) . 'templates/' );
+	}
+
 }
