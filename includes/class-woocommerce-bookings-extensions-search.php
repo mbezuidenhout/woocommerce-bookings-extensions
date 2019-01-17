@@ -63,13 +63,14 @@ class WC_Booking_Extensions_Bookings_Search {
 	}
 
 	public function output() {
+		/*
 		if ( empty( $this->products ) ) {
 			$notice_html  = '<strong>' . esc_html__( 'No products found!', 'woocommerce-booking-extensions' ) . '</strong><br><br>';
 			$notice_html .= 'No products has been found matching the shortcode criteria';
 
 			WC_Admin_Notices::add_custom_notice('woocommerce_booking_extensions_no_products', $notice_html );
 			return false;
-		}
+		}*/
 
 		$this->scripts();
 		$this->prepare_fields();
@@ -433,11 +434,32 @@ class WC_Booking_Extensions_Bookings_Search {
 
 		$available_blocks = array();
 
+		$interval = (int) $duration * $product->get_duration();
+		$base_interval = $product->get_duration();
+
+		if ( 'hour' === $product->get_duration_unit() ) {
+			$interval      = $interval * 60;
+			$base_interval = $base_interval * 60;
+		}
 		$intervals = array($available_products[0]->get_duration() * $duration, $available_products[0]->get_duration());
+
+		$first_block_time     = $product->get_first_block_time();
+		$from                 = strtotime( $first_block_time ? $first_block_time : 'midnight', $date );
+		$to = strtotime( '+ 1 day', $from ) + $interval;
+		$to                   = strtotime( 'midnight', $to ) - 1;
 
 		foreach( $available_products as $product ) {
 			$custom_product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
-			$block_in_range = $custom_product->get_blocks_in_range( $date, $date + 60 * 60 * 24, $intervals ); // TODO: Specify correct end date
+			//$block_in_range = $custom_product->get_blocks_in_range( $date, strtotime("+1 day", $date ), $intervals );
+			//$block_in_range = $custom_product->get_blocks_availability( $from, strtotime("+1 day", $date ), $duration );
+			//$existing_bookings = WC_Bookings_Controller::get_bookings_in_date_range( $from + 1, $to - 1 );
+			$booked = array();
+			/** @var WC_Booking[] $existing_bookings */
+			$existing_bookings = $custom_product->get_bookings_in_date_range($from, $to);
+			foreach($existing_bookings as $existing_booking) {
+				$booked[] = array($existing_booking->get_start(), $existing_booking->get_end());
+			}
+			$block_in_range = $custom_product->get_blocks_in_range( $from, $to, array( $interval, $base_interval ), 0, $booked );
 			if( ! empty($block_in_range) )
 				$available_blocks[$product->get_id()] = $block_in_range;
 		}
