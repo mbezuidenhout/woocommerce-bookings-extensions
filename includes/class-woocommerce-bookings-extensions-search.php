@@ -441,7 +441,6 @@ class WC_Booking_Extensions_Bookings_Search {
 			$interval      = $interval * 60;
 			$base_interval = $base_interval * 60;
 		}
-		$intervals = array($available_products[0]->get_duration() * $duration, $available_products[0]->get_duration());
 
 		$first_block_time     = $product->get_first_block_time();
 		$from                 = strtotime( $first_block_time ? $first_block_time : 'midnight', $date );
@@ -450,14 +449,11 @@ class WC_Booking_Extensions_Bookings_Search {
 
 		foreach( $available_products as $product ) {
 			$custom_product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
-			//$block_in_range = $custom_product->get_blocks_in_range( $date, strtotime("+1 day", $date ), $intervals );
-			//$block_in_range = $custom_product->get_blocks_availability( $from, strtotime("+1 day", $date ), $duration );
-			//$existing_bookings = WC_Bookings_Controller::get_bookings_in_date_range( $from + 1, $to - 1 );
 			$booked = array();
 			/** @var WC_Booking[] $existing_bookings */
 			$existing_bookings = $custom_product->get_bookings_in_date_range($from, $to);
 			foreach($existing_bookings as $existing_booking) {
-				$booked[] = array($existing_booking->get_start(), $existing_booking->get_end());
+				$booked[] = array($existing_booking->get_start(), $existing_booking->get_end() + $custom_product->get_buffer_period() * 60);
 			}
 			$block_in_range = $custom_product->get_blocks_in_range( $from, $to, array( $interval, $base_interval ), 0, $booked );
 			if( ! empty($block_in_range) )
@@ -467,8 +463,11 @@ class WC_Booking_Extensions_Bookings_Search {
 		$html_block = '';
 		foreach( $available_products as $product ) {
 			if( in_array( $product->get_id(), array_keys($available_blocks) ) )
-			$html_block .= sprintf( '<li><div class="search-result-slug">Slug: %s</div><div class=""search-result-thumbnail">%s</div><div class="search-result-name">Name: %s</div></li>', $product->get_slug(), $product->get_image(), $product->get_name() );
+			$html_block .= sprintf( '<li><a href="%s"><div class=""search-result-thumbnail">%s</div><div class="search-result-name">%s</div></a></li>', get_permalink( $product->get_id() ), $product->get_image(), $product->get_name() );
 		}
+		if( empty($html_block))
+			$html_block .= __( 'This date is unavailable', 'woocommerce-bookings' );
+
 
 		return $html_block;
 	}
