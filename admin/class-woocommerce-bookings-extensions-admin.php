@@ -141,9 +141,51 @@ class Woocommerce_Bookings_Extensions_Admin {
 	 */
 	public function add_extra_props( $post_id ) {
 		$product = wc_get_product( $post_id );
-		$block_start = isset( $_POST['_wc_booking_extensions_block_start'] ) ? $_POST['_wc_booking_extensions_block_start'] : '';
-		$product->update_meta_data( 'block_starts', wc_clean( $block_start ) );
-		$product->save();
+		if( 'booking' == $product->get_type() ) {
+			$block_start = isset( $_POST['_wc_booking_extensions_block_start'] ) ? $_POST['_wc_booking_extensions_block_start'] : '';
+			$dependencies = isset( $_POST['_wc_booking_extensions_dependent_products'] ) ? $_POST['_wc_booking_extensions_dependent_products'] : array();
+
+			// Remove vica-versa dependencies
+            $old_dependencies = $product->get_meta( 'booking_dependencies' );
+            $remove_depencendies = array_diff( $old_dependencies, $dependencies );
+            foreach( $remove_depencendies as $dependency  ){
+	            $dependent_product = wc_get_product( $dependency );
+	            $dependent_product_dependencies = $dependent_product->get_meta( 'booking_dependencies' );
+	            if( is_array( $dependent_product_dependencies ) ) {
+		            $key = array_search( $product->get_id(), $dependent_product_dependencies );
+		            if ( false !== $key ) {
+			            unset( $dependent_product_dependencies[ $key ] );
+			            $dependent_product_dependencies = array_unique( $dependent_product_dependencies );
+			            $dependent_product->update_meta_data( 'booking_dependencies', $dependent_product_dependencies );
+			            $dependent_product->save();
+		            }
+	            }
+            }
+
+			// Add vice-versa dependency
+			foreach( $dependencies as $key => $dependency ) {
+				$dependent_product = wc_get_product( $dependency );
+                if( 'booking' != $dependent_product->get_type() ) {
+	                unset( $dependencies[ $key ] );
+                } else {
+                    $dependent_product_dependencies = $dependent_product->get_meta('booking_dependencies');
+                    if( ! is_array( $dependent_product_dependencies ) )
+                        $dependent_product_dependencies = array();
+	                $dependent_product_dependencies[] = $product->get_id();
+	                $dependent_product_dependencies = array_unique( $dependent_product_dependencies );
+	                $dependent_product->update_meta_data( 'booking_dependencies', $dependent_product_dependencies);
+	                $dependent_product->save();
+                }
+			}
+
+			$dependencies = array_unique( $dependencies );
+
+			$product->update_meta_data( 'block_starts', wc_clean( $block_start ) );
+			$product->update_meta_data( 'booking_dependencies', wc_clean( $dependencies ) );
+
+			$product->save();
+
+		}
 	}
 
 }
