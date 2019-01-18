@@ -172,11 +172,15 @@ class Woocommerce_Bookings_Extensions {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		/** @see Woocommerce_Bookings_Extensions_Admin::booking_extensions_data */
 		$this->loader->add_action( 'woocommerce_product_options_general_product_data', $plugin_admin, 'booking_extensions_data' );
 
 		// Saving data.
+		/** @see Woocommerce_Bookings_Extensions_Admin::add_extra_props */
 		$this->loader->add_action( 'woocommerce_process_product_meta', $plugin_admin, 'add_extra_props');
 
+		/** @see Woocommerce_Bookings_Extensions_Admin::show_booking_dependencies_options */
+		$this->loader->add_action( 'woocommerce_product_options_related', $plugin_admin, 'show_booking_dependencies_options' );
 	}
 
 	/**
@@ -211,9 +215,6 @@ class Woocommerce_Bookings_Extensions {
 		/** @see Woocommerce_Bookings_Extensions_Public::search_result */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
-
-		/** @see Woocommerce_Bookings_Extensions_Public::show_booking_dependencies_options */
-		$this->loader->add_action( 'woocommerce_product_options_related', $plugin_public, 'show_booking_dependencies_options' );
 
 		if (! is_admin()) {
 			/** @see Woocommerce_Bookings_Extensions_Public::global_search_shortcode() */

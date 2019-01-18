@@ -188,4 +188,32 @@ class Woocommerce_Bookings_Extensions_Admin {
 		}
 	}
 
+	public function show_booking_dependencies_options( ) {
+		$post = get_post( intval( $_GET['post'] ) );
+		$product = wc_get_product( $post->ID );
+		$action = wc_clean( $_GET['action'] );
+
+		$args = array(
+			'status'    => array( 'draft', 'pending', 'private', 'publish' ),
+			'type'      => 'booking',
+			'limit'     => null
+		);
+
+		$query = new WC_Product_Query( $args );
+		/** @var WC_Product[] $bookable_products */
+		$bookable_products = $query->get_products();
+		$bookable_product_ids = array();
+		foreach($bookable_products as $key => $bookable_product) {
+		    if( $post->ID == $bookable_product->get_id() )
+		        continue;
+		    $bookable_product_ids[] = $bookable_product->get_id();
+        }
+
+		if( 'edit' == $action && 'booking' == $product->get_type() )
+			include( 'partials/dependencies.php' );
+		//wc_get_template( 'dependencies.php', array('product_object' => $product, 'post' => $post), 'woocommerce-bookings-extensions', plugin_dir_path(  __DIR__ ) . 'templates/' );
+	}
+
+
+
 }
