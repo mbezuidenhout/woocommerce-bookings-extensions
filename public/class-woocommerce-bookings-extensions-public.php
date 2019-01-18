@@ -445,6 +445,21 @@ class Woocommerce_Bookings_Extensions_Public {
 			return false;
 		}
 
+		// Check validation on dependents
+		$dependent_products_ids = $product->get_meta( 'booking_dependencies' );
+		if( is_array( $dependent_products_ids ) ) {
+			foreach( $dependent_products_ids as $depenent_products_id ) {
+				$dependent_product = new WC_Booking_Extensions_Product_Booking( $depenent_products_id );
+				// Adjust check range by 1 second less on start and end
+				$existing_bookings = $dependent_product->get_bookings_in_date_range($data['_start_date'] + 1, $data['_end_date'] - 1);
+				if ( ! empty( $existing_bookings ) ) {
+					$error = new WP_Error( 'Error', __( 'Sorry, the selected block is not available', 'woocommerce-bookings' ) );
+					wc_add_notice( $error->get_error_message() , 'error' );
+					return false;
+				}
+			}
+		}
+
 		return $passed;
 	}
 
