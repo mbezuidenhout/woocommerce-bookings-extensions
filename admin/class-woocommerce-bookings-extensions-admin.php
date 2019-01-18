@@ -188,7 +188,11 @@ class Woocommerce_Bookings_Extensions_Admin {
 		}
 	}
 
-	public function show_booking_dependencies_options( ) {
+	/**
+	 * Adds functionality to bookable product to define inter dependent products
+     * Note that multi level dependencies are not supported in searches
+	 */
+	public function show_booking_dependencies_options() {
 		$post = get_post( intval( $_GET['post'] ) );
 		$product = wc_get_product( $post->ID );
 		$action = wc_clean( $_GET['action'] );
@@ -211,7 +215,7 @@ class Woocommerce_Bookings_Extensions_Admin {
 
 		if( 'edit' == $action && 'booking' == $product->get_type() )
 			include( 'partials/dependencies.php' );
-		//wc_get_template( 'dependencies.php', array('product_object' => $product, 'post' => $post), 'woocommerce-bookings-extensions', plugin_dir_path(  __DIR__ ) . 'templates/' );
+
 	}
 
 

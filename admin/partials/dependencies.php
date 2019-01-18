@@ -6,7 +6,8 @@
  */
 
 /**
- * @var \WC_Product_Booking $product_object
+ * @var \WC_Product_Booking $product
+ * @var array $bookable_product_ids
  * @see Woocommerce_Bookings_Extensions_Admin::show_booking_dependencies_options
  */
 

@@ -181,7 +181,24 @@ class Woocommerce_Bookings_Extensions_Public {
 		}
 
 		$blocks     = $product->get_blocks_in_range( $from, $to, array( $interval, $base_interval ), $resource_id_to_check );
-		//$block_html = wc_bookings_get_time_slots_html( $product, $blocks, array( $interval, $base_interval ), $resource_id_to_check, $from, $to );
+		// Get dependent products blocks
+		$dependent_product_ids = $product->get_meta('booking_dependencies');
+		if( is_array( $dependent_product_ids ) ) {
+			foreach( $dependent_product_ids as $dependent_product_id ) {
+				$dependent_product = new WC_Booking_Extensions_Product_Booking( wc_get_product( $dependent_product_id ) );
+				/** @var \WC_Booking[] $dep_prod_existing_bookings */
+				$dep_prod_existing_bookings = WC_Bookings_Controller::get_all_existing_bookings( $dependent_product, $from, $to );
+				foreach( $dep_prod_existing_bookings as $existing_booking ) {
+					$block_size = $interval + $product->get_buffer_period();
+					foreach( $blocks as $key => $block ) {
+						if( $existing_booking->is_within_block($block, strtotime( "+{$block_size} minutes", $block ) ) )
+							unset( $blocks[$key] );
+					}
+				}
+			}
+			$blocks = array_values( $blocks );
+		}
+
 		$block_html = $this->get_time_slots_html( $product, $blocks, array( $interval, $base_interval ), $resource_id_to_check, $from, $to );
 
 		if ( empty( $block_html ) ) {
@@ -248,7 +265,24 @@ class Woocommerce_Bookings_Extensions_Public {
 			'to'          => $to,
 		) );
 
+		/** @var WC_Booking[] $existing_bookings */
 		$existing_bookings = WC_Bookings_Controller::get_all_existing_bookings( $bookable_product, $from, $to );
+		// Add buffer period to each booking
+		foreach( $existing_bookings as &$existing_booking ) {
+			$existing_booking->set_end(strtotime("+{$bookable_product->get_buffer_period_minutes()} minutes", $existing_booking->get_end()));
+		}
+		/** @var int[]|null $dependent_products */
+		$dependent_products = $bookable_product->get_meta( 'booking_dependencies');
+		if( is_array( $dependent_products ) ) {
+			foreach( $dependent_products as $dependent_product ) {
+				$dependent_product = new WC_Booking_Extensions_Product_Booking($dependent_product);
+				$dep_prod_bookings = WC_Bookings_Controller::get_all_existing_bookings( $dependent_product, $from, $to );
+				foreach( $dep_prod_bookings as &$dep_prod_booking ) {
+					$dep_prod_booking->set_end(strtotime("+{$dependent_product->get_buffer_period_minutes()} minutes", $dep_prod_booking->get_end()));
+				}
+				$existing_bookings = array_merge($existing_bookings, $dep_prod_bookings);
+			}
+		}
 
 		$booking_resource  = $resource_id ? $bookable_product->get_resource( $resource_id ) : null;
 		$available_slots   = array();
@@ -291,10 +325,7 @@ class Woocommerce_Bookings_Extensions_Public {
 
 			$qty_booked_in_block = 0;
 
-			/** @var WC_Booking $existing_booking */
 			foreach ( $existing_bookings as $existing_booking ) {
-				$buffer = $bookable_product->get_buffer_period_minutes() ?: 0;
-				$existing_booking->set_end( $existing_booking->get_end() + $buffer ); // Add buffer after booking
 				if ( $existing_booking->is_within_block( $block, strtotime( "+{$interval} minutes", $block ) ) ) {
 					$qty_to_add = $bookable_product->has_person_qty_multiplier() ? max( 1, array_sum( $existing_booking->get_persons() ) ) : 1;
 					if ( $bookable_product->has_resources() ) {
@@ -481,6 +512,9 @@ class Woocommerce_Bookings_Extensions_Public {
 
 	}
 
+	/**
+	 * Sends back array for bookings global search shortcode js
+	 */
 	public function search_booking_products() {
 		check_ajax_referer( 'search-bookings', 'security' );
 		$request = $_GET;
@@ -499,6 +533,9 @@ class Woocommerce_Bookings_Extensions_Public {
 		wp_send_json( $data );
 	}
 
+	/**
+	 * Sends html of bookable products that are available for specified date
+	 */
 	public function search_result() {
 		$posted = array();
 		parse_str( $_POST['form'], $posted );
@@ -522,6 +559,94 @@ class Woocommerce_Bookings_Extensions_Public {
 		);
 
 		wp_send_json( $res );
+	}
+
+	public function find_booked_day_blocks( $product_id, $min_date = null, $max_date = null, $timezone_offset = null ) {
+		try {
+
+			$args                          = array();
+			$product                       = new WC_Product_Booking( $product_id );
+			$args['availability_rules']    = array();
+			$args['availability_rules'][0] = $product->get_availability_rules();
+			$args['min_date']              = !is_null( $min_date ) ? strtotime( $min_date ) : $product->get_min_date();
+			$args['max_date']              = !is_null( $max_date ) ? strtotime( $max_date ) : $product->get_max_date();
+
+			$min_date        = ( is_null( $min_date ) ) ? strtotime( "+{$args['min_date']['value']} {$args['min_date']['unit']}", current_time( 'timestamp' ) ) : $args['min_date'];
+			$max_date        = ( is_null( $max_date ) ) ? strtotime( "+{$args['max_date']['value']} {$args['max_date']['unit']}", current_time( 'timestamp' ) ) : $args['max_date'];
+			$timezone_offset = !is_null( $timezone_offset ) ? $timezone_offset : 0;
+
+			if ( $product->has_resources() ) {
+				foreach ( $product->get_resources() as $resource ) {
+					$args['availability_rules'][ $resource->ID ] = $product->get_availability_rules( $resource->ID );
+				}
+			}
+
+			$booked = WC_Bookings_Controller::find_booked_day_blocks( $product_id, $min_date, $max_date, 'Y-n-j', $timezone_offset );
+
+			$args['partially_booked_days'] = $booked['partially_booked_days'];
+			$args['fully_booked_days']     = $booked['fully_booked_days'];
+			$args['unavailable_days']      = $booked['unavailable_days'];
+			$args['restricted_days']       = $product->has_restricted_days() ? $product->get_restricted_days() : false;
+
+			$buffer_days = array();
+			if ( ! in_array( $product->get_duration_unit(), array( 'minute', 'hour' ) ) ) {
+				$buffer_days = WC_Bookings_Controller::get_buffer_day_blocks_for_booked_days( $product, $args['fully_booked_days'] );
+			}
+
+			$args['buffer_days']           = $buffer_days;
+
+			return $args;
+
+		} catch ( Exception $e ) {
+
+			wp_die();
+
+		}
+	}
+
+	/**
+	 * This endpoint is supposed to replace the back-end logic in booking-form.
+	 */
+	public function find_booked_day_blocks_ajax() {
+		check_ajax_referer( 'find-booked-day-blocks', 'security' );
+
+		$product_id = absint( $_GET['product_id'] );
+
+		if ( empty( $product_id ) ) {
+			wp_send_json_error( 'Missing product ID' );
+			exit;
+		}
+
+		$args = $this->find_booked_day_blocks( intval($product_id), $_GET['min_date'], $_GET['max_date'], $_GET['timezone_offset'] );
+
+		$product = wc_get_product( $product_id );
+		$dependent_products_ids = $product->get_meta( 'booking_dependencies' );
+
+		if( ! empty($dependent_products_ids) ) {
+			foreach ( $dependent_products_ids as $dependent_product_id ) {
+				$dependent_args = $this->find_booked_day_blocks( intval($dependent_product_id), $_GET['min_date'], $_GET['max_date'], $_GET['timezone_offset'] );
+
+				// Merge data together. Note that only fully and partially booked data gets merged
+
+				// Add fully booked days and remove out of partially booked list
+				foreach( $dependent_args['fully_booked_days'] as $day => $val ) {
+					$args['fully_booked_days'][$day] = $val;
+					if( array_key_exists($day, $args['partially_booked_days'] ) )
+						unset( $args['partially_booked_days'][$day] );
+				}
+
+				// Add partially booked days
+				foreach( $dependent_args['partially_booked_days'] as $day => $val ) {
+					if( ! array_key_exists( $day, $args['fully_booked_days'] ) ) {
+						$args['partially_booked_days'][$day] = $val;
+					}
+				}
+
+			}
+		}
+
+		wp_send_json( $args );
+
 	}
 
 }

@@ -11,6 +11,11 @@ new WC_Bookings_Custom;
 
 class WC_Booking_Extensions_Product_Booking extends WC_Product_Booking {
 
+	/**
+	 * WC_Booking_Extensions_Product_Booking constructor.
+	 *
+	 * @param int $product
+	 */
 	public function __construct( $product = 0 ) {
 		$this->defaults['block_starts'] = 'on_the_half_hour';
 		if( is_integer( intval( $product ) ) )
@@ -19,6 +24,26 @@ class WC_Booking_Extensions_Product_Booking extends WC_Product_Booking {
 		if( is_a( $product, 'WC_Product'))
 			$this->data['block_starts'] = $product->get_meta('block_starts');
 	}
+
+	/**
+	 * Returns blocks/time slots from a given start and end minute blocks.
+	 *
+	 * This function take varied inputs but always returns a block array of available slots.
+	 * Sometimes it gets the minutes and see if all is available some times it needs to make up the
+	 * minutes based on what is booked.
+	 *
+	 * It uses start and end date to figure things out.
+	 *
+	 * @param $check_date
+	 * @param $start_date
+	 * @param $end_date
+	 * @param $bookable_ranges
+	 * @param $intervals
+	 * @param integer $resource_id
+	 * @param $minutes_not_available
+	 *
+	 * @return array
+	 */
 
 	protected function get_bookable_minute_blocks_for_date( $check_date, $start_date, $end_date, $bookable_ranges, $intervals, $resource_id, $minutes_not_available ) {
 		switch($this->data['block_starts']) {

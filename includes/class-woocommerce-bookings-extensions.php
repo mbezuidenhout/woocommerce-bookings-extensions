@@ -199,10 +199,14 @@ class Woocommerce_Bookings_Extensions {
 
 		$this->loader->add_action( 'plugins_loaded', $this, 'load_extensions', 11 );
 		// Replace WooCommerce Bookings ajax handlers
-		//$this->loader->remove_action( 'wp_ajax_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
+		// $this->loader->remove_action( 'wp_ajax_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
+		// $this->loader->remove_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
+		// $this->loader->remove_action( 'wc_ajax_wc_bookings_find_booked_day_blocks', 'WC_Bookings_WC_Ajax', 'find_booked_day_blocks', 10);
+		/** @see Woocommerce_Bookings_Extensions_Public::get_time_blocks_for_date */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
-		//$this->loader->remove_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
+		/** @see Woocommerce_Bookings_Extensions_Public::find_booked_day_blocks_ajax */
+		$this->loader->add_action( 'wc_ajax_wc_bookings_find_booked_day_blocks', $plugin_public, 'find_booked_day_blocks_ajax', 9 );
 
 		/** @see Woocommerce_Bookings_Extensions_Public::calculate_costs */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
@@ -216,7 +220,8 @@ class Woocommerce_Bookings_Extensions {
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 
-		if (! is_admin()) {
+		// Notice that the global search does not support multi level dependencies
+		if ( ! is_admin() ) {
 			/** @see Woocommerce_Bookings_Extensions_Public::global_search_shortcode() */
 			$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
 		}
@@ -262,6 +267,14 @@ class Woocommerce_Bookings_Extensions {
 		return $this->version;
 	}
 
+	/**
+	 * Searches through the list of filters registered with Wordpress and removes by class and function name
+	 *
+	 * @param string $tag
+	 * @param string $class_name
+	 * @param string $function_name
+	 * @param integer $priority
+	 */
 	public function remove_filter_by_class( $tag, $class_name, $function_name, $priority ) {
 		global $wp_filter;
 
@@ -280,6 +293,9 @@ class Woocommerce_Bookings_Extensions {
 		}
 	}
 
+	/**
+	 * Replaces parts of the WooCommerce Bookings components
+	 */
 	public function load_extensions() {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-product-booking.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-cart-manager.php';
@@ -287,9 +303,11 @@ class Woocommerce_Bookings_Extensions {
 		$plugin_public = new Woocommerce_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
 		$cart_manager = new WC_Booking_Extensions_Cart_Manager();
 
+		/** @see WC_Booking_Cart_Manager::validate_add_cart_item */
 		$this->remove_filter_by_class( 'woocommerce_add_to_cart_validation', 'WC_Booking_Cart_Manager', 'validate_add_cart_item', 10 );
 		add_filter( 'woocommerce_add_to_cart_validation', array( $plugin_public, 'validate_add_cart_item' ), 10, 3 );
 
+		/** @see WC_Booking_Cart_Manager::add_cart_item_data */
 		$this->remove_filter_by_class( 'woocommerce_add_cart_item_data', 'WC_Booking_Cart_Manager', 'add_cart_item_data', 10);
 		add_filter( 'woocommerce_add_cart_item_data', array( $cart_manager, 'add_cart_item_data' ), 10, 3 );
 	}
