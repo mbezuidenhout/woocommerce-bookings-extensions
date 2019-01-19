@@ -6,6 +6,8 @@
  *
  * @version 1.0.0
  * @since   1.2.0
+ *
+ * @see Woocommerce_Bookings_Extensions_Public::global_search_shortcode
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,10 +24,10 @@ $nonce = wp_create_nonce( 'search-bookings' );
 
 		<?php $bookings_search_form->output(); ?>
 
-        <div class="wc-booking-extensions-search-result" style="display:none">
-            <ul class="wc-booking-extensions-result-list">
+		<div class="wc-booking-extensions-search-result" style="display:none">
+			<ul class="wc-booking-extensions-result-list">
 
-            </ul>
-        </div>
+			</ul>
+		</div>
 	</div>
 </form>

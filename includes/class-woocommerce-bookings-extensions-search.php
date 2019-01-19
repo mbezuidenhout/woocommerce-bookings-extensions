@@ -59,9 +59,10 @@ class WC_Booking_Extensions_Bookings_Search {
 
 		foreach ( $this->products as $key => $product ) {
 			if ( $product->is_purchasable() === false ||
-				$this->duration_unit !== $product->get_duration_unit() &&
+				$this->duration_unit !== $product->get_duration_unit() ||
+				$this->duration_unit === $product->get_duration_unit() &&
 				$this->duration !== $product->get_duration() ) {
-				unset( $this->products['key'] );
+				unset( $this->products[ $key ] );
 			}
 		}
 
@@ -184,7 +185,7 @@ class WC_Booking_Extensions_Bookings_Search {
 		$min = 0;
 		$max = 1;
 		foreach ( $this->products as $product ) {
-			if ( 0 == $min || $min > $product->get_min_duration() ) {
+			if ( 0 === $min || $min > $product->get_min_duration() ) {
 				$min = $product->get_min_duration();
 			}
 			if ( $max < $product->get_max_duration() ) {
@@ -251,12 +252,12 @@ class WC_Booking_Extensions_Bookings_Search {
 	}
 
 	protected function persons_field() {
-		$min = 0;
-		$max = 1;
+		$min         = 0;
+		$max         = 1;
 		$has_persons = false;
 		foreach ( $this->products as $product ) {
 			$has_persons |= $product->has_persons();
-			if ( 0 == $min || $min > $product->get_min_persons() ) {
+			if ( 0 === $min || $min > $product->get_min_persons() ) {
 				$min = $product->get_min_persons();
 			}
 			if ( $max < $product->get_max_persons() ) {

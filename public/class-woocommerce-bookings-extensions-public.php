@@ -521,7 +521,7 @@ class Woocommerce_Bookings_Extensions_Public {
 		$atts = shortcode_atts(
 			array(
 				'method'        => 'exclude',
-				'ids'           => array(),
+				'ids'           => '',
 				'duration_unit' => 'day',
 				'duration'      => 1,
 			),
@@ -537,7 +537,7 @@ class Woocommerce_Bookings_Extensions_Public {
 
 		$ids = array_values( $ids );
 
-		$search_form = new WC_Booking_Extensions_Bookings_Search( $atts['method'], $ids, $atts['duration_unit'], $atts['duration'] );
+		$search_form = new WC_Booking_Extensions_Bookings_Search( $atts['method'], $ids, $atts['duration_unit'], intval( $atts['duration'] ) );
 
 		wc_get_template( 'globalsearch.php', array( 'bookings_search_form' => $search_form ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
 
@@ -570,11 +570,22 @@ class Woocommerce_Bookings_Extensions_Public {
 	public function search_result() {
 		$posted = array();
 		parse_str( $_POST['form'], $posted );
+		$default = array(
+			'wc_bookings_field_start_date_year'  => null,
+			'wc_bookings_field_start_date_month' => null,
+			'wc_bookings_field_start_date_day'   => null,
+			'wc_bookings_field_duration'         => 1,
+			'wc_bookings_field_persons'          => null,
+			'duration_unit'                      => 'day',
+			'duration'                           => 1
+		);
+
+		$posted = wp_parse_args( $posted, $default );
 
 		$ids = array_unique( explode( ',', preg_replace( '/[^0-9,]/', '', $posted['ids'] ) ) );
 		$key = array_search( '', $ids );
-		if( false !== $key )
-			unset( $ids[$key] );
+		if ( false !== $key )
+			unset( $ids[ $key ] );
 
 		$ids = array_values( $ids );
 
@@ -585,8 +596,8 @@ class Woocommerce_Bookings_Extensions_Public {
 		$availability_html = $booking_search->get_availability_html( $date, $posted['wc_bookings_field_duration'], $posted['wc_bookings_field_persons'] );
 
 		$res = array(
-			result => 'SUCCESS',
-			html => $availability_html
+			'result' => 'SUCCESS',
+			'html'   => $availability_html,
 		);
 
 		wp_send_json( $res );
