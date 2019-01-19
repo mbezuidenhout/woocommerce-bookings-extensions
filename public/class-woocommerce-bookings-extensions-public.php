@@ -582,18 +582,19 @@ class Woocommerce_Bookings_Extensions_Public {
 
 		$posted = wp_parse_args( $posted, $default );
 
-		$ids = array_unique( explode( ',', preg_replace( '/[^0-9,]/', '', $posted['ids'] ) ) );
+		$ids = array_unique( array_map( 'intval', explode( ',', preg_replace( '/[^0-9,]/', '', $posted['ids'] ) ) ) );
 		$key = array_search( '', $ids );
-		if ( false !== $key )
+		if ( false !== $key ) {
 			unset( $ids[ $key ] );
+		}
 
 		$ids = array_values( $ids );
 
-		$booking_search = new WC_Booking_Extensions_Bookings_Search( 'include', $ids, $posted['duration_unit'], $posted['duration'] );
+		$booking_search = new WC_Booking_Extensions_Bookings_Search( 'include', $ids, $posted['duration_unit'], intval( $posted['duration'] ) );
 
 		$date = strtotime($posted['wc_bookings_field_start_date_year'] . '-' . $posted['wc_bookings_field_start_date_month'] . '-' . $posted['wc_bookings_field_start_date_day'] );
 
-		$availability_html = $booking_search->get_availability_html( $date, $posted['wc_bookings_field_duration'], $posted['wc_bookings_field_persons'] );
+		$availability_html = $booking_search->get_availability_html( $date, intval( $posted['wc_bookings_field_duration'] ), intval( $posted['wc_bookings_field_persons'] ) );
 
 		$res = array(
 			'result' => 'SUCCESS',
