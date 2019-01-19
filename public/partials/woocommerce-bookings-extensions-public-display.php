@@ -10,5 +10,3 @@
  * @package    Woocommerce_Bookings_Extensions
  * @subpackage Woocommerce_Bookings_Extensions/public/partials
  */
-?>
-

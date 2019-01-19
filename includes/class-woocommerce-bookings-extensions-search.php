@@ -283,10 +283,11 @@ class WC_Booking_Extensions_Bookings_Search {
 			return $this->min_date;
 		}
 
-		$min            = array(
+		$min = array(
 			'value' => 0,
 			'unit'  => 'day',
 		);
+
 		$this->min_date = $min;
 		return $this->min_date;
 	}
@@ -300,6 +301,7 @@ class WC_Booking_Extensions_Bookings_Search {
 			'value' => 12,
 			'unit'  => 'month',
 		);
+
 		$this->max_date = $max;
 		return $this->max_date;
 	}

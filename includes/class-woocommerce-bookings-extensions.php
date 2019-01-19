@@ -268,7 +268,7 @@ class Woocommerce_Bookings_Extensions {
 	}
 
 	/**
-	 * Searches through the list of filters registered with Wordpress and removes by class and function name
+	 * Searches through the list of filters registered with WordPress and removes by class and function name
 	 *
 	 * @param string $tag
 	 * @param string $class_name
@@ -285,7 +285,7 @@ class Woocommerce_Bookings_Extensions {
 			foreach ( $callbacks as $callback_id => $callback ) {
 				if ( is_array( $callback['function'] ) ) {
 
-					if ( is_a( $callback['function'][0], $class_name ) && $function_name == $callback['function'][1] ) {
+					if ( is_a( $callback['function'][0], $class_name ) && $function_name === $callback['function'][1] ) {
 						unset( $callbacks[ $callback_id ] );
 					}
 				}
@@ -301,7 +301,7 @@ class Woocommerce_Bookings_Extensions {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-cart-manager.php';
 
 		$plugin_public = new Woocommerce_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
-		$cart_manager = new WC_Booking_Extensions_Cart_Manager();
+		$cart_manager  = new WC_Booking_Extensions_Cart_Manager();
 
 		/** @see WC_Booking_Cart_Manager::validate_add_cart_item */
 		$this->remove_filter_by_class( 'woocommerce_add_to_cart_validation', 'WC_Booking_Cart_Manager', 'validate_add_cart_item', 10 );

@@ -136,7 +136,6 @@ class Woocommerce_Bookings_Extensions_Admin {
 	 *
 	 * @version  1.10.7
 	 * @param    int    $post_id
-	 * @return   WC_Product_Booking
 	 */
 	public function add_extra_props( $post_id ) {
 		$product = wc_get_product( $post_id );
@@ -148,10 +147,10 @@ class Woocommerce_Bookings_Extensions_Admin {
 			$old_dependencies    = $product->get_meta( 'booking_dependencies' );
 			$remove_depencendies = array_diff( $old_dependencies, $dependencies );
 			foreach ( $remove_depencendies as $dependency ) {
-				$dependent_product = wc_get_product( $dependency );
+				$dependent_product              = wc_get_product( $dependency );
 				$dependent_product_dependencies = $dependent_product->get_meta( 'booking_dependencies' );
 				if ( is_array( $dependent_product_dependencies ) ) {
-					$key = array_search( $product->get_id(), $dependent_product_dependencies );
+					$key = array_search( $product->get_id(), $dependent_product_dependencies, true );
 					if ( false !== $key ) {
 						unset( $dependent_product_dependencies[ $key ] );
 						$dependent_product_dependencies = array_unique( $dependent_product_dependencies );
@@ -207,7 +206,7 @@ class Woocommerce_Bookings_Extensions_Admin {
 		/** @var WC_Product[] $bookable_products */
 		$bookable_products    = $query->get_products();
 		$bookable_product_ids = array();
-		foreach ( $bookable_products as $key => $bookable_product ) {
+		foreach ( $bookable_products as $bookable_product ) {
 			if ( $post->ID === $bookable_product->get_id() ) {
 				continue;
 			}
