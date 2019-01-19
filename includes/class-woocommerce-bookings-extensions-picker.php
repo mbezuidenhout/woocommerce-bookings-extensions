@@ -4,6 +4,7 @@
  */
 abstract class WC_Booking_Extensions_Bookings_Picker {
 
+	/** @var WC_Product_Booking */
 	protected $search_form;
 	protected $args = array();
 
@@ -14,7 +15,7 @@ abstract class WC_Booking_Extensions_Bookings_Picker {
 	 */
 	protected function get_field_label( $text ) {
 		// If the duration is > 1, dates and times are 'start' times and should thus have different labels
-		if ( $this->search_form->get_duration_type() === 'customer' && $this->search_form->get_max_duration() > 1 && ! in_array( $this->search_form->get_duration_unit(), array( 'hour', 'minute' ) ) ) {
+		if ( $this->search_form->get_duration_type() === 'customer' && $this->search_form->get_max_duration() > 1 && ! in_array( $this->search_form->get_duration_unit(), array( 'hour', 'minute' ), true ) ) {
 			/* translators: 1: Text to insert into label string */
 			$date_label = __( 'Start %s', 'woocommerce-bookings' );
 		} else {
@@ -34,7 +35,7 @@ abstract class WC_Booking_Extensions_Bookings_Picker {
 		if ( $min_date['value'] ) {
 			$unit = strtolower( substr( $min_date['unit'], 0, 1 ) );
 
-			if ( in_array( $unit, array( 'd', 'w', 'y', 'm' ) ) ) {
+			if ( in_array( $unit, array( 'd', 'w', 'y', 'm' ), true ) ) {
 				$js_string = "+{$min_date['value']}{$unit}";
 			} elseif ( 'h' === $unit ) {
 
@@ -43,9 +44,9 @@ abstract class WC_Booking_Extensions_Bookings_Picker {
 				if ( 24 > $min_date['value'] ) {
 					$current_d = date( 'd', current_time( 'timestamp' ) );
 					$min_d     = date( 'd', strtotime( "+{$min_date['value']} hour", current_time( 'timestamp' ) ) );
-					$js_string = '+' . ( $current_d == $min_d ? 0 : 1 ) . 'd';
+					$js_string = '+' . ( $current_d === $min_d ? 0 : 1 ) . 'd';
 				} else {
-					$min_d = (int) ( $min_date['value'] / 24 );
+					$min_d     = (int) ( $min_date['value'] / 24 );
 					$js_string = '+' . $min_d . 'd';
 				}
 			}
@@ -62,12 +63,12 @@ abstract class WC_Booking_Extensions_Bookings_Picker {
 		$max_date  = $this->search_form->get_max_date();
 		$unit      = strtolower( substr( $max_date['unit'], 0, 1 ) );
 
-		if ( in_array( $unit, array( 'd', 'w', 'y', 'm' ) ) ) {
+		if ( in_array( $unit, array( 'd', 'w', 'y', 'm' ), true ) ) {
 			$js_string = "+{$max_date['value']}{$unit}";
 		} elseif ( 'h' === $unit ) {
 			$current_d = date( 'd', current_time( 'timestamp' ) );
 			$max_d     = date( 'd', strtotime( "+{$max_date['value']}{$unit}", current_time( 'timestamp' ) ) );
-			$js_string = '+' . ( $current_d == $max_d ? 0 : 1 ) . 'd';
+			$js_string = '+' . ( $current_d === $max_d ? 0 : 1 ) . 'd';
 		}
 		return $js_string;
 	}

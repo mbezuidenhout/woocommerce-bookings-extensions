@@ -128,54 +128,54 @@ class Woocommerce_Bookings_Extensions_Admin {
 			$bookable_product = new WC_Booking_Extensions_Product_Booking( $post->ID );
 		}
 
-		include( 'partials/html-booking-extensions-data.php' );
-    }
+		include 'partials/html-booking-extensions-data.php';
+	}
 
 	/**
 	 * Set data in 3.0.x
 	 *
 	 * @version  1.10.7
-	 * @param    WC_Product_Booking|WC_Booking_Extensions_Product_Booking $product
-     * @param    WC_Data_Store $product_data
-     * @return   WC_Product_Booking
+	 * @param    int    $post_id
+	 * @return   WC_Product_Booking
 	 */
 	public function add_extra_props( $post_id ) {
 		$product = wc_get_product( $post_id );
-		if( 'booking' == $product->get_type() ) {
-			$block_start = isset( $_POST['_wc_booking_extensions_block_start'] ) ? $_POST['_wc_booking_extensions_block_start'] : '';
+		if ( 'booking' === $product->get_type() ) {
+			$block_start  = isset( $_POST['_wc_booking_extensions_block_start'] ) ? $_POST['_wc_booking_extensions_block_start'] : '';
 			$dependencies = isset( $_POST['_wc_booking_extensions_dependent_products'] ) ? $_POST['_wc_booking_extensions_dependent_products'] : array();
 
 			// Remove vica-versa dependencies
-            $old_dependencies = $product->get_meta( 'booking_dependencies' );
-            $remove_depencendies = array_diff( $old_dependencies, $dependencies );
-            foreach( $remove_depencendies as $dependency  ){
-	            $dependent_product = wc_get_product( $dependency );
-	            $dependent_product_dependencies = $dependent_product->get_meta( 'booking_dependencies' );
-	            if( is_array( $dependent_product_dependencies ) ) {
-		            $key = array_search( $product->get_id(), $dependent_product_dependencies );
-		            if ( false !== $key ) {
-			            unset( $dependent_product_dependencies[ $key ] );
-			            $dependent_product_dependencies = array_unique( $dependent_product_dependencies );
-			            $dependent_product->update_meta_data( 'booking_dependencies', $dependent_product_dependencies );
-			            $dependent_product->save();
-		            }
-	            }
-            }
+			$old_dependencies    = $product->get_meta( 'booking_dependencies' );
+			$remove_depencendies = array_diff( $old_dependencies, $dependencies );
+			foreach ( $remove_depencendies as $dependency ) {
+				$dependent_product = wc_get_product( $dependency );
+				$dependent_product_dependencies = $dependent_product->get_meta( 'booking_dependencies' );
+				if ( is_array( $dependent_product_dependencies ) ) {
+					$key = array_search( $product->get_id(), $dependent_product_dependencies );
+					if ( false !== $key ) {
+						unset( $dependent_product_dependencies[ $key ] );
+						$dependent_product_dependencies = array_unique( $dependent_product_dependencies );
+						$dependent_product->update_meta_data( 'booking_dependencies', $dependent_product_dependencies );
+						$dependent_product->save();
+					}
+				}
+			}
 
 			// Add vice-versa dependency
-			foreach( $dependencies as $key => $dependency ) {
+			foreach ( $dependencies as $key => $dependency ) {
 				$dependent_product = wc_get_product( $dependency );
-                if( 'booking' != $dependent_product->get_type() ) {
-	                unset( $dependencies[ $key ] );
-                } else {
-                    $dependent_product_dependencies = $dependent_product->get_meta('booking_dependencies');
-                    if( ! is_array( $dependent_product_dependencies ) )
-                        $dependent_product_dependencies = array();
-	                $dependent_product_dependencies[] = $product->get_id();
-	                $dependent_product_dependencies = array_unique( $dependent_product_dependencies );
-	                $dependent_product->update_meta_data( 'booking_dependencies', $dependent_product_dependencies);
-	                $dependent_product->save();
-                }
+				if ( 'booking' !== $dependent_product->get_type() ) {
+					unset( $dependencies[ $key ] );
+				} else {
+					$dependent_product_dependencies = $dependent_product->get_meta( 'booking_dependencies' );
+					if ( ! is_array( $dependent_product_dependencies ) ) {
+						$dependent_product_dependencies = array();
+					}
+					$dependent_product_dependencies[] = $product->get_id();
+					$dependent_product_dependencies   = array_unique( $dependent_product_dependencies );
+					$dependent_product->update_meta_data( 'booking_dependencies', $dependent_product_dependencies );
+					$dependent_product->save();
+				}
 			}
 
 			$dependencies = array_unique( $dependencies );
@@ -190,31 +190,33 @@ class Woocommerce_Bookings_Extensions_Admin {
 
 	/**
 	 * Adds functionality to bookable product to define inter dependent products
-     * Note that multi level dependencies are not supported in searches
+	 * Note that multi level dependencies are not supported in searches
 	 */
 	public function show_booking_dependencies_options() {
-		$post = get_post( intval( $_GET['post'] ) );
+		$post    = get_post( intval( $_GET['post'] ) );
 		$product = wc_get_product( $post->ID );
-		$action = wc_clean( $_GET['action'] );
+		$action  = wc_clean( $_GET['action'] );
 
 		$args = array(
-			'status'    => array( 'draft', 'pending', 'private', 'publish' ),
-			'type'      => 'booking',
-			'limit'     => null
+			'status' => array( 'draft', 'pending', 'private', 'publish' ),
+			'type'   => 'booking',
+			'limit'  => null,
 		);
 
 		$query = new WC_Product_Query( $args );
 		/** @var WC_Product[] $bookable_products */
-		$bookable_products = $query->get_products();
+		$bookable_products    = $query->get_products();
 		$bookable_product_ids = array();
-		foreach($bookable_products as $key => $bookable_product) {
-		    if( $post->ID == $bookable_product->get_id() )
-		        continue;
-		    $bookable_product_ids[] = $bookable_product->get_id();
-        }
+		foreach ( $bookable_products as $key => $bookable_product ) {
+			if ( $post->ID === $bookable_product->get_id() ) {
+				continue;
+			}
+			$bookable_product_ids[] = $bookable_product->get_id();
+		}
 
-		if( 'edit' == $action && 'booking' == $product->get_type() )
-			include( 'partials/dependencies.php' );
+		if ( 'edit' === $action && 'booking' === $product->get_type() ) {
+			include 'partials/dependencies.php';
+		}
 
 	}
 

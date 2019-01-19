@@ -29,48 +29,46 @@ class WC_Booking_Extensions_Bookings_Search {
 	 */
 	public function __construct( $method, $ids, $duration_unit, $duration ) {
 		$this->duration_unit = $duration_unit;
-		$this->duration = $duration;
+		$this->duration      = $duration;
 
 		$args = array(
-			'status'    => 'publish',
-			'type'      => 'booking',
-			'limit'     => null
+			'status' => 'publish',
+			'type'   => 'booking',
+			'limit'  => null,
 		);
 
-		$query = new WC_Product_Query( $args );
+		$query          = new WC_Product_Query( $args );
 		$this->products = $query->get_products();
 
-		if( 'exclude' == $method && ! empty($ids) ) {
-			foreach( $ids as $id )
-				foreach( $this->products as $key => $product ) {
-					if( $id == $product->get_id() ) {
-						unset($this->products[$key]);
+		if ( 'exclude' === $method && ! empty( $ids ) ) {
+			foreach ( $ids as $id ) {
+				foreach ( $this->products as $key => $product ) {
+					if ( $id === $product->get_id() ) {
+						unset( $this->products[ $key ] );
 						continue 2;
 					}
 				}
-		} elseif( 'include' == $method && ! empty($ids) ) {
-			foreach( $this->products as $key => $product )
-				if( !in_array( $product->get_id(), $ids ) )
-					unset($this->products[$key]);
+			}
+		} elseif ( 'include' === $method && ! empty( $ids ) ) {
+			foreach ( $this->products as $key => $product ) {
+				if ( ! in_array( $product->get_id(), $ids, true ) ) {
+					unset( $this->products[ $key ] );
+				}
+			}
 		}
 
-		foreach( $this->products as $key => $product ) {
-			if( $product->is_purchasable() === false || $this->duration_unit != $product->get_duration_unit() && $this->duration != $product->get_duration() )
-				unset($this->products['key']);
+		foreach ( $this->products as $key => $product ) {
+			if ( $product->is_purchasable() === false ||
+				$this->duration_unit !== $product->get_duration_unit() &&
+				$this->duration !== $product->get_duration() ) {
+				unset( $this->products['key'] );
+			}
 		}
 
 		$this->products = array_values( $this->products );
 	}
 
 	public function output() {
-		/*
-		if ( empty( $this->products ) ) {
-			$notice_html  = '<strong>' . esc_html__( 'No products found!', 'woocommerce-booking-extensions' ) . '</strong><br><br>';
-			$notice_html .= 'No products has been found matching the shortcode criteria';
-
-			WC_Admin_Notices::add_custom_notice('woocommerce_booking_extensions_no_products', $notice_html );
-			return false;
-		}*/
 
 		$this->scripts();
 		$this->prepare_fields();
@@ -79,17 +77,21 @@ class WC_Booking_Extensions_Bookings_Search {
 			wc_get_template( 'booking-form/' . $field['type'] . '.php', array( 'field' => $field ), 'woocommerce-bookings', WC_BOOKINGS_TEMPLATE_PATH );
 		}
 
-		$hidden_fields = array(array(
-			'name' => 'ids',
-			'value' => implode(',', $this->get_ids())
-		),array(
-			'name' => 'duration',
-			'value' => $this->duration
-		),array(
-			'name' => 'duration_unit',
-			'value' => $this->duration_unit
-		));
-		foreach( $hidden_fields as $key => $field ) {
+		$hidden_fields = array(
+			array(
+				'name'  => 'ids',
+				'value' => implode( ',', $this->get_ids() ),
+			),
+			array(
+				'name'  => 'duration',
+				'value' => $this->duration,
+			),
+			array(
+				'name'  => 'duration_unit',
+				'value' => $this->duration_unit,
+			),
+		);
+		foreach ( $hidden_fields as $key => $field ) {
 			wc_get_template( 'hidden-field.php', array( 'field' => $field ), 'woocommerce-booking-extensions', untrailingslashit( plugin_dir_path( __DIR__ ) ) . '/templates/' );
 		}
 
@@ -97,8 +99,9 @@ class WC_Booking_Extensions_Bookings_Search {
 
 	public function get_ids() {
 		$ids = array();
-		foreach( $this->products as $product )
+		foreach ( $this->products as $product ) {
 			$ids[] = $product->get_id();
+		}
 		return $ids;
 	}
 
@@ -128,7 +131,7 @@ class WC_Booking_Extensions_Bookings_Search {
 
 		$wc_bookings_date_picker_args = array(
 			//'ajax_url'                   => WC_AJAX::get_endpoint( 'wc_booking_extensions_search' ),
-			'ajax_url'                     => admin_url('admin-ajax.php?action=wc_booking_extensions_search'),
+			'ajax_url' => admin_url( 'admin-ajax.php?action=wc_booking_extensions_search' ),
 		);
 
 		wp_enqueue_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
@@ -180,15 +183,17 @@ class WC_Booking_Extensions_Bookings_Search {
 		// Get the duration type for each product
 		$min = 0;
 		$max = 1;
-		foreach( $this->products as $product ) {
-			if( 0 == $min || $min > $product->get_min_duration() )
+		foreach ( $this->products as $product ) {
+			if ( 0 == $min || $min > $product->get_min_duration() ) {
 				$min = $product->get_min_duration();
-			if( $max < $product->get_max_duration() )
+			}
+			if ( $max < $product->get_max_duration() ) {
 				$max = $product->get_max_duration();
+			}
 		}
 
 		$after = '';
-		switch( $this->duration_unit ) {
+		switch ( $this->duration_unit ) {
 			case 'month':
 				if ( $this->duration > 1 ) {
 					/* translators: 1: product duration */
@@ -206,7 +211,7 @@ class WC_Booking_Extensions_Bookings_Search {
 						$after = __( 'Day(s)', 'woocommerce-bookings' );
 					}
 				} else {
-					if ( 1 == ( $this->duration / 7 ) ) {
+					if ( 1 === ( $this->duration / 7 ) ) {
 						$after = __( 'Week(s)', 'woocommerce-bookings' );
 					} else {
 						/* translators: 1: product duration in weeks */
@@ -232,63 +237,78 @@ class WC_Booking_Extensions_Bookings_Search {
 				break;
 		}
 
-		$this->add_field( array(
-			'type'  => 'number',
-			'name'  => 'duration',
-			'label' => __( 'Duration', 'woocommerce-bookings' ),
-			'after' => $after,
-			'min'   => $min,
-			'max'   => $max,
-			'step'  => 1,
-		) );
+		$this->add_field(
+			array(
+				'type'  => 'number',
+				'name'  => 'duration',
+				'label' => __( 'Duration', 'woocommerce-bookings' ),
+				'after' => $after,
+				'min'   => $min,
+				'max'   => $max,
+				'step'  => 1,
+			)
+		);
 	}
 
 	protected function persons_field() {
 		$min = 0;
 		$max = 1;
 		$has_persons = false;
-		foreach( $this->products as $product ) {
+		foreach ( $this->products as $product ) {
 			$has_persons |= $product->has_persons();
-			if( 0 == $min || $min > $product->get_min_persons() )
+			if ( 0 == $min || $min > $product->get_min_persons() ) {
 				$min = $product->get_min_persons();
-			if( $max < $product->get_max_persons() )
+			}
+			if ( $max < $product->get_max_persons() ) {
 				$max = $product->get_max_persons();
+			}
 		}
 
-		if( $has_persons ) {
-			$this->add_field( array(
-				'type'  => 'number',
-				'name'  => 'persons',
-				'label' => __( 'Persons', 'woocommerce-bookings' ),
-				'min'   => $min,
-				'max'   => $max,
-				'step'  => 1
-			) );
+		if ( $has_persons ) {
+			$this->add_field(
+				array(
+					'type'  => 'number',
+					'name'  => 'persons',
+					'label' => __( 'Persons', 'woocommerce-bookings' ),
+					'min'   => $min,
+					'max'   => $max,
+					'step'  => 1,
+				)
+			);
 		}
 	}
 
 	public function get_min_date() {
-		if( ! empty( $this->min_date ) )
+		if ( ! empty( $this->min_date ) ) {
 			return $this->min_date;
+		}
 
-		$min = array('value' => 0, 'unit' => 'day');
+		$min            = array(
+			'value' => 0,
+			'unit'  => 'day',
+		);
 		$this->min_date = $min;
 		return $this->min_date;
 	}
 
 	public function get_max_date() {
-		if ( !empty( $this->max_date ) )
+		if ( ! empty( $this->max_date ) ) {
 			return $this->max_date;
+		}
 
-		$max = array('value' => 12, 'unit' => 'month');
+		$max = array(
+			'value' => 12,
+			'unit'  => 'month',
+		);
 		$this->max_date = $max;
 		return $this->max_date;
 	}
 
 	public function get_default_availability() {
 		$availability = false;
-		foreach($this->products as $product)
+		foreach ( $this->products as $product ) {
 			$availability |= $product->get_default_availability();
+		}
 		return $availability;
 	}
 
@@ -302,8 +322,9 @@ class WC_Booking_Extensions_Bookings_Search {
 
 	public function is_range_picker_enabled() {
 		$enable = false;
-		foreach($this->products as $product)
+		foreach ( $this->products as $product ) {
 			$enable |= $product->get_enable_range_picker();
+		}
 		return $enable;
 	}
 
@@ -321,13 +342,13 @@ class WC_Booking_Extensions_Bookings_Search {
 		// Get date picker specific to the duration unit for this product
 		switch ( $this->duration_unit ) {
 			case 'month':
-				//include_once( 'class-wc-booking-form-month-picker.php' );
+				//include_once 'class-wc-booking-form-month-picker.php';
 				//$picker = new WC_Booking_Form_Month_Picker( $this );
 				break;
 			case 'day':
 			case 'minute':
 			case 'hour':
-				include_once( 'class-woocommerce-bookings-extensions-date-picker.php' );
+				include_once 'class-woocommerce-bookings-extensions-date-picker.php';
 				$picker = new WC_Booking_Extensions_Bookings_Date_Picker( $this );
 				break;
 			default:
@@ -421,7 +442,7 @@ class WC_Booking_Extensions_Bookings_Search {
 		$available_products = $this->products;
 
 		// Remove bookable products that cannot accommodate the specified nr of persons
-		if( null !== $persons ) {
+		if ( null !== $persons ) {
 			foreach ( $available_products as $key => $product ) {
 				if ( $product->get_has_persons() && $persons < $product->get_min_persons() || $persons > $product->get_max_persons() ) {
 					unset( $available_products[ $key ] );
@@ -429,12 +450,13 @@ class WC_Booking_Extensions_Bookings_Search {
 			}
 		}
 
-		if(empty($available_products))
+		if ( empty( $available_products ) ) {
 			return false;
+		}
 
 		$available_blocks = array();
 
-		$interval = (int) $duration * $product->get_duration();
+		$interval      = (int) $duration * $product->get_duration();
 		$base_interval = $product->get_duration();
 
 		if ( 'hour' === $product->get_duration_unit() ) {
@@ -442,31 +464,34 @@ class WC_Booking_Extensions_Bookings_Search {
 			$base_interval = $base_interval * 60;
 		}
 
-		$first_block_time     = $product->get_first_block_time();
-		$from                 = strtotime( $first_block_time ? $first_block_time : 'midnight', $date );
-		$to = strtotime( '+ 1 day', $from ) + $interval;
-		$to                   = strtotime( 'midnight', $to ) - 1;
+		$first_block_time = $product->get_first_block_time();
+		$from             = strtotime( $first_block_time ? $first_block_time : 'midnight', $date );
+		$to               = strtotime( '+ 1 day', $from ) + $interval;
+		$to               = strtotime( 'midnight', $to ) - 1;
 
-		foreach( $available_products as $product ) {
+		foreach ( $available_products as $product ) {
 			$custom_product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
-			$booked = array();
+			$booked         = array();
 			/** @var WC_Booking[] $existing_bookings */
-			$existing_bookings = $custom_product->get_bookings_in_date_range($from, $to);
-			foreach($existing_bookings as $existing_booking) {
-				$booked[] = array($existing_booking->get_start(), $existing_booking->get_end() + $custom_product->get_buffer_period() * 60);
+			$existing_bookings = $custom_product->get_bookings_in_date_range( $from, $to );
+			foreach ( $existing_bookings as $existing_booking ) {
+				$booked[] = array( $existing_booking->get_start(), $existing_booking->get_end() + $custom_product->get_buffer_period() * 60 );
 			}
 			$block_in_range = $custom_product->get_blocks_in_range( $from, $to, array( $interval, $base_interval ), 0, $booked );
-			if( ! empty($block_in_range) )
-				$available_blocks[$product->get_id()] = $block_in_range;
+			if ( ! empty( $block_in_range ) ) {
+				$available_blocks[ $product->get_id() ] = $block_in_range;
+			}
 		}
 
 		$html_block = '';
-		foreach( $available_products as $product ) {
-			if( in_array( $product->get_id(), array_keys($available_blocks) ) )
-			$html_block .= sprintf( '<li><a href="%s"><div class=""search-result-thumbnail">%s</div><div class="search-result-name">%s</div></a></li>', get_permalink( $product->get_id() ), $product->get_image(), $product->get_name() );
+		foreach ( $available_products as $product ) {
+			if ( in_array( $product->get_id(), array_keys( $available_blocks ), true ) ) {
+				$html_block .= sprintf( '<li><a href="%s"><div class="search-result-thumbnail">%s</div><div class="search-result-name">%s</div></a></li>', get_permalink( $product->get_id() ), $product->get_image(), $product->get_name() );
+			}
 		}
-		if( empty($html_block))
+		if ( empty( $html_block ) ) {
 			$html_block .= __( 'This date is unavailable', 'woocommerce-bookings' );
+		}
 
 
 		return $html_block;

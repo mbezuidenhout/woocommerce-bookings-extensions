@@ -22,8 +22,8 @@ class WC_Booking_Extensions_Cart_Manager extends WC_Booking_Cart_Manager {
 		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
 
 		$booking_form                       = new WC_Booking_Form( $product );
-		$cart_item_meta['booking']          = $booking_form->get_posted_data( $_POST );
-		$cart_item_meta['booking']['_cost'] = $booking_form->calculate_booking_cost( $_POST );
+		$cart_item_meta['booking']          = $booking_form->get_posted_data( $_POST ); // phpcs:ignore
+		$cart_item_meta['booking']['_cost'] = $booking_form->calculate_booking_cost( $_POST ); // phpcs:ignore
 
 		// Create the new booking
 		$new_booking = $this->create_booking_from_cart_data( $cart_item_meta, $product_id );

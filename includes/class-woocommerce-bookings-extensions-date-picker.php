@@ -3,7 +3,7 @@
  * Class dependencies
  */
 if ( ! class_exists( 'WC_Booking_Form_Picker' ) ) {
-	include_once( 'class-woocommerce-bookings-extensions-picker.php' );
+	include_once 'class-woocommerce-bookings-extensions-picker.php';
 }
 
 /**
@@ -20,14 +20,14 @@ class WC_Booking_Extensions_Bookings_Date_Picker extends WC_Booking_Extensions_B
 	 * @param WC_Booking_Extensions_Bookings_Search $search_form The booking form which called this picker
 	 */
 	public function __construct( $search_form ) {
-		$this->search_form                  = $search_form;
-		$this->args                         = array();
-		$this->args['type']                 = $this->field_type;
-		$this->args['name']                 = $this->field_name;
-		$this->args['min_date']             = $this->search_form->get_min_date();
-		$this->args['max_date']             = $this->search_form->get_max_date();
-		$this->args['default_availability'] = $this->search_form->get_default_availability();
-		$this->args['min_date_js']          = $this->get_min_date();
+		$this->search_form                     = $search_form;
+		$this->args                            = array();
+		$this->args['type']                    = $this->field_type;
+		$this->args['name']                    = $this->field_name;
+		$this->args['min_date']                = $this->search_form->get_min_date();
+		$this->args['max_date']                = $this->search_form->get_max_date();
+		$this->args['default_availability']    = $this->search_form->get_default_availability();
+		$this->args['min_date_js']             = $this->get_min_date();
 		$this->args['max_date_js']             = $this->get_max_date();
 		$this->args['duration_type']           = $this->search_form->get_duration_type();
 		$this->args['duration_unit']           = $this->search_form->get_duration_unit();
@@ -91,7 +91,7 @@ class WC_Booking_Extensions_Bookings_Date_Picker extends WC_Booking_Extensions_B
 			 * months batches to ensure we can exit when we find the first one without going
 			 * through all 12 months.
 			 */
-			for ( $i = 1 ; $i <= $max['value'] ; $i += 3 ) {
+			for ( $i = 1; $i <= $max['value']; $i += 3 ) {
 
 				/*
 				 * $min_date calculated above first.
@@ -112,9 +112,11 @@ class WC_Booking_Extensions_Bookings_Date_Picker extends WC_Booking_Extensions_B
 					$blocks_in_range = array_reverse( $blocks_in_range );
 				}
 
-				$available_blocks = $this->search_form->get_available_blocks( array(
-					'blocks' => $blocks_in_range,
-				) );
+				$available_blocks = $this->search_form->get_available_blocks(
+					array(
+						'blocks' => $blocks_in_range,
+					)
+				);
 
 				if ( ! empty( $available_blocks[0] ) ) {
 					$default_date = $available_blocks[0];

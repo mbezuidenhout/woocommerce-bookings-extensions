@@ -82,7 +82,7 @@ class Woocommerce_Bookings_Extensions {
 		}
 		$this->plugin_name = 'woocommerce-bookings-extensions';
 
-		$this->uri = plugin_dir_url( dirname( __FILE__  ) );
+		$this->uri = plugin_dir_url( dirname( __FILE__ ) );
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -177,7 +177,7 @@ class Woocommerce_Bookings_Extensions {
 
 		// Saving data.
 		/** @see Woocommerce_Bookings_Extensions_Admin::add_extra_props */
-		$this->loader->add_action( 'woocommerce_process_product_meta', $plugin_admin, 'add_extra_props');
+		$this->loader->add_action( 'woocommerce_process_product_meta', $plugin_admin, 'add_extra_props' );
 
 		/** @see Woocommerce_Bookings_Extensions_Admin::show_booking_dependencies_options */
 		$this->loader->add_action( 'woocommerce_product_options_related', $plugin_admin, 'show_booking_dependencies_options' );
@@ -278,15 +278,15 @@ class Woocommerce_Bookings_Extensions {
 	public function remove_filter_by_class( $tag, $class_name, $function_name, $priority ) {
 		global $wp_filter;
 
-		if ( isset( $wp_filter[$tag] )) {
+		if ( isset( $wp_filter[ $tag ] ) ) {
 			/** @var WP_Hook $hook */
-			$hook = &$wp_filter[$tag];
-			$callbacks = &$hook->callbacks[$priority];
-			foreach( $callbacks as $callback_id => $callback ) {
-				if( is_array( $callback['function'] ) ) {
+			$hook      = &$wp_filter[ $tag ];
+			$callbacks = &$hook->callbacks[ $priority ];
+			foreach ( $callbacks as $callback_id => $callback ) {
+				if ( is_array( $callback['function'] ) ) {
 
-					if( is_a( $callback['function'][0], $class_name ) && $function_name == $callback['function'][1] ) {
-						unset( $callbacks[$callback_id] );
+					if ( is_a( $callback['function'][0], $class_name ) && $function_name == $callback['function'][1] ) {
+						unset( $callbacks[ $callback_id ] );
 					}
 				}
 			}
@@ -308,7 +308,7 @@ class Woocommerce_Bookings_Extensions {
 		add_filter( 'woocommerce_add_to_cart_validation', array( $plugin_public, 'validate_add_cart_item' ), 10, 3 );
 
 		/** @see WC_Booking_Cart_Manager::add_cart_item_data */
-		$this->remove_filter_by_class( 'woocommerce_add_cart_item_data', 'WC_Booking_Cart_Manager', 'add_cart_item_data', 10);
+		$this->remove_filter_by_class( 'woocommerce_add_cart_item_data', 'WC_Booking_Cart_Manager', 'add_cart_item_data', 10 );
 		add_filter( 'woocommerce_add_cart_item_data', array( $cart_manager, 'add_cart_item_data' ), 10, 3 );
 	}
 }

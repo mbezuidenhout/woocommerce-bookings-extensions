@@ -52,14 +52,15 @@ class Woocommerce_Bookings_Extensions_Public {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of the plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param    string    $plugin_name       The name of the plugin.
+	 * @param    string    $version     The version of this plugin.
+	 * @param    string    $uri         The plugin's uri
 	 */
 	public function __construct( $plugin_name, $version, $uri ) {
 
 		$this->plugin_name = $plugin_name;
-		$this->version = $version;
-		$this->uri = $uri;
+		$this->version     = $version;
+		$this->uri         = $uri;
 
 	}
 
@@ -122,8 +123,8 @@ class Woocommerce_Bookings_Extensions_Public {
 		}
 
 		// Product Checking
-		$booking_id   = $posted['add-to-cart'];
-		$product      = new WC_Booking_Extensions_Product_Booking( wc_get_product( $booking_id ) );
+		$booking_id = $posted['add-to-cart'];
+		$product    = new WC_Booking_Extensions_Product_Booking( wc_get_product( $booking_id ) );
 		if ( ! $product ) {
 			return false;
 		}
@@ -152,9 +153,9 @@ class Woocommerce_Bookings_Extensions_Public {
 			$base_interval = $base_interval * 60;
 		}
 
-		$first_block_time     = $product->get_first_block_time();
-		$from                 = strtotime( $first_block_time ? $first_block_time : 'midnight', $timestamp );
-		$standard_from        = $from;
+		$first_block_time = $product->get_first_block_time();
+		$from             = strtotime( $first_block_time ? $first_block_time : 'midnight', $timestamp );
+		$standard_from    = $from;
 
 		// Get an extra day before/after so front-end can get enough blocks to fill out 24 hours in client time.
 		if ( isset( $posted['get_prev_day'] ) ) {
@@ -167,32 +168,32 @@ class Woocommerce_Bookings_Extensions_Public {
 
 		// cap the upper range
 		$to                   = strtotime( 'midnight', $to ) - 1;
-
 		$resource_id_to_check = ( ! empty( $posted['wc_bookings_field_resource'] ) ? $posted['wc_bookings_field_resource'] : 0 );
 		$resource             = $product->get_resource( absint( $resource_id_to_check ) );
 		$resources            = $product->get_resources();
 
 		if ( $resource_id_to_check && $resource ) {
 			$resource_id_to_check = $resource->ID;
-		} elseif ( $product->has_resources() && $resources && sizeof( $resources ) === 1 ) {
+		} elseif ( $product->has_resources() && $resources && count( $resources ) === 1 ) {
 			$resource_id_to_check = current( $resources )->ID;
 		} else {
 			$resource_id_to_check = 0;
 		}
 
-		$blocks     = $product->get_blocks_in_range( $from, $to, array( $interval, $base_interval ), $resource_id_to_check );
+		$blocks = $product->get_blocks_in_range( $from, $to, array( $interval, $base_interval ), $resource_id_to_check );
 		// Get dependent products blocks
-		$dependent_product_ids = $product->get_meta('booking_dependencies');
-		if( is_array( $dependent_product_ids ) ) {
-			foreach( $dependent_product_ids as $dependent_product_id ) {
+		$dependent_product_ids = $product->get_meta( 'booking_dependencies' );
+		if ( is_array( $dependent_product_ids ) ) {
+			foreach ( $dependent_product_ids as $dependent_product_id ) {
 				$dependent_product = new WC_Booking_Extensions_Product_Booking( wc_get_product( $dependent_product_id ) );
 				/** @var \WC_Booking[] $dep_prod_existing_bookings */
 				$dep_prod_existing_bookings = WC_Bookings_Controller::get_all_existing_bookings( $dependent_product, $from, $to );
-				foreach( $dep_prod_existing_bookings as $existing_booking ) {
+				foreach ( $dep_prod_existing_bookings as $existing_booking ) {
 					$block_size = $interval + $product->get_buffer_period();
-					foreach( $blocks as $key => $block ) {
-						if( $existing_booking->is_within_block($block, strtotime( "+{$block_size} minutes", $block ) ) )
-							unset( $blocks[$key] );
+					foreach ( $blocks as $key => $block ) {
+						if ( $existing_booking->is_within_block( $block, strtotime( "+{$block_size} minutes", $block ) ) ) {
+							unset( $blocks[ $key ] );
+						}
 					}
 				}
 			}
@@ -212,12 +213,14 @@ class Woocommerce_Bookings_Extensions_Public {
 	 * Find available blocks and return HTML for the user to choose a block. Used in class-wc-bookings-ajax.php.
 	 *
 	 * @param \WC_Product_Booking $bookable_product
-	 * @param  array  $blocks
-	 * @param  array  $intervals
-	 * @param  integer $resource_id
-	 * @param  integer $from The starting date for the set of blocks
-	 * @param  integer $to
+	 * @param  array              $blocks
+	 * @param  array              $intervals
+	 * @param  integer            $resource_id
+	 * @param  integer            $from The starting date for the set of blocks
+	 * @param  integer            $to
+	 *
 	 * @return string
+	 * @throws WC_Data_Exception
 	 */
 	private function get_time_slots_html( $bookable_product, $blocks, $intervals = array(), $resource_id = 0, $from = 0, $to = 0 ) {
 		$available_blocks = $this->get_time_slots( $bookable_product, $blocks, $intervals, $resource_id, $from, $to );
@@ -255,37 +258,39 @@ class Woocommerce_Bookings_Extensions_Public {
 		}
 
 		list( $interval, $base_interval ) = $intervals;
-		$interval = $bookable_product->get_check_start_block_only() ? $base_interval : $interval;
+		$interval                         = $bookable_product->get_check_start_block_only() ? $base_interval : $interval;
 
-		$blocks   = $bookable_product->get_available_blocks( array(
-			'blocks'      => $blocks,
-			'intervals'   => $intervals,
-			'resource_id' => $resource_id,
-			'from'        => $from,
-			'to'          => $to,
-		) );
+		$blocks = $bookable_product->get_available_blocks(
+			array(
+				'blocks'      => $blocks,
+				'intervals'   => $intervals,
+				'resource_id' => $resource_id,
+				'from'        => $from,
+				'to'          => $to,
+			)
+		);
 
 		/** @var WC_Booking[] $existing_bookings */
 		$existing_bookings = WC_Bookings_Controller::get_all_existing_bookings( $bookable_product, $from, $to );
 		// Add buffer period to each booking
-		foreach( $existing_bookings as &$existing_booking ) {
-			$existing_booking->set_end(strtotime("+{$bookable_product->get_buffer_period_minutes()} minutes", $existing_booking->get_end()));
+		foreach ( $existing_bookings as &$existing_booking ) {
+			$existing_booking->set_end( strtotime( "+{$bookable_product->get_buffer_period_minutes()} minutes", $existing_booking->get_end() ) );
 		}
 		/** @var int[]|null $dependent_products */
-		$dependent_products = $bookable_product->get_meta( 'booking_dependencies');
-		if( is_array( $dependent_products ) ) {
-			foreach( $dependent_products as $dependent_product ) {
-				$dependent_product = new WC_Booking_Extensions_Product_Booking($dependent_product);
+		$dependent_products = $bookable_product->get_meta( 'booking_dependencies' );
+		if ( is_array( $dependent_products ) ) {
+			foreach ( $dependent_products as $dependent_product ) {
+				$dependent_product = new WC_Booking_Extensions_Product_Booking( $dependent_product );
 				$dep_prod_bookings = WC_Bookings_Controller::get_all_existing_bookings( $dependent_product, $from, $to );
-				foreach( $dep_prod_bookings as &$dep_prod_booking ) {
-					$dep_prod_booking->set_end(strtotime("+{$dependent_product->get_buffer_period_minutes()} minutes", $dep_prod_booking->get_end()));
+				foreach ( $dep_prod_bookings as &$dep_prod_booking ) {
+					$dep_prod_booking->set_end( strtotime( "+{$dependent_product->get_buffer_period_minutes()} minutes", $dep_prod_booking->get_end() ) );
 				}
-				$existing_bookings = array_merge($existing_bookings, $dep_prod_bookings);
+				$existing_bookings = array_merge( $existing_bookings, $dep_prod_bookings );
 			}
 		}
 
-		$booking_resource  = $resource_id ? $bookable_product->get_resource( $resource_id ) : null;
-		$available_slots   = array();
+		$booking_resource = $resource_id ? $bookable_product->get_resource( $resource_id ) : null;
+		$available_slots  = array();
 
 		foreach ( $blocks as $block ) {
 			$resources = array();
@@ -295,6 +300,7 @@ class Woocommerce_Bookings_Extensions_Public {
 			if ( $bookable_product->has_resources() && ( is_null( $booking_resource ) || ! $booking_resource->has_qty() ) ) {
 				$available_qty = 0;
 
+				/** @var \WC_Product_Booking_Resource $resource */
 				foreach ( $bookable_product->get_resources() as $resource ) {
 
 					// Only include if it is available for this selection.
@@ -302,12 +308,12 @@ class Woocommerce_Bookings_Extensions_Public {
 						continue;
 					}
 
-					if ( in_array( $bookable_product->get_duration_unit(), array( 'minute', 'hour' ) )
-					     && ! $bookable_product->check_availability_rules_against_time( $block, strtotime( "+{$interval} minutes", $block ), $resource->get_id() ) ) {
+					if ( in_array( $bookable_product->get_duration_unit(), array( 'minute', 'hour' ), true ) &&
+						! $bookable_product->check_availability_rules_against_time( $block, strtotime( "+{$interval} minutes", $block ), $resource->get_id() ) ) {
 						continue;
 					}
 
-					$available_qty += $resource->get_qty();
+					$available_qty                   += $resource->get_qty();
 					$resources[ $resource->get_id() ] = $resource->get_qty();
 				}
 			} elseif ( $bookable_product->has_resources() && $booking_resource && $booking_resource->has_qty() ) {
@@ -316,11 +322,11 @@ class Woocommerce_Bookings_Extensions_Public {
 					continue;
 				}
 
-				$available_qty = $booking_resource->get_qty();
+				$available_qty                            = $booking_resource->get_qty();
 				$resources[ $booking_resource->get_id() ] = $booking_resource->get_qty();
 			} else {
 				$available_qty = $bookable_product->get_qty();
-				$resources[0] = $bookable_product->get_qty();
+				$resources[0]  = $bookable_product->get_qty();
 			}
 
 			$qty_booked_in_block = 0;
@@ -331,17 +337,17 @@ class Woocommerce_Bookings_Extensions_Public {
 					if ( $bookable_product->has_resources() ) {
 						if ( $existing_booking->get_resource_id() === absint( $resource_id ) ) {
 							// Include the quantity to subtract if an existing booking matches the selected resource id
-							$qty_booked_in_block += $qty_to_add;
+							$qty_booked_in_block      += $qty_to_add;
 							$resources[ $resource_id ] = ( isset( $resources[ $resource_id ] ) ? $resources[ $resource_id ] : 0 ) - $qty_to_add;
 						} elseif ( ( is_null( $booking_resource ) || ! $booking_resource->has_qty() ) && $existing_booking->get_resource() ) {
 							// Include the quantity to subtract if the resource is auto selected (null/resource id empty)
 							// but the existing booking includes a resource
-							$qty_booked_in_block += $qty_to_add;
+							$qty_booked_in_block                              += $qty_to_add;
 							$resources[ $existing_booking->get_resource_id() ] = ( isset( $resources[ $existing_booking->get_resource_id() ] ) ? $resources[ $existing_booking->get_resource_id() ] : 0 ) - $qty_to_add;
 						}
 					} else {
 						$qty_booked_in_block += $qty_to_add;
-						$resources[0] = ( isset( $resources[0] ) ? $resources[0] : 0 ) - $qty_to_add;
+						$resources[0]         = ( isset( $resources[0] ) ? $resources[0] : 0 ) - $qty_to_add;
 					}
 				}
 			}
@@ -371,22 +377,26 @@ class Woocommerce_Bookings_Extensions_Public {
 		$product    = wc_get_product( $booking_id );
 
 		if ( ! $product ) {
-			wp_send_json( array(
-				'result' => 'ERROR',
-				'html'   => apply_filters( 'woocommerce_bookings_calculated_booking_cost_error_output', '<span class="booking-error">' . __( 'This booking is unavailable.', 'woocommerce-bookings' ) . '</span>', null, null ),
-			) );
+			wp_send_json(
+				array(
+					'result' => 'ERROR',
+					'html'   => apply_filters( 'woocommerce_bookings_calculated_booking_cost_error_output', '<span class="booking-error">' . __( 'This booking is unavailable.', 'woocommerce-bookings' ) . '</span>', null, null ),
+				)
+			);
 		}
 
 		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
 
-		$booking_form     = new WC_Booking_Form( $product );
-		$cost             = $booking_form->calculate_booking_cost( $posted );
+		$booking_form = new WC_Booking_Form( $product );
+		$cost         = $booking_form->calculate_booking_cost( $posted );
 
 		if ( is_wp_error( $cost ) ) {
-			wp_send_json( array(
-				'result' => 'ERROR',
-				'html'   => apply_filters( 'woocommerce_bookings_calculated_booking_cost_error_output', '<span class="booking-error">' . $cost->get_error_message() . '</span>', $cost, $product ),
-			) );
+			wp_send_json(
+				array(
+					'result' => 'ERROR',
+					'html'   => apply_filters( 'woocommerce_bookings_calculated_booking_cost_error_output', '<span class="booking-error">' . $cost->get_error_message() . '</span>', $cost, $product ),
+				)
+			);
 		}
 
 		if ( 'incl' === get_option( 'woocommerce_tax_display_shop' ) ) {
@@ -413,10 +423,12 @@ class Woocommerce_Bookings_Extensions_Public {
 		$output = apply_filters( 'woocommerce_bookings_booking_cost_string', __( 'Booking cost', 'woocommerce-bookings' ), $product ) . ': <strong>' . wc_price( $display_price ) . $price_suffix . '</strong>';
 
 		// Send the output
-		wp_send_json( array(
-			'result' => 'SUCCESS',
-			'html'   => apply_filters( 'woocommerce_bookings_calculated_booking_cost_success_output', $output, $display_price, $product ),
-		) );
+		wp_send_json(
+			array(
+				'result' => 'SUCCESS',
+				'html'   => apply_filters( 'woocommerce_bookings_calculated_booking_cost_success_output', $output, $display_price, $product ),
+			)
+		);
 	}
 
 	/**
@@ -447,14 +459,14 @@ class Woocommerce_Bookings_Extensions_Public {
 
 		// Check validation on dependents
 		$dependent_products_ids = $product->get_meta( 'booking_dependencies' );
-		if( is_array( $dependent_products_ids ) ) {
-			foreach( $dependent_products_ids as $depenent_products_id ) {
+		if ( is_array( $dependent_products_ids ) ) {
+			foreach ( $dependent_products_ids as $depenent_products_id ) {
 				$dependent_product = new WC_Booking_Extensions_Product_Booking( $depenent_products_id );
 				// Adjust check range by 1 second less on start and end
-				$existing_bookings = $dependent_product->get_bookings_in_date_range($data['_start_date'] + 1, $data['_end_date'] - 1);
+				$existing_bookings = $dependent_product->get_bookings_in_date_range( $data['_start_date'] + 1, $data['_end_date'] - 1 );
 				if ( ! empty( $existing_bookings ) ) {
 					$error = new WP_Error( 'Error', __( 'Sorry, the selected block is not available', 'woocommerce-bookings' ) );
-					wc_add_notice( $error->get_error_message() , 'error' );
+					wc_add_notice( $error->get_error_message(), 'error' );
 					return false;
 				}
 			}
@@ -498,7 +510,8 @@ class Woocommerce_Bookings_Extensions_Public {
 	/**
 	 * Processes the shortcode wcbooking_search
 	 *
-	 * Usage: wcbooking_search duration_unit="month|day|hour|minute" duration="<Integer value of unit size>" [method="include|exclude" ids="<List of product ids>"]
+	 * Usage: wcbooking_search duration_unit="month|day|hour|minute" duration="<Integer value of unit size>"
+	 * [method="include|exclude" ids="<List of product ids>"]
 	 *
 	 * The search will only include products of type Bookable Product/WC_Bookings
 	 *
@@ -510,20 +523,23 @@ class Woocommerce_Bookings_Extensions_Public {
 				'method'        => 'exclude',
 				'ids'           => array(),
 				'duration_unit' => 'day',
-				'duration'      => 1
-			), $atts, 'wcbooking_search'
+				'duration'      => 1,
+			),
+			$atts,
+			'wcbooking_search'
 		);
 
 		$ids = array_unique( explode( ',', preg_replace( '/[^0-9,]/', '', $atts['ids'] ) ) );
-		$key = array_search( '', $ids );
-		if( false !== $key )
-			unset( $ids[$key] );
+		$key = array_search( '', $ids, true );
+		if ( false !== $key ) {
+			unset( $ids[ $key ] );
+		}
 
 		$ids = array_values( $ids );
 
-		$search_form = new WC_Booking_Extensions_Bookings_Search( $atts['method'], $ids , $atts['duration_unit'], $atts['duration'] );
+		$search_form = new WC_Booking_Extensions_Bookings_Search( $atts['method'], $ids, $atts['duration_unit'], $atts['duration'] );
 
-		wc_get_template( 'globalsearch.php', array('bookings_search_form' => $search_form), 'woocommerce-bookings-extensions', plugin_dir_path(  __DIR__ ) . 'templates/' );
+		wc_get_template( 'globalsearch.php', array( 'bookings_search_form' => $search_form ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
 
 	}
 
@@ -535,14 +551,14 @@ class Woocommerce_Bookings_Extensions_Public {
 		$request = $_GET;
 
 		$data = array(
-			'availability_rules' => array(),
-			'buffer_days'        => array(),
-			'fully_booked_days'  => array(),
-			'max_date'           => strtotime($request['max_date']),
-			'min_date'           => strtotime($request['min_date']),
+			'availability_rules'    => array(),
+			'buffer_days'           => array(),
+			'fully_booked_days'     => array(),
+			'max_date'              => strtotime( $request['max_date'] ),
+			'min_date'              => strtotime( $request['min_date'] ),
 			'partially_booked_days' => array(),
-			'restricted_days'    => false,
-			'unavailable_days'   => array()
+			'restricted_days'       => false,
+			'unavailable_days'      => array(),
 		);
 
 		wp_send_json( $data );
@@ -583,12 +599,12 @@ class Woocommerce_Bookings_Extensions_Public {
 			$product                       = new WC_Product_Booking( $product_id );
 			$args['availability_rules']    = array();
 			$args['availability_rules'][0] = $product->get_availability_rules();
-			$args['min_date']              = !is_null( $min_date ) ? strtotime( $min_date ) : $product->get_min_date();
-			$args['max_date']              = !is_null( $max_date ) ? strtotime( $max_date ) : $product->get_max_date();
+			$args['min_date']              = ! is_null( $min_date ) ? strtotime( $min_date ) : $product->get_min_date();
+			$args['max_date']              = ! is_null( $max_date ) ? strtotime( $max_date ) : $product->get_max_date();
 
 			$min_date        = ( is_null( $min_date ) ) ? strtotime( "+{$args['min_date']['value']} {$args['min_date']['unit']}", current_time( 'timestamp' ) ) : $args['min_date'];
 			$max_date        = ( is_null( $max_date ) ) ? strtotime( "+{$args['max_date']['value']} {$args['max_date']['unit']}", current_time( 'timestamp' ) ) : $args['max_date'];
-			$timezone_offset = !is_null( $timezone_offset ) ? $timezone_offset : 0;
+			$timezone_offset = ! is_null( $timezone_offset ) ? $timezone_offset : 0;
 
 			if ( $product->has_resources() ) {
 				foreach ( $product->get_resources() as $resource ) {
@@ -604,11 +620,11 @@ class Woocommerce_Bookings_Extensions_Public {
 			$args['restricted_days']       = $product->has_restricted_days() ? $product->get_restricted_days() : false;
 
 			$buffer_days = array();
-			if ( ! in_array( $product->get_duration_unit(), array( 'minute', 'hour' ) ) ) {
+			if ( ! in_array( $product->get_duration_unit(), array( 'minute', 'hour' ), true ) ) {
 				$buffer_days = WC_Bookings_Controller::get_buffer_day_blocks_for_booked_days( $product, $args['fully_booked_days'] );
 			}
 
-			$args['buffer_days']           = $buffer_days;
+			$args['buffer_days'] = $buffer_days;
 
 			return $args;
 
@@ -632,31 +648,31 @@ class Woocommerce_Bookings_Extensions_Public {
 			exit;
 		}
 
-		$args = $this->find_booked_day_blocks( intval($product_id), $_GET['min_date'], $_GET['max_date'], $_GET['timezone_offset'] );
+		$args = $this->find_booked_day_blocks( intval( $product_id ), $_GET['min_date'], $_GET['max_date'], $_GET['timezone_offset'] );
 
-		$product = wc_get_product( $product_id );
+		$product                = wc_get_product( $product_id );
 		$dependent_products_ids = $product->get_meta( 'booking_dependencies' );
 
-		if( ! empty($dependent_products_ids) ) {
+		if ( ! empty( $dependent_products_ids ) ) {
 			foreach ( $dependent_products_ids as $dependent_product_id ) {
-				$dependent_args = $this->find_booked_day_blocks( intval($dependent_product_id), $_GET['min_date'], $_GET['max_date'], $_GET['timezone_offset'] );
+				$dependent_args = $this->find_booked_day_blocks( intval( $dependent_product_id ), $_GET['min_date'], $_GET['max_date'], $_GET['timezone_offset'] );
 
 				// Merge data together. Note that only fully and partially booked data gets merged
 
 				// Add fully booked days and remove out of partially booked list
-				foreach( $dependent_args['fully_booked_days'] as $day => $val ) {
-					$args['fully_booked_days'][$day] = $val;
-					if( array_key_exists($day, $args['partially_booked_days'] ) )
-						unset( $args['partially_booked_days'][$day] );
-				}
-
-				// Add partially booked days
-				foreach( $dependent_args['partially_booked_days'] as $day => $val ) {
-					if( ! array_key_exists( $day, $args['fully_booked_days'] ) ) {
-						$args['partially_booked_days'][$day] = $val;
+				foreach ( $dependent_args['fully_booked_days'] as $day => $val ) {
+					$args['fully_booked_days'][ $day ] = $val;
+					if ( array_key_exists( $day, $args['partially_booked_days'] ) ) {
+						unset( $args['partially_booked_days'][ $day ] );
 					}
 				}
 
+				// Add partially booked days
+				foreach ( $dependent_args['partially_booked_days'] as $day => $val ) {
+					if ( ! array_key_exists( $day, $args['fully_booked_days'] ) ) {
+						$args['partially_booked_days'][ $day ] = $val;
+					}
+				}
 			}
 		}
 

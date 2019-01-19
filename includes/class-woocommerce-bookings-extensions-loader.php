@@ -74,11 +74,11 @@ class Woocommerce_Bookings_Extensions_Loader {
 	 */
 	public function __construct() {
 
-		$this->actions = array();
-		$this->filters = array();
+		$this->actions        = array();
+		$this->filters        = array();
 		$this->remove_actions = array();
 		$this->remove_filters = array();
-		$this->shortcodes = array();
+		$this->shortcodes     = array();
 	}
 
 	/**
@@ -137,15 +137,17 @@ class Woocommerce_Bookings_Extensions_Loader {
 	 */
 	private function add( $hooks, $hook, $component, $callback, $priority = null, $accepted_args = null ) {
 		$entity = array(
-			'hook'          => $hook,
-			'component'     => $component,
-			'callback'      => $callback
+			'hook'      => $hook,
+			'component' => $component,
+			'callback'  => $callback,
 		);
 
-		if( null !== $priority )
+		if ( null !== $priority ) {
 			$entity['priority'] = $priority;
-		if ( null !== $accepted_args )
+		}
+		if ( null !== $accepted_args ) {
 			$entity['accepted_args'] = $accepted_args;
+		}
 
 		$hooks[] = $entity;
 
@@ -161,11 +163,11 @@ class Woocommerce_Bookings_Extensions_Loader {
 	public function run() {
 
 		foreach ( $this->remove_actions as $hook ) {
-			remove_action( $hook['hook'],  array( $hook['component'], $hook['callback'] ), $hook['priority'] );
+			remove_action( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'] );
 		}
 
 		foreach ( $this->remove_filters as $hook ) {
-			remove_filter( $hook['hook'],  array( $hook['component'], $hook['callback'] ), $hook['priority'] );
+			remove_filter( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'] );
 		}
 
 		foreach ( $this->filters as $hook ) {
