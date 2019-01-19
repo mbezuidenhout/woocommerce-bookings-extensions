@@ -37,25 +37,17 @@ class WC_Booking_Extensions_Bookings_Search {
 			'limit'  => null,
 		);
 
-		$query          = new WC_Product_Query( $args );
-		$this->products = $query->get_products();
 
-		if ( 'exclude' === $method && ! empty( $ids ) ) {
-			foreach ( $ids as $id ) {
-				foreach ( $this->products as $key => $product ) {
-					if ( $id === $product->get_id() ) {
-						unset( $this->products[ $key ] );
-						continue 2;
-					}
-				}
-			}
-		} elseif ( 'include' === $method && ! empty( $ids ) ) {
-			foreach ( $this->products as $key => $product ) {
-				if ( ! in_array( $product->get_id(), $ids, true ) ) {
-					unset( $this->products[ $key ] );
-				}
+		if ( ! empty( $ids ) ) {
+			if ( 'exclude' === $method ) {
+				$args['exclude'] = $ids;
+			} elseif ( 'include' === $method ) {
+				$args['include'] = $ids;
 			}
 		}
+
+		$query          = new WC_Product_Query( $args );
+		$this->products = $query->get_products();
 
 		foreach ( $this->products as $key => $product ) {
 			if ( $product->is_purchasable() === false ||

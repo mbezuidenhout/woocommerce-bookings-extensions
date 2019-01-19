@@ -577,7 +577,7 @@ class Woocommerce_Bookings_Extensions_Public {
 			'wc_bookings_field_duration'         => 1,
 			'wc_bookings_field_persons'          => null,
 			'duration_unit'                      => 'day',
-			'duration'                           => 1
+			'duration'                           => 1,
 		);
 
 		$posted = wp_parse_args( $posted, $default );
