@@ -19,7 +19,7 @@
  * @subpackage Woocommerce_Bookings_Extensions/admin
  * @author     Marius Bezuidenhout <marius.bezuidenhout@gmail.com>
  */
-class Woocommerce_Bookings_Extensions_Admin {
+class WC_Bookings_Extensions_Admin {
 
 	/**
 	 * The ID of this plugin.
@@ -125,7 +125,7 @@ class Woocommerce_Bookings_Extensions_Admin {
 		global $post, $bookable_product;
 
 		if ( empty( $bookable_product ) || $bookable_product->get_id() !== $post->ID ) {
-			$bookable_product = new WC_Booking_Extensions_Product_Booking( $post->ID );
+			$bookable_product = new WC_Bookings_Extensions_Product_Booking( $post->ID );
 		}
 
 		include 'partials/html-booking-extensions-data.php';

@@ -23,7 +23,7 @@
  * @subpackage Woocommerce_Bookings_Extensions/includes
  * @author     Marius Bezuidenhout <marius.bezuidenhout@gmail.com>
  */
-class Woocommerce_Bookings_Extensions_i18n {
+class WC_Bookings_Extensions_i18n {
 
 
 	/**

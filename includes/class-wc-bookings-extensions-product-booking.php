@@ -9,7 +9,7 @@ class WC_Bookings_Custom extends WC_Bookings {
 // Ensure that WooCommerce Bookings class files are included
 new WC_Bookings_Custom;
 
-class WC_Booking_Extensions_Product_Booking extends WC_Product_Booking {
+class WC_Bookings_Extensions_Product_Booking extends WC_Product_Booking {
 
 	/**
 	 * WC_Booking_Extensions_Product_Booking constructor.

@@ -1,6 +1,6 @@
 <?php
 
-class WC_Booking_Extensions_Bookings_Search {
+class WC_Bookings_Extensions_Bookings_Search {
 
 	/** @var WC_Product_Booking[] Array of WC_Product_Booking */
 	protected $products;
@@ -343,8 +343,8 @@ class WC_Booking_Extensions_Bookings_Search {
 			case 'day':
 			case 'minute':
 			case 'hour':
-				include_once 'class-woocommerce-bookings-extensions-date-picker.php';
-				$picker = new WC_Booking_Extensions_Bookings_Date_Picker( $this );
+				include_once 'class-wc-bookings-extensions-date-picker.php';
+				$picker = new WC_Bookings_Extensions_Bookings_Date_Picker( $this );
 				break;
 			default:
 				break;
@@ -465,7 +465,7 @@ class WC_Booking_Extensions_Bookings_Search {
 		$to               = strtotime( 'midnight', $to ) - 1;
 
 		foreach ( $available_products as $product ) {
-			$custom_product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
+			$custom_product = new WC_Bookings_Extensions_Product_Booking( $product->get_id() );
 			$booked         = array();
 			/** @var WC_Booking[] $existing_bookings */
 			$existing_bookings = $custom_product->get_bookings_in_date_range( $from, $to );

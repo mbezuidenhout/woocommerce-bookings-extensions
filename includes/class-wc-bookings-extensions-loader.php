@@ -20,7 +20,7 @@
  * @subpackage Woocommerce_Bookings_Extensions/includes
  * @author     Marius Bezuidenhout <marius.bezuidenhout@gmail.com>
  */
-class Woocommerce_Bookings_Extensions_Loader {
+class WC_Bookings_Extensions_Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

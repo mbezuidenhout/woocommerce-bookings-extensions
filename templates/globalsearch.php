@@ -7,7 +7,7 @@
  * @version 1.0.0
  * @since   1.2.0
  *
- * @see Woocommerce_Bookings_Extensions_Public::global_search_shortcode
+ * @see WC_Bookings_Extensions_Public::global_search_shortcode
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $nonce = wp_create_nonce( 'search-bookings' );
 
-/** @var WC_Booking_Extensions_Bookings_Search $bookings_search_form */
+/** @var WC_Bookings_Extensions_Bookings_Search $bookings_search_form */
 ?>
 <form class="cart" method="post" enctype='multipart/form-data' data-nonce="<?php echo esc_attr( $nonce ); ?>">
 

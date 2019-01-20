@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <div class="options_group show_if_booking">
 	<?php
-	/** @var \WC_Booking_Extensions_Product_Booking $bookable_product */
+	/** @var \WC_Bookings_Extensions_Product_Booking $bookable_product */
 	woocommerce_wp_select(
 		array(
 			'id'          => '_wc_booking_extensions_block_start',

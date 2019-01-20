@@ -38,20 +38,20 @@ define( 'WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION', '1.2.0' );
 
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-woocommerce-bookings-extensions-activator.php
+ * This action is documented in includes/class-wc-bookings-extensions-activator.php
  */
 function activate_woocommerce_bookings_extensions() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-woocommerce-bookings-extensions-activator.php';
-	Woocommerce_Bookings_Extensions_Activator::activate();
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wc-bookings-extensions-activator.php';
+	WC_Bookings_Extensions_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-woocommerce-bookings-extensions-deactivator.php
+ * This action is documented in includes/class-wc-bookings-extensions-deactivator.php
  */
 function deactivate_woocommerce_bookings_extensions() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-woocommerce-bookings-extensions-deactivator.php';
-	Woocommerce_Bookings_Extensions_Deactivator::deactivate();
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wc-bookings-extensions-deactivator.php';
+	WC_Bookings_Extensions_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'activate_woocommerce_bookings_extensions' );
@@ -61,7 +61,7 @@ register_deactivation_hook( __FILE__, 'deactivate_woocommerce_bookings_extension
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-woocommerce-bookings-extensions.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-wc-bookings-extensions.php';
 
 /**
  * Begins execution of the plugin.
@@ -74,7 +74,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-woocommerce-bookings-exten
  */
 function run_woocommerce_bookings_extensions() {
 
-	$plugin = new Woocommerce_Bookings_Extensions();
+	$plugin = new WC_Bookings_Extensions();
 	$plugin->run();
 
 }

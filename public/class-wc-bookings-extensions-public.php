@@ -19,7 +19,7 @@
  * @subpackage Woocommerce_Bookings_Extensions/public
  * @author     Marius Bezuidenhout <marius.bezuidenhout@gmail.com>
  */
-class Woocommerce_Bookings_Extensions_Public {
+class WC_Bookings_Extensions_Public {
 
 	/**
 	 * The ID of this plugin.
@@ -124,7 +124,7 @@ class Woocommerce_Bookings_Extensions_Public {
 
 		// Product Checking
 		$booking_id = $posted['add-to-cart'];
-		$product    = new WC_Booking_Extensions_Product_Booking( wc_get_product( $booking_id ) );
+		$product    = new WC_Bookings_Extensions_Product_Booking( wc_get_product( $booking_id ) );
 		if ( ! $product ) {
 			return false;
 		}
@@ -185,7 +185,7 @@ class Woocommerce_Bookings_Extensions_Public {
 		$dependent_product_ids = $product->get_meta( 'booking_dependencies' );
 		if ( is_array( $dependent_product_ids ) ) {
 			foreach ( $dependent_product_ids as $dependent_product_id ) {
-				$dependent_product = new WC_Booking_Extensions_Product_Booking( wc_get_product( $dependent_product_id ) );
+				$dependent_product = new WC_Bookings_Extensions_Product_Booking( wc_get_product( $dependent_product_id ) );
 				/** @var \WC_Booking[] $dep_prod_existing_bookings */
 				$dep_prod_existing_bookings = WC_Bookings_Controller::get_all_existing_bookings( $dependent_product, $from, $to );
 				foreach ( $dep_prod_existing_bookings as $existing_booking ) {
@@ -241,12 +241,12 @@ class Woocommerce_Bookings_Extensions_Public {
 	}
 
 	/**
-	 * @param WC_Booking_Extensions_Product_Booking $bookable_product
-	 * @param array $blocks
-	 * @param array $intervals
-	 * @param int $resource_id
-	 * @param int $from
-	 * @param int $to
+	 * @param WC_Bookings_Extensions_Product_Booking $bookable_product
+	 * @param array                                  $blocks
+	 * @param array                                  $intervals
+	 * @param int                                    $resource_id
+	 * @param int                                    $from
+	 * @param int                                    $to
 	 *
 	 * @return array
 	 * @throws WC_Data_Exception
@@ -280,7 +280,7 @@ class Woocommerce_Bookings_Extensions_Public {
 		$dependent_products = $bookable_product->get_meta( 'booking_dependencies' );
 		if ( is_array( $dependent_products ) ) {
 			foreach ( $dependent_products as $dependent_product ) {
-				$dependent_product = new WC_Booking_Extensions_Product_Booking( $dependent_product );
+				$dependent_product = new WC_Bookings_Extensions_Product_Booking( $dependent_product );
 				$dep_prod_bookings = WC_Bookings_Controller::get_all_existing_bookings( $dependent_product, $from, $to );
 				foreach ( $dep_prod_bookings as &$dep_prod_booking ) {
 					$dep_prod_booking->set_end( strtotime( "+{$dependent_product->get_buffer_period_minutes()} minutes", $dep_prod_booking->get_end() ) );
@@ -385,7 +385,7 @@ class Woocommerce_Bookings_Extensions_Public {
 			);
 		}
 
-		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
+		$product = new WC_Bookings_Extensions_Product_Booking( $product->get_id() );
 
 		$booking_form = new WC_Booking_Form( $product );
 		$cost         = $booking_form->calculate_booking_cost( $posted );
@@ -446,7 +446,7 @@ class Woocommerce_Bookings_Extensions_Public {
 			return $passed;
 		}
 
-		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
+		$product = new WC_Bookings_Extensions_Product_Booking( $product->get_id() );
 
 		$booking_form = new WC_Booking_Form( $product );
 		$data         = $booking_form->get_posted_data();
@@ -461,7 +461,7 @@ class Woocommerce_Bookings_Extensions_Public {
 		$dependent_products_ids = $product->get_meta( 'booking_dependencies' );
 		if ( is_array( $dependent_products_ids ) ) {
 			foreach ( $dependent_products_ids as $depenent_products_id ) {
-				$dependent_product = new WC_Booking_Extensions_Product_Booking( $depenent_products_id );
+				$dependent_product = new WC_Bookings_Extensions_Product_Booking( $depenent_products_id );
 				// Adjust check range by 1 second less on start and end
 				$existing_bookings = $dependent_product->get_bookings_in_date_range( $data['_start_date'] + 1, $data['_end_date'] - 1 );
 				if ( ! empty( $existing_bookings ) ) {
@@ -489,7 +489,7 @@ class Woocommerce_Bookings_Extensions_Public {
 			return $cart_item_meta;
 		}
 
-		$product = new WC_Booking_Extensions_Product_Booking( $product->get_id() );
+		$product = new WC_Bookings_Extensions_Product_Booking( $product->get_id() );
 
 		$booking_form                       = new WC_Booking_Form( $product );
 		$cart_item_meta['booking']          = $booking_form->get_posted_data( $_POST );
@@ -510,8 +510,8 @@ class Woocommerce_Bookings_Extensions_Public {
 	/**
 	 * Processes the shortcode wcbooking_search
 	 *
-	 * Usage: wcbooking_search duration_unit="month|day|hour|minute" duration="<Integer value of unit size>"
-	 * [method="include|exclude" ids="<List of product ids>"]
+	 * Usage: wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer value of unit size>"
+	 * [method="{include|exclude}" ids="<Comma separated ist of product ids>"]
 	 *
 	 * The search will only include products of type Bookable Product/WC_Bookings
 	 *
@@ -537,7 +537,7 @@ class Woocommerce_Bookings_Extensions_Public {
 
 		$ids = array_values( $ids );
 
-		$search_form = new WC_Booking_Extensions_Bookings_Search( $atts['method'], $ids, $atts['duration_unit'], intval( $atts['duration'] ) );
+		$search_form = new WC_Bookings_Extensions_Bookings_Search( $atts['method'], $ids, $atts['duration_unit'], intval( $atts['duration'] ) );
 
 		wc_get_template( 'globalsearch.php', array( 'bookings_search_form' => $search_form ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
 
@@ -590,7 +590,7 @@ class Woocommerce_Bookings_Extensions_Public {
 
 		$ids = array_values( $ids );
 
-		$booking_search = new WC_Booking_Extensions_Bookings_Search( 'include', $ids, $posted['duration_unit'], intval( $posted['duration'] ) );
+		$booking_search = new WC_Bookings_Extensions_Bookings_Search( 'include', $ids, $posted['duration_unit'], intval( $posted['duration'] ) );
 
 		$date = strtotime($posted['wc_bookings_field_start_date_year'] . '-' . $posted['wc_bookings_field_start_date_month'] . '-' . $posted['wc_bookings_field_start_date_day'] );
 

@@ -26,7 +26,7 @@
  * @subpackage Woocommerce_Bookings_Extensions/includes
  * @author     Marius Bezuidenhout <marius.bezuidenhout@gmail.com>
  */
-class Woocommerce_Bookings_Extensions {
+class WC_Bookings_Extensions {
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -34,7 +34,7 @@ class Woocommerce_Bookings_Extensions {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      Woocommerce_Bookings_Extensions_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      WC_Bookings_Extensions_Loader $loader Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -113,32 +113,32 @@ class Woocommerce_Bookings_Extensions {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-loader.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-i18n.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-woocommerce-bookings-extensions-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wc-bookings-extensions-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-woocommerce-bookings-extensions-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wc-bookings-extensions-public.php';
 
 		/**
 		 * The class responsible for display the global search form that occur by using the
 		 * shortcode
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-search.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-search.php';
 
-		$this->loader = new Woocommerce_Bookings_Extensions_Loader();
+		$this->loader = new WC_Bookings_Extensions_Loader();
 
 	}
 
@@ -153,7 +153,7 @@ class Woocommerce_Bookings_Extensions {
 	 */
 	private function set_locale() {
 
-		$plugin_i18n = new Woocommerce_Bookings_Extensions_i18n();
+		$plugin_i18n = new WC_Bookings_Extensions_i18n();
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 
@@ -168,18 +168,18 @@ class Woocommerce_Bookings_Extensions {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Woocommerce_Bookings_Extensions_Admin( $this->get_plugin_name(), $this->get_version() );
+		$plugin_admin = new WC_Bookings_Extensions_Admin( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-		/** @see Woocommerce_Bookings_Extensions_Admin::booking_extensions_data */
+		/** @see WC_Bookings_Extensions_Admin::booking_extensions_data */
 		$this->loader->add_action( 'woocommerce_product_options_general_product_data', $plugin_admin, 'booking_extensions_data' );
 
 		// Saving data.
-		/** @see Woocommerce_Bookings_Extensions_Admin::add_extra_props */
+		/** @see WC_Bookings_Extensions_Admin::add_extra_props */
 		$this->loader->add_action( 'woocommerce_process_product_meta', $plugin_admin, 'add_extra_props' );
 
-		/** @see Woocommerce_Bookings_Extensions_Admin::show_booking_dependencies_options */
+		/** @see WC_Bookings_Extensions_Admin::show_booking_dependencies_options */
 		$this->loader->add_action( 'woocommerce_product_options_related', $plugin_admin, 'show_booking_dependencies_options' );
 	}
 
@@ -192,7 +192,7 @@ class Woocommerce_Bookings_Extensions {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Woocommerce_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
+		$plugin_public = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
@@ -202,27 +202,27 @@ class Woocommerce_Bookings_Extensions {
 		// $this->loader->remove_action( 'wp_ajax_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
 		// $this->loader->remove_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
 		// $this->loader->remove_action( 'wc_ajax_wc_bookings_find_booked_day_blocks', 'WC_Bookings_WC_Ajax', 'find_booked_day_blocks', 10);
-		/** @see Woocommerce_Bookings_Extensions_Public::get_time_blocks_for_date */
+		/** @see WC_Bookings_Extensions_Public::get_time_blocks_for_date */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
-		/** @see Woocommerce_Bookings_Extensions_Public::find_booked_day_blocks_ajax */
+		/** @see WC_Bookings_Extensions_Public::find_booked_day_blocks_ajax */
 		$this->loader->add_action( 'wc_ajax_wc_bookings_find_booked_day_blocks', $plugin_public, 'find_booked_day_blocks_ajax', 9 );
 
-		/** @see Woocommerce_Bookings_Extensions_Public::calculate_costs */
+		/** @see WC_Bookings_Extensions_Public::calculate_costs */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 
-		/** @see Woocommerce_Bookings_Extensions_Public::search_booking_products */
+		/** @see WC_Bookings_Extensions_Public::search_booking_products */
 		$this->loader->add_action( 'wp_ajax_wc_booking_extensions_search', $plugin_public, 'search_booking_products' );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_booking_extensions_search', $plugin_public, 'search_booking_products' );
 
-		/** @see Woocommerce_Bookings_Extensions_Public::search_result */
+		/** @see WC_Bookings_Extensions_Public::search_result */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 
 		// Notice that the global search does not support multi level dependencies
 		if ( ! is_admin() ) {
-			/** @see Woocommerce_Bookings_Extensions_Public::global_search_shortcode() */
+			/** @see WC_Bookings_Extensions_Public::global_search_shortcode() */
 			$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
 		}
 	}
@@ -251,7 +251,7 @@ class Woocommerce_Bookings_Extensions {
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     1.0.0
-	 * @return    Woocommerce_Bookings_Extensions_Loader    Orchestrates the hooks of the plugin.
+	 * @return    WC_Bookings_Extensions_Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader() {
 		return $this->loader;
@@ -297,11 +297,11 @@ class Woocommerce_Bookings_Extensions {
 	 * Replaces parts of the WooCommerce Bookings components
 	 */
 	public function load_extensions() {
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-product-booking.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-bookings-extensions-cart-manager.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-product-booking.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-cart-manager.php';
 
-		$plugin_public = new Woocommerce_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
-		$cart_manager  = new WC_Booking_Extensions_Cart_Manager();
+		$plugin_public = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
+		$cart_manager  = new WC_Bookings_Extensions_Cart_Manager();
 
 		/** @see WC_Booking_Cart_Manager::validate_add_cart_item */
 		$this->remove_filter_by_class( 'woocommerce_add_to_cart_validation', 'WC_Booking_Cart_Manager', 'validate_add_cart_item', 10 );

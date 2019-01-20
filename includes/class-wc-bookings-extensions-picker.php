@@ -2,7 +2,7 @@
 /**
  * Picker class
  */
-abstract class WC_Booking_Extensions_Bookings_Picker {
+abstract class WC_Bookings_Extensions_Bookings_Picker {
 
 	/** @var WC_Product_Booking */
 	protected $search_form;

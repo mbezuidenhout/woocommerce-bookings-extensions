@@ -19,7 +19,7 @@
  * @subpackage Woocommerce_Bookings_Extensions/includes
  * @author     Marius Bezuidenhout <marius.bezuidenhout@gmail.com>
  */
-class Woocommerce_Bookings_Extensions_Activator {
+class WC_Bookings_Extensions_Activator {
 
 	/**
 	 * Short Description. (use period)

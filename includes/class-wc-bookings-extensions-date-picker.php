@@ -3,13 +3,13 @@
  * Class dependencies
  */
 if ( ! class_exists( 'WC_Booking_Form_Picker' ) ) {
-	include_once 'class-woocommerce-bookings-extensions-picker.php';
+	include_once 'class-wc-bookings-extensions-picker.php';
 }
 
 /**
  * Date Picker class
  */
-class WC_Booking_Extensions_Bookings_Date_Picker extends WC_Booking_Extensions_Bookings_Picker {
+class WC_Bookings_Extensions_Bookings_Date_Picker extends WC_Bookings_Extensions_Bookings_Picker {
 
 	private $field_type = 'date-picker';
 	private $field_name = 'start_date';
@@ -17,7 +17,7 @@ class WC_Booking_Extensions_Bookings_Date_Picker extends WC_Booking_Extensions_B
 	/**
 	 * Constructor
 	 *
-	 * @param WC_Booking_Extensions_Bookings_Search $search_form The booking form which called this picker
+	 * @param WC_Bookings_Extensions_Bookings_Search $search_form The booking form which called this picker
 	 */
 	public function __construct( $search_form ) {
 		$this->search_form                     = $search_form;
