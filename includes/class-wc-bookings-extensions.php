@@ -86,9 +86,23 @@ class WC_Bookings_Extensions {
 
 		$this->load_dependencies();
 		$this->set_locale();
-		$this->define_admin_hooks();
-		$this->define_public_hooks();
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		if ( ! is_plugin_active( 'woocommerce-bookings/woocommerce-bookings.php' ) ) {
+			add_action( 'admin_notices', array( $this, 'woocommerce_bookings_extensions_woocommerce_bookings_admin_notice' ) );
+		} else {
+			$this->define_admin_hooks();
+			$this->define_public_hooks();
+		}
+	}
 
+	public function woocommerce_bookings_extensions_woocommerce_bookings_admin_notice() {
+		?>
+		<div class="error">
+			<p><?php esc_html_e( 'WooCommerce Bookings Extensions is enabled but not effective. It requires WooCommerce Bookings in order to work.', 'woocommerce-bookings-extensions' ); ?></p>
+		</div>
+		<?php
 	}
 
 	/**
