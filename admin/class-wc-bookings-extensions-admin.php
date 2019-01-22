@@ -174,21 +174,15 @@ class WC_Bookings_Extensions_Admin {
 		$product = wc_get_product( $post->ID );
 		$action  = wc_clean( $_GET['action'] );
 
-		$args = array(
-			'status' => array( 'draft', 'pending', 'private', 'publish' ),
-			'type'   => 'booking',
-			'limit'  => null,
-		);
+		/** @var \WC_Product_Data_Store_CPT $data_store */
+		$data_store = WC_Data_Store::load( 'product' );
+		$ids        = $data_store->search_products( null, 'booking', false, false, null );
 
-		$query = new WC_Product_Query( $args );
-		/** @var WC_Product[] $bookable_products */
-		$bookable_products    = $query->get_products();
-		$bookable_product_ids = array();
-		foreach ( $bookable_products as $bookable_product ) {
-			if ( $post->ID === $bookable_product->get_id() ) {
+		foreach ( $ids as $id ) {
+			if ( $post->ID === $id || 0 === $id ) {
 				continue;
 			}
-			$bookable_product_ids[] = $bookable_product->get_id();
+			$bookable_product_ids[] = $id;
 		}
 
 		if ( 'edit' === $action && 'booking' === $product->get_type() ) {

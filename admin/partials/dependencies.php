@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 <div class="options_group show_if_booking">
 	<p class="form-field">
 		<label for="dependent_products"><?php esc_html_e( 'Dependent products', 'woocommerce' ); ?></label>
-		<select class="wc-product-search" multiple="multiple" style="width: 50%;" id="dependent_products" name="_wc_booking_extensions_dependent_products[]" data-sortable="true" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products" data-include="<?php echo wp_json_encode( $bookable_product_ids ); ?>">
+		<select class="wc-product-search" multiple="multiple" style="width: 50%;" id="dependent_products" name="_wc_booking_extensions_dependent_products[]" data-sortable="true" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products" data-exclude="<?php echo wp_json_encode( $product->get_id() ) ?>" data-include="<?php echo wp_json_encode( $bookable_product_ids ); ?>">
 <?php
 $product_ids = $product->get_meta( 'booking_dependencies' );
 
