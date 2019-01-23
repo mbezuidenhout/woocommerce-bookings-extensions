@@ -12,6 +12,7 @@ jQuery(document).ready(function($) {
 
 	$('.wc-bookings-booking-form')
 		.on('change', 'input, select', function( e ) {
+			debugger;
 
 			var name  = $(this).attr('name');
 
@@ -55,12 +56,17 @@ jQuery(document).ready(function($) {
 			}
 
 			$form.find('.wc-booking-extensions-search-result').block({message: null, overlayCSS: {background: '#fff', backgroundSize: '16px 16px', opacity: 0.6}}).show();
+			debugger;
 			xhr[index] = $.ajax({
 				type: 		'POST',
 				url: 		booking_form_params.ajax_url,
 				data: 		{
-					action: 'wc_bookings_extensions_search_result',
-					form:   $form.serialize()
+					action:      booking_form_params.action,
+					_ajax_nonce: booking_form_params.ajax_nonce,
+					day:         $( "#search-datepicker" ).datepicker("getDate").getDate(),
+					month:       $( "#search-datepicker" ).datepicker("getDate").getMonth(),
+					year:        $( "#search-datepicker" ).datepicker("getDate").getFullYear(),
+					form:        $form.serialize()
 				},
 				success: 	function( code ) {
 					if ( code.charAt(0) !== '{' ) {

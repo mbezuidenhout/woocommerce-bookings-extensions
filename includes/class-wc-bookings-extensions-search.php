@@ -8,6 +8,9 @@ class WC_Bookings_Extensions_Bookings_Search {
 	/** @var array Array of fields to display on search form */
 	protected $fields;
 
+	/** @var Array of extended fields from this plugin */
+	protected $extension_fields;
+
 	/** @var int Duration block sizes */
 	protected $duration;
 
@@ -70,22 +73,28 @@ class WC_Bookings_Extensions_Bookings_Search {
 			wc_get_template( 'booking-form/' . $field['type'] . '.php', array( 'field' => $field ), 'woocommerce-bookings', WC_BOOKINGS_TEMPLATE_PATH );
 		}
 
-		$hidden_fields = array(
+		$this->extension_fields = array_merge(
+			$this->extension_fields,
 			array(
-				'name'  => 'ids',
-				'value' => implode( ',', $this->get_ids() ),
-			),
-			array(
-				'name'  => 'duration',
-				'value' => $this->duration,
-			),
-			array(
-				'name'  => 'duration_unit',
-				'value' => $this->duration_unit,
-			),
+				array(
+					'type'  => 'hidden-field',
+					'name'  => 'ids',
+					'value' => implode( ',', $this->get_ids() ),
+				),
+				array(
+					'type'  => 'hidden-field',
+					'name'  => 'duration',
+					'value' => $this->duration,
+				),
+				array(
+					'type'  => 'hidden-field',
+					'name'  => 'duration_unit',
+					'value' => $this->duration_unit,
+				),
+			)
 		);
-		foreach ( $hidden_fields as $key => $field ) {
-			wc_get_template( 'hidden-field.php', array( 'field' => $field ), 'woocommerce-booking-extensions', untrailingslashit( plugin_dir_path( __DIR__ ) ) . '/templates/' );
+		foreach ( $this->extension_fields as $key => $field ) {
+			wc_get_template( $field['type'] . '.php', array( 'field' => $field ), 'woocommerce-booking-extensions', untrailingslashit( plugin_dir_path( __DIR__ ) ) . '/templates/' );
 		}
 
 	}
@@ -102,6 +111,8 @@ class WC_Bookings_Extensions_Bookings_Search {
 		global $wp_locale;
 
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+		$nonce = wp_create_nonce( 'search-bookings' );
 
 		$wc_bookings_booking_form_args = array(
 			'closeText'                  => __( 'Close', 'woocommerce-bookings' ),
@@ -122,9 +133,15 @@ class WC_Bookings_Extensions_Bookings_Search {
 			'default_availability'       => $this->get_default_availability(),
 		);
 
+		/** @see WC_Bookings_Extensions_Public::search_booking_products */
 		$wc_bookings_date_picker_args = array(
-			//'ajax_url'                   => WC_AJAX::get_endpoint( 'wc_booking_extensions_search' ),
-			'ajax_url' => admin_url( 'admin-ajax.php?action=wc_booking_extensions_search' ),
+			//'ajax_url'                   => WC_AJAX::get_endpoint( 'wc_bookings_extensions_search' ),
+			'ajax_url'        => admin_url( 'admin-ajax.php?action=wc_bookings_extensions_search' ),
+			'datepicker_args' => array(
+				'minDate'    => 0,
+				'maxDae'     => '+6M',
+				'dateFormat' => $this->convert_to_moment_format( get_option( 'date_format' ) ),
+			),
 		);
 
 		wp_enqueue_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
@@ -133,11 +150,13 @@ class WC_Bookings_Extensions_Bookings_Search {
 		wp_enqueue_script( 'wc-bookings-booking-form', plugin_dir_url( __DIR__ ) . 'public/js/search-form' . $suffix . '.js', array( 'jquery', 'jquery-blockui' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
 		wp_localize_script( 'wc-bookings-booking-form', 'wc_bookings_booking_form', $wc_bookings_booking_form_args );
 
-		wp_register_script( 'wc-bookings-date-picker', WC_BOOKINGS_PLUGIN_URL . '/assets/js/date-picker' . $suffix . '.js', array( 'wc-bookings-moment', 'wc-bookings-booking-form', 'jquery-ui-datepicker', 'underscore' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
-		wp_localize_script( 'wc-bookings-date-picker', 'wc_bookings_date_picker_args', $wc_bookings_date_picker_args );
+//		wp_register_script( 'wc-bookings-date-picker', WC_BOOKINGS_PLUGIN_URL . '/assets/js/date-picker' . $suffix . '.js', array( 'wc-bookings-moment', 'wc-bookings-booking-form', 'jquery-ui-datepicker', 'underscore' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+//		wp_localize_script( 'wc-bookings-date-picker', 'wc_bookings_date_picker_args', $wc_bookings_date_picker_args );
 
 		// Variables for JS scripts
 		$booking_form_params = array(
+			'ajax_nonce'                 => $nonce,
+			'action'                     => 'wc_bookings_extensions_search_result',
 			'cache_ajax_requests'        => 'false',
 			'ajax_url'                   => admin_url( 'admin-ajax.php' ),
 			'i18n_date_unavailable'      => __( 'This date is unavailable', 'woocommerce-bookings' ),
@@ -158,6 +177,10 @@ class WC_Bookings_Extensions_Bookings_Search {
 		);
 
 		wp_localize_script( 'wc-bookings-booking-form', 'booking_form_params', apply_filters( 'booking_form_params', $booking_form_params ) );
+
+		//wp_deregister_script( 'wc-bookings-date-picker' ); // Replace default date picker action
+		wp_register_script( 'wc-bookings-extensions-date-picker', plugin_dir_url( __DIR__ ) . 'public/js/date-picker' . $suffix . '.js', array( 'wc-bookings-moment', 'wc-bookings-booking-form', 'jquery-ui-datepicker', 'underscore' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+		wp_localize_script( 'wc-bookings-extensions-date-picker', 'wc_bookings_extensions_date_picker_args', $wc_bookings_date_picker_args );
 	}
 
 	protected function prepare_fields() {
@@ -343,15 +366,15 @@ class WC_Bookings_Extensions_Bookings_Search {
 			case 'day':
 			case 'minute':
 			case 'hour':
-				include_once 'class-wc-bookings-extensions-date-picker.php';
-				$picker = new WC_Bookings_Extensions_Bookings_Date_Picker( $this );
+				include_once 'class-wc-bookings-extensions-date-field.php';
+				$picker = new WC_Bookings_Extensions_Bookings_Date_Field( $this );
 				break;
 			default:
 				break;
 		}
 
 		if ( ! is_null( $picker ) ) {
-			$this->add_field( $picker->get_args() );
+			$this->extension_fields[] = $picker->get_args();
 		}
 	}
 

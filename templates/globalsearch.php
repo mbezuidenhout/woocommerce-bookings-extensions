@@ -20,7 +20,7 @@ $nonce = wp_create_nonce( 'search-bookings' );
 ?>
 <form class="cart" method="post" enctype='multipart/form-data' data-nonce="<?php echo esc_attr( $nonce ); ?>">
 
-	<div id="wc-bookings-booking-form" class="wc-bookings-booking-form">
+	<div id="wc-bookings-booking-form" class="wc-bookings-booking-form wc-bookings-search">
 
 		<?php $bookings_search_form->output(); ?>
 

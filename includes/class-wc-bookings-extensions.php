@@ -227,14 +227,15 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
 
 		/** @see WC_Bookings_Extensions_Public::search_booking_products */
-		$this->loader->add_action( 'wp_ajax_wc_booking_extensions_search', $plugin_public, 'search_booking_products' );
-		$this->loader->add_action( 'wp_ajax_nopriv_wc_booking_extensions_search', $plugin_public, 'search_booking_products' );
+		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search', $plugin_public, 'search_booking_products' );
+		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search', $plugin_public, 'search_booking_products' );
 
 		/** @see WC_Bookings_Extensions_Public::search_result */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 
 		// Notice that the global search does not support multi level dependencies
+		// Short codes should not be active in the admin panel
 		if ( ! is_admin() ) {
 			/** @see WC_Bookings_Extensions_Public::global_search_shortcode() */
 			$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );

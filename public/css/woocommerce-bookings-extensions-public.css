@@ -2,3 +2,7 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+
+.wc_bookings_field_date-container {
+	width: auto;
+}

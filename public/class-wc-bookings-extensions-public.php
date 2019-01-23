@@ -547,7 +547,6 @@ class WC_Bookings_Extensions_Public {
 	 * Sends back array for bookings global search shortcode js
 	 */
 	public function search_booking_products() {
-		check_ajax_referer( 'search-bookings', 'security' );
 		$request = $_GET;
 
 		$data = array(
@@ -568,6 +567,7 @@ class WC_Bookings_Extensions_Public {
 	 * Sends html of bookable products that are available for specified date
 	 */
 	public function search_result() {
+		check_ajax_referer( 'search-bookings' );
 		$posted = array();
 		parse_str( $_POST['form'], $posted );
 		$default = array(
@@ -583,7 +583,7 @@ class WC_Bookings_Extensions_Public {
 		$posted = wp_parse_args( $posted, $default );
 
 		$ids = array_unique( array_map( 'intval', explode( ',', preg_replace( '/[^0-9,]/', '', $posted['ids'] ) ) ) );
-		$key = array_search( '', $ids );
+		$key = array_search( '', $ids, true );
 		if ( false !== $key ) {
 			unset( $ids[ $key ] );
 		}
@@ -592,7 +592,7 @@ class WC_Bookings_Extensions_Public {
 
 		$booking_search = new WC_Bookings_Extensions_Bookings_Search( 'include', $ids, $posted['duration_unit'], intval( $posted['duration'] ) );
 
-		$date = strtotime($posted['wc_bookings_field_start_date_year'] . '-' . $posted['wc_bookings_field_start_date_month'] . '-' . $posted['wc_bookings_field_start_date_day'] );
+		$date = strtotime( intval( $_REQUEST['year'] ) . '-' . ( intval( $_REQUEST['month'] ) + 1 ) . '-' . intval( $_REQUEST['day'] ) );
 
 		$availability_html = $booking_search->get_availability_html( $date, intval( $posted['wc_bookings_field_duration'] ), intval( $posted['wc_bookings_field_persons'] ) );
 
