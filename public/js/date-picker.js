@@ -21,7 +21,7 @@ jQuery( function( $ ) {
 	$.datepicker.parseDate = function(format, value) {
 		var date = moment(value, format).toDate();
 		if( 'Invalid Date' == date )
-			return moment().toDate();
+			return '';
 		return date;
 	};
 	$.datepicker.formatDate = function (format, value) {

@@ -516,6 +516,7 @@ class WC_Bookings_Extensions_Public {
 	 * The search will only include products of type Bookable Product/WC_Bookings
 	 *
 	 * @param array $atts Attributes passed by the shortcode
+	 * @return string
 	 */
 	public function global_search_shortcode( $atts ) {
 		$atts = shortcode_atts(
@@ -539,8 +540,11 @@ class WC_Bookings_Extensions_Public {
 
 		$search_form = new WC_Bookings_Extensions_Bookings_Search( $atts['method'], $ids, $atts['duration_unit'], intval( $atts['duration'] ) );
 
+		ob_start();
+
 		wc_get_template( 'globalsearch.php', array( 'bookings_search_form' => $search_form ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
 
+		return ob_get_clean();
 	}
 
 	/**
@@ -592,7 +596,7 @@ class WC_Bookings_Extensions_Public {
 
 		$booking_search = new WC_Bookings_Extensions_Bookings_Search( 'include', $ids, $posted['duration_unit'], intval( $posted['duration'] ) );
 
-		$date = strtotime( intval( $_REQUEST['year'] ) . '-' . ( intval( $_REQUEST['month'] ) + 1 ) . '-' . intval( $_REQUEST['day'] ) );
+		$date = strtotime( intval( $_REQUEST['year'] ) . '-' . ( intval( $_REQUEST['month'] ) ) . '-' . intval( $_REQUEST['day'] ) );
 
 		$availability_html = $booking_search->get_availability_html( $date, intval( $posted['wc_bookings_field_duration'] ), intval( $posted['wc_bookings_field_persons'] ) );
 

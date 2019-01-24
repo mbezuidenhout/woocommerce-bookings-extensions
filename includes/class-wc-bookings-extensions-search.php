@@ -112,8 +112,6 @@ class WC_Bookings_Extensions_Bookings_Search {
 
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		$nonce = wp_create_nonce( 'search-bookings' );
-
 		$wc_bookings_booking_form_args = array(
 			'closeText'                  => __( 'Close', 'woocommerce-bookings' ),
 			'currentText'                => __( 'Today', 'woocommerce-bookings' ),
@@ -150,12 +148,8 @@ class WC_Bookings_Extensions_Bookings_Search {
 		wp_enqueue_script( 'wc-bookings-booking-form', plugin_dir_url( __DIR__ ) . 'public/js/search-form' . $suffix . '.js', array( 'jquery', 'jquery-blockui' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
 		wp_localize_script( 'wc-bookings-booking-form', 'wc_bookings_booking_form', $wc_bookings_booking_form_args );
 
-//		wp_register_script( 'wc-bookings-date-picker', WC_BOOKINGS_PLUGIN_URL . '/assets/js/date-picker' . $suffix . '.js', array( 'wc-bookings-moment', 'wc-bookings-booking-form', 'jquery-ui-datepicker', 'underscore' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
-//		wp_localize_script( 'wc-bookings-date-picker', 'wc_bookings_date_picker_args', $wc_bookings_date_picker_args );
-
 		// Variables for JS scripts
 		$booking_form_params = array(
-			'ajax_nonce'                 => $nonce,
 			'action'                     => 'wc_bookings_extensions_search_result',
 			'cache_ajax_requests'        => 'false',
 			'ajax_url'                   => admin_url( 'admin-ajax.php' ),
