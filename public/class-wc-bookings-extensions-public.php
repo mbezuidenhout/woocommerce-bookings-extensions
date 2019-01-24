@@ -696,4 +696,94 @@ class WC_Bookings_Extensions_Public {
 
 	}
 
+	public function get_bookings() {
+		$defaults = array(
+			'username'   => '',
+			'password'   => '',
+			'format'     => 'html',
+			'range'      => 'now',
+			'product_id' => 0,
+		);
+		$args     = wp_parse_args( sanitize_post( $_GET ), $defaults );
+		$user     = wp_authenticate( $args['username'], $args['password'] );
+		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings
+			wp_die( 'Invalid user or does not have sufficient privileges' );
+		}
+
+		if ( 'html' === $args['format'] && 0 === $args['product_id'] ) {
+			wp_die( 'Product ID cannot be null if format is html' );
+		}
+
+		if ( 'html' === $args['format'] && ! in_array( $args['range'], array( 'now', 'next' ), true ) ) {
+			wp_die( 'Range must be "now" or "next" if format is html' );
+		}
+
+		$products = array();
+		if ( $args['product_id'] > 0 ) {
+			$product = wc_get_product( $args['product_id'] );
+			if ( $product && 'booking' === $product->get_type() ) {
+				$products[] = $product;
+			}
+		} else {
+			/** @var \WC_Product_Data_Store_CPT $data_store */
+			$data_store = WC_Data_Store::load( 'product' );
+			$ids        = $data_store->search_products( null, 'booking', false, false, null );
+			foreach ( $ids as $id ) {
+				$product = wc_get_product( $id );
+				if ( is_a( $product, 'WC_Product_Booking' ) ) {
+					$products[] = $product;
+				}
+			}
+		}
+
+		$bookings = array();
+		foreach ( $products as $product ) {
+			/** @var \WC_Product_Booking $product */
+			$now        = strtotime( 'now' );
+			$start_time = $now;
+			$end_time   = $start_time + 1;
+			switch ( $args['range'] ) {
+				case 'now':
+					break;
+				case 'next':
+				case 'day':
+					$end_time = strtotime( '+ 1 day', $start_time );
+					break;
+				case 'week':
+					$end_time = strtotime( '+ 1 week', $start_time );
+					break;
+				default:
+					$end_time = strtotime( '+ 1 month', $start_time );
+					break;
+			}
+			/** @var \WC_Booking[] $product_bookings */
+			$product_bookings = $product->get_bookings_in_date_range( $start_time, $end_time );
+			if ( 'next' === $args['range'] ) {
+				foreach ( $product_bookings as $product_booking ) {
+					if ( $product_booking->get_start() <= $now && $product_booking->get_end() >= $now ) {
+						continue;
+					}
+					$product_bookings = array( $product_booking );
+					break;
+				}
+			}
+			$bookings[ $product->get_id() ] = $product_bookings;
+		}
+
+		if ( 'html' === $args['format'] ) {
+			wc_get_template( 'booking-view.php', array( 'booking' => $bookings[ $args['product_id'] ] ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
+		} else {
+			echo wp_json_encode( $bookings );
+		}
+
+	}
+
+	public function add_routes() {
+		if ( ! class_exists( 'WP_Route' ) ) {
+			require_once plugin_dir_path( __DIR__ ) . 'includes/class-wp-route.php';
+		}
+
+		WP_Route::get( 'wc-bookings-fetch', array( $this, 'get_bookings' ) );
+	}
+
 }

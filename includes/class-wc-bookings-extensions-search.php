@@ -34,13 +34,6 @@ class WC_Bookings_Extensions_Bookings_Search {
 		$this->duration_unit = $duration_unit;
 		$this->duration      = $duration;
 
-		$args = array(
-			'status' => 'publish',
-			'type'   => 'booking',
-			'limit'  => null,
-		);
-
-
 		if ( ! empty( $ids ) ) {
 			if ( 'exclude' === $method ) {
 				$args['exclude'] = $ids;
@@ -49,19 +42,27 @@ class WC_Bookings_Extensions_Bookings_Search {
 			}
 		}
 
-		$query          = new WC_Product_Query( $args );
-		$this->products = $query->get_products();
+		/** @var \WC_Product_Data_Store_CPT $data_store */
+		$data_store   = WC_Data_Store::load( 'product' );
+		$bookings_ids = $data_store->search_products( null, 'booking', false, false, null );
+		if ( ! empty( $ids ) ) {
+			if ( 'exclude' === $method ) {
+				$bookings_ids = array_diff( $bookings_ids, $ids );
+			} elseif ( 'include' === $method ) {
+				$bookings_ids = array_intersect( $bookings_ids, $ids );
+			}
+		}
+		$this->products = array();
 
-		foreach ( $this->products as $key => $product ) {
-			if ( $product->is_purchasable() === false ||
-				$this->duration_unit !== $product->get_duration_unit() ||
+		foreach ( $bookings_ids as $id ) {
+			$product = wc_get_product( $id );
+			if ( is_a( $product, 'WC_Product_Booking' ) && $product->is_purchasable() === true &&
 				$this->duration_unit === $product->get_duration_unit() &&
-				$this->duration !== $product->get_duration() ) {
-				unset( $this->products[ $key ] );
+				$this->duration === $product->get_duration() ) {
+				$this->products[] = $product;
 			}
 		}
 
-		$this->products = array_values( $this->products );
 	}
 
 	public function output() {
