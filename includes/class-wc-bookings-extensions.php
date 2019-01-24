@@ -236,10 +236,10 @@ class WC_Bookings_Extensions {
 
 		// Notice that the global search does not support multi level dependencies
 		// Short codes should not be active in the admin panel
-		if ( ! is_admin() ) {
+		//if ( ! is_admin() ) {
 			/** @see WC_Bookings_Extensions_Public::global_search_shortcode() */
 			$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
-		}
+		//}
 	}
 
 	/**

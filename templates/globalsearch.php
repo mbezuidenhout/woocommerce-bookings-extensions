@@ -19,6 +19,9 @@ $nonce = wp_create_nonce( 'search-bookings' );
 /** @var WC_Bookings_Extensions_Bookings_Search $bookings_search_form */
 ?>
 <form class="wc-bookings-extensions-form" method="post" enctype='multipart/form-data' name="wc-bookings-extensions-form" data-nonce="<?php echo esc_attr( $nonce ); ?>">
+	<div class="wc-bookings-extensions-search-title">
+		<span><?php esc_html_e( 'Check availability', 'woocommerce-bookings-extensions' ); ?></span>
+	</div>
 	<div id="wc-bookings-booking-form" class="wc-bookings-extensions-search">
 		<?php $bookings_search_form->output(); ?>
 	</div>

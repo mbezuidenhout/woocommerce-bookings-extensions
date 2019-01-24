@@ -453,7 +453,7 @@ class WC_Bookings_Extensions_Bookings_Search {
 	}
 
 	public function get_availability_html( $date, $duration, $persons = null ) {
-
+		global $product, $post;
 		$available_products = $this->products;
 
 		// Remove bookable products that cannot accommodate the specified nr of persons
@@ -501,7 +501,13 @@ class WC_Bookings_Extensions_Bookings_Search {
 		$html_block = '';
 		foreach ( $available_products as $product ) {
 			if ( in_array( $product->get_id(), array_keys( $available_blocks ), true ) ) {
-				$html_block .= sprintf( '<li><a href="%s"><div class="search-result-thumbnail">%s</div><div class="search-result-name">%s</div></a></li>', get_permalink( $product->get_id() ), $product->get_image(), $product->get_name() );
+				$post = get_post( intval( $product->get_id() ) );
+				ob_start();
+				wc_get_template_part( 'content', 'product' );
+				$html_block .= '<li>' . ob_get_contents() . '</li>';
+				// wc_get_template( 'product.php', $product, 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
+				ob_clean();
+
 			}
 		}
 		if ( empty( $html_block ) ) {
