@@ -104,6 +104,9 @@ class WC_Bookings_Extensions_Bookings_Search {
 		foreach ( $this->products as $product ) {
 			$ids[] = $product->get_id();
 		}
+
+		$ids = apply_filters( 'wc_bookings_extensions_search_product_ids', $ids );
+
 		return $ids;
 	}
 

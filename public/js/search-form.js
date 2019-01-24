@@ -20,6 +20,9 @@ jQuery(document).ready(function($) {
 			$form = $(this).closest('form');
 			var index = $form.index(this);
 			var nonce = $form.attr( "data-nonce" );
+			if ( typeof xhr[index] !== 'undefined' && xhr[index].hasOwnProperty( 'abort' ) ) {
+				xhr[index].abort();
+			}
 
 			$form.find('.wc-booking-extensions-search-result').block({message: null, overlayCSS: {background: '#fff', backgroundSize: '16px 16px', opacity: 0.6}}).show();
 			xhr[index] = $.ajax({

@@ -19,15 +19,12 @@ $nonce = wp_create_nonce( 'search-bookings' );
 /** @var WC_Bookings_Extensions_Bookings_Search $bookings_search_form */
 ?>
 <form class="wc-bookings-extensions-form" method="post" enctype='multipart/form-data' name="wc-bookings-extensions-form" data-nonce="<?php echo esc_attr( $nonce ); ?>">
-
 	<div id="wc-bookings-booking-form" class="wc-bookings-extensions-search">
-
 		<?php $bookings_search_form->output(); ?>
+	</div>
+	<div class="wc-booking-extensions-search-result" style="display:none">
+		<ul class="wc-booking-extensions-result-list">
 
-		<div class="wc-booking-extensions-search-result" style="display:none">
-			<ul class="wc-booking-extensions-result-list">
-
-			</ul>
-		</div>
+		</ul>
 	</div>
 </form>
