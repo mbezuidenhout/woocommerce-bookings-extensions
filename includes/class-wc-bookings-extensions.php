@@ -239,6 +239,8 @@ class WC_Bookings_Extensions {
 
 		/** @see WC_Bookings_Extensions_Public::add_routes */
 		$this->loader->add_action( 'init', $plugin_public, 'add_routes' );
+		/** @see WC_Bookings_Extensions_Public::add_rest_routes */
+		$this->loader->add_action( 'rest_api_init', $plugin_public, 'add_rest_routes' );
 
 		// Notice that the global search does not support multi level dependencies
 		// Short codes should not be active in the admin panel

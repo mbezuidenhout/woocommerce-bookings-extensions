@@ -1,1 +1,5 @@
-HALLO
+<?php
+
+$test = $bookings;
+
+?>

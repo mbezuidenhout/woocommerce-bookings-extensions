@@ -12,6 +12,9 @@ final class WP_Route {
 
 	private $hooked = false;
 
+	/** @var array $reserved_names */
+	protected $reserved_names;
+
 	private $routes = array(
 		'ANY'    => array(),
 		'GET'    => array(),
@@ -22,7 +25,10 @@ final class WP_Route {
 	);
 
 	private function __construct() {
-
+		if ( ! function_exists( 'get_subdirectory_reserved_names' ) ) {
+			require_once ABSPATH . 'wp-includes/ms-functions.php';
+		}
+		$this->reserved_names = get_subdirectory_reserved_names();
 	}
 
 	public static function instance() {
@@ -98,6 +104,10 @@ final class WP_Route {
 	// INTERNAL UTILITY METHODS
 	// -----------------------------------------------------
 	private function add_route( $method, $route, $callable, $options = array() ) {
+		$base_path = explode( '?', $this->tokenize( $route )[0] )[0];
+		if ( in_array( $base_path, $this->reserved_names, true ) ) {
+			throw new Exception( 'Route contains reserved name' );
+		}
 		$this->routes[ $method ][] = (object) array_merge(
 			array(
 				'route'    => ltrim( $route, '/' ),
@@ -105,6 +115,7 @@ final class WP_Route {
 			),
 			$options
 		);
+
 	}
 
 	private function hook() {
@@ -154,18 +165,19 @@ final class WP_Route {
 	// handle()
 	// -----------------------------------------------------
 	public function handle() {
-		$method              = strtoupper( $_SERVER['REQUEST_METHOD'] );
-		$routes              = array_merge( $this->routes[$method], $this->routes['ANY'] );
-		$requestURI 		 = $this->requestURI();
-		$tokenizedRequestURI = $this->tokenize( $requestURI );
+		$method                = strtoupper( $_SERVER['REQUEST_METHOD'] );
+		$routes                = array_merge( $this->routes[ $method ], $this->routes['ANY'] );
+		$request_uri           = $this->requestURI();
+		$tokenized_request_uri = $this->tokenize( $request_uri );
+		$request_uri_path      = explode( '?', $this->tokenize( $request_uri )[0] )[0];
+
 		foreach ( $routes as $key => $route ) {
 			// First, filter routes that do not have equal tokenized lengths
-			if ( count( $this->tokenize( $route->route ) ) !== count( $tokenizedRequestURI ) ) {
+			if ( count( $this->tokenize( $route->route ) ) !== count( $tokenized_request_uri ) ) {
 				unset( $routes[ $key ] );
 				continue;
 			}
-			$requestURI_path = explode( '?', $this->tokenize( $requestURI )[0] )[0];
-			if ( $this->tokenize( $route->route )[0] !== $requestURI_path ) {
+			if ( $this->tokenize( $route->route )[0] !== $request_uri_path ) {
 				unset( $routes[ $key ] );
 				continue;
 			}

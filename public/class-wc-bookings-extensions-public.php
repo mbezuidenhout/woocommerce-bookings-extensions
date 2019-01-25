@@ -696,35 +696,17 @@ class WC_Bookings_Extensions_Public {
 
 	}
 
-	public function get_bookings() {
-		$defaults = array(
-			'username'   => '',
-			'password'   => '',
-			'format'     => 'html',
-			'range'      => 'now',
-			'product_id' => 0,
-		);
-		$args     = wp_parse_args( sanitize_post( $_GET ), $defaults );
-		$user     = wp_authenticate( $args['username'], $args['password'] );
-		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings
-			wp_die( 'Invalid user or does not have sufficient privileges' );
-		}
-
-		if ( 'html' === $args['format'] && 0 === $args['product_id'] ) {
-			wp_die( 'Product ID cannot be null if format is html' );
-		}
-
-		if ( 'html' === $args['format'] && ! in_array( $args['range'], array( 'now', 'next' ), true ) ) {
-			wp_die( 'Range must be "now" or "next" if format is html' );
-		}
-
+	/**
+	 * Get an array of bookings
+	 *
+	 * @param int $product_id Product ID to fetch
+	 * @param string $range Range of dates to fetch [now|next]
+	 * @return \WC_Booking[][]
+	 * @throws Exception
+	 */
+	protected function get_bookings( $product_id, $range = 'now' ) {
 		$products = array();
-		if ( $args['product_id'] > 0 ) {
-			$product = wc_get_product( $args['product_id'] );
-			if ( $product && 'booking' === $product->get_type() ) {
-				$products[] = $product;
-			}
-		} else {
+		if ( is_null( $product_id ) ) {
 			/** @var \WC_Product_Data_Store_CPT $data_store */
 			$data_store = WC_Data_Store::load( 'product' );
 			$ids        = $data_store->search_products( null, 'booking', false, false, null );
@@ -734,6 +716,11 @@ class WC_Bookings_Extensions_Public {
 					$products[] = $product;
 				}
 			}
+		} else {
+			$product = wc_get_product( $product_id );
+			if ( $product && 'booking' === $product->get_type() ) {
+				$products[] = $product;
+			}
 		}
 
 		$bookings = array();
@@ -742,7 +729,7 @@ class WC_Bookings_Extensions_Public {
 			$now        = strtotime( 'now' );
 			$start_time = $now;
 			$end_time   = $start_time + 1;
-			switch ( $args['range'] ) {
+			switch ( $range ) {
 				case 'now':
 					break;
 				case 'next':
@@ -758,7 +745,7 @@ class WC_Bookings_Extensions_Public {
 			}
 			/** @var \WC_Booking[] $product_bookings */
 			$product_bookings = $product->get_bookings_in_date_range( $start_time, $end_time );
-			if ( 'next' === $args['range'] ) {
+			if ( 'next' === $range ) {
 				foreach ( $product_bookings as $product_booking ) {
 					if ( $product_booking->get_start() <= $now && $product_booking->get_end() >= $now ) {
 						continue;
@@ -770,12 +757,130 @@ class WC_Bookings_Extensions_Public {
 			$bookings[ $product->get_id() ] = $product_bookings;
 		}
 
-		if ( 'html' === $args['format'] ) {
-			wc_get_template( 'booking-view.php', array( 'booking' => $bookings[ $args['product_id'] ] ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
-		} else {
-			echo wp_json_encode( $bookings );
+		return $bookings;
+	}
+
+	private function get_booking_properties( $booking ) {
+		$customer = $booking->get_customer();
+		$order    = $booking->get_order();
+		$product  = $booking->get_product();
+		$user     = null;
+		if ( property_exists( $customer, 'user_id' ) ) {
+			$user     = get_user_by( 'id', $customer->user_id );
+		}
+		$booking = array(
+			'booking'  => $booking,
+			'customer' => $customer,
+			'order'    => $order,
+			'product'  => $product,
+			'user'     => $user,
+		);
+		return $booking;
+	}
+
+	/**
+	 * Usage: https://<server>/wc-bookings/fetch?username=<username>&password=<password>&product_id=<product_id>
+	 *
+	 * @throws Exception
+	 */
+	public function get_bookings_html() {
+		$defaults = array(
+			'username'   => '',
+			'password'   => '',
+			'product_id' => null,
+		);
+		$args     = wp_parse_args( sanitize_post( $_GET ), $defaults );
+		$user     = wp_authenticate( $args['username'], $args['password'] );
+		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings
+			wp_die( 'Invalid user or does not have sufficient privileges' );
 		}
 
+		if ( 0 === $args['product_id'] ) {
+			wp_die( 'Product ID cannot be null' );
+		}
+
+		$bookings['now']  = $this->get_bookings( $args['product_id'], 'now' );
+		$bookings['next'] = $this->get_bookings( $args['product_id'], 'next' );
+
+		if ( ! empty( $bookings['now'][$args['product_id']] ) ) {
+			$bookings['now'] = $this->get_booking_properties( $bookings['now'][$args['product_id']][0] );
+		} else {
+			unset( $bookings['now'] );
+		}
+
+		if( ! empty( $bookings['next'][$args['product_id']] ) ) {
+			$bookings['next'] = $this->get_booking_properties( $bookings['next'][$args['product_id']][0] );
+		} else {
+			unset( $bookings['next'] );
+		}
+
+		wc_get_template( 'booking-view.php', array( 'bookings' => $bookings ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
+
+	}
+
+	/**
+	 * Usage: https://<server>/wp-json/wc-bookings/fetch?username=<username>&password=<password>
+	 *
+	 * @return array
+	 * @throws Exception
+	 */
+	public function get_bookings_json() {
+		$defaults = array(
+			'username'   => '',
+			'password'   => '',
+			'range'      => 'now',
+			'product_id' => null,
+		);
+		$args     = wp_parse_args( sanitize_post( $_GET ), $defaults );
+		$user     = wp_authenticate( $args['username'], $args['password'] );
+		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings
+			wp_die( 'Invalid user or does not have sufficient privileges' );
+		}
+
+		$bookings = $this->get_bookings( $args['product_id'], $args['range'] );
+
+		$bookings_arr = array();
+
+		foreach ( $bookings as $key => $bookings_for_product ) {
+			foreach ( $bookings_for_product as $booking ) {
+				if ( ! key_exists( $key, $bookings_arr ) ) {
+					$bookings_arr[ $key ] = array();
+				}
+				$customer = $booking->get_customer();
+				$order    = $booking->get_order();
+				$product  = $booking->get_product();
+				/** @var WP_User $user */
+				$display_name = '';
+				$email        = '';
+				$company_name = '';
+				if ( property_exists( $customer, 'user_id' ) ) {
+					$user = get_user_by( 'id', $customer->user_id );
+					if ( is_a( $user, 'WP_User' ) ) {
+						$display_name = $user->display_name;
+						$email        = $user->user_email;
+					} else {
+						$display_name = str_replace( ' (Guest)', '', $customer->name );
+						$email        = $customer->email;
+					}
+					if ( is_a( $order, 'WC_Order' ) ) {
+						$company_name = $order->get_billing_company();
+					}
+				}
+				$bookings_arr[ $key ][] = array(
+					'product_id'      => $booking->get_product_id(),
+					'product_name'    => $product->get_name(),
+					'unix_start_time' => $booking->get_start(),
+					'unix_end_time'   => $booking->get_end(),
+					'display_name'    => $display_name,
+					'email'           => $email,
+					'order_id'        => $booking->get_order_id(),
+					'status'          => $booking->get_status(), // unpaid|complete|in-cart
+					'company_name'    => $company_name,
+				);
+			}
+		}
+
+		return $bookings_arr;
 	}
 
 	public function add_routes() {
@@ -783,7 +888,18 @@ class WC_Bookings_Extensions_Public {
 			require_once plugin_dir_path( __DIR__ ) . 'includes/class-wp-route.php';
 		}
 
-		WP_Route::get( 'wc-bookings-fetch', array( $this, 'get_bookings' ) );
+		WP_Route::get( 'wc-bookings/fetch', array( $this, 'get_bookings_html' ) );
+	}
+
+	public function add_rest_routes() {
+		register_rest_route(
+			'wc-bookings',
+			'/fetch',
+			array(
+				'methods' => 'GET',
+				'callback' => array( $this, 'get_bookings_json' ),
+			)
+		);
 	}
 
 }
