@@ -193,13 +193,14 @@ final class WP_Route {
 				$callable   = $route->callable;
 				$controller = new $callable();
 				call_user_func_array( array( $controller, 'boot' ), $this->get_route_params( $route->route ) );
+				exit;
 			} elseif ( isset( $routes[0]->redirect ) ) {
 				$redirect = $routes[0]->redirect;
 				header( "Location: {$redirect}", true, $routes[0]->code );
 				wp_die();
 			} else {
 				call_user_func_array( $route->callable, $this->get_route_params( $route->route ) );
-				wp_die();
+				exit;
 			}
 		}
 	}

@@ -726,54 +726,88 @@ class WC_Bookings_Extensions_Public {
 		$bookings = array();
 		foreach ( $products as $product ) {
 			/** @var \WC_Product_Booking $product */
-			$now        = strtotime( 'now' );
-			$start_time = $now;
-			$end_time   = $start_time + 1;
+			$now        = current_time( 'timestamp' );
+			$start_time = strtotime( 'today' );
+			$end_time   = strtotime( 'tomorrow' );
 			switch ( $range ) {
 				case 'now':
-					break;
-				case 'next':
 				case 'day':
-					$end_time = strtotime( '+ 1 day', $start_time );
 					break;
 				case 'week':
 					$end_time = strtotime( '+ 1 week', $start_time );
 					break;
+				case 'now-next':
+				case 'next':
 				default:
 					$end_time = strtotime( '+ 1 month', $start_time );
 					break;
 			}
 			/** @var \WC_Booking[] $product_bookings */
-			$product_bookings = $product->get_bookings_in_date_range( $start_time, $end_time );
-			if ( 'next' === $range ) {
-				foreach ( $product_bookings as $product_booking ) {
+			$product_bookings  = $product->get_bookings_in_date_range( $start_time, $end_time );
+			$_product_bookings = array();
+			$now_next_range    = false;
+			if ( 'now' === substr( $range, 0, 3 ) ) {
+				foreach ( $product_bookings as $key => $product_booking ) {
+					if ( $product_booking->get_start() <= $now && $product_booking->get_end() >= $now ) {
+						$now_next_range           = true;
+						$_product_bookings['now'] = $product_booking;
+						break;
+					}
+				}
+			}
+			if ( 'next' === substr( $range, -4 ) ) {
+				foreach ( $product_bookings as $key => $product_booking ) {
 					if ( $product_booking->get_start() <= $now && $product_booking->get_end() >= $now ) {
 						continue;
 					}
-					$product_bookings = array( $product_booking );
+					$now_next_range            = true;
+					$_product_bookings['next'] = $product_booking;
 					break;
 				}
 			}
-			$bookings[ $product->get_id() ] = $product_bookings;
+			if ( $now_next_range ) {
+				$bookings[ $product->get_id() ] = $_product_bookings;
+			} else {
+				$bookings[ $product->get_id() ] = $product_bookings;
+			}
 		}
 
 		return $bookings;
 	}
 
+	/**
+	 * Extract data from the booking
+	 *
+	 * @param \WC_Booking $booking
+	 *
+	 * @return array
+	 */
 	private function get_booking_properties( $booking ) {
 		$customer = $booking->get_customer();
 		$order    = $booking->get_order();
 		$product  = $booking->get_product();
 		$user     = null;
 		if ( property_exists( $customer, 'user_id' ) ) {
-			$user     = get_user_by( 'id', $customer->user_id );
+			$user = get_user_by( 'id', $customer->user_id );
 		}
+
+		if ( is_a( $order, 'WC_Order' ) ) {
+			if ( empty( $order->get_billing_company() ) ) {
+				$organizer = str_replace( ' (Guest)', '', $customer->name );
+			} else {
+				$organizer = $order->get_billing_company();
+			}
+		} else {
+			$organizer = __( 'Private function', 'woocommerce-bookings-extensions' );
+		}
+
 		$booking = array(
-			'booking'  => $booking,
-			'customer' => $customer,
-			'order'    => $order,
-			'product'  => $product,
-			'user'     => $user,
+			'booking'   => $booking,
+			'customer'  => $customer,
+			'order'     => $order,
+			'product'   => $product,
+			'user'      => $user,
+			'organizer' => $organizer,
 		);
 		return $booking;
 	}
@@ -783,14 +817,20 @@ class WC_Bookings_Extensions_Public {
 	 *
 	 * @throws Exception
 	 */
-	public function get_bookings_html() {
+	public function get_bookings_page() {
 		$defaults = array(
 			'username'   => '',
 			'password'   => '',
 			'product_id' => null,
 		);
-		$args     = wp_parse_args( sanitize_post( $_GET ), $defaults );
-		$user     = wp_authenticate( $args['username'], $args['password'] );
+
+		define( SCRIPT_DEBUG, true );
+
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+		$args               = wp_parse_args( sanitize_post( $_GET ), $defaults );
+		$user               = wp_authenticate( $args['username'], $args['password'] );
+		$args['product_id'] = intval( $args['product_id'] );
 		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings
 			wp_die( 'Invalid user or does not have sufficient privileges' );
 		}
@@ -799,22 +839,50 @@ class WC_Bookings_Extensions_Public {
 			wp_die( 'Product ID cannot be null' );
 		}
 
-		$bookings['now']  = $this->get_bookings( $args['product_id'], 'now' );
-		$bookings['next'] = $this->get_bookings( $args['product_id'], 'next' );
-
-		if ( ! empty( $bookings['now'][$args['product_id']] ) ) {
-			$bookings['now'] = $this->get_booking_properties( $bookings['now'][$args['product_id']][0] );
-		} else {
-			unset( $bookings['now'] );
+		$product = wc_get_product( $args['product_id'] );
+		if ( ! is_a( $product, 'WC_Product' ) ) {
+			wp_die( 'Invalid product ID' );
 		}
 
-		if( ! empty( $bookings['next'][$args['product_id']] ) ) {
-			$bookings['next'] = $this->get_booking_properties( $bookings['next'][$args['product_id']][0] );
-		} else {
-			unset( $bookings['next'] );
+		$bookings = $this->get_bookings( $args['product_id'], 'now-next' );
+
+		$_bookings = array();
+		if ( ! empty( $bookings[ $args['product_id'] ]['now'] ) ) {
+			$_bookings['now'] = $this->get_booking_properties( $bookings[ $args['product_id'] ]['now'] );
 		}
 
-		wc_get_template( 'booking-view.php', array( 'bookings' => $bookings ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
+		if ( ! empty( $bookings[ $args['product_id'] ]['next'] ) ) {
+			$_bookings['next'] = $this->get_booking_properties( $bookings[ $args['product_id'] ]['next'] );
+		}
+
+		$script_params = array(
+			'server_unix_time' => strtotime( 'now' ),
+			'date_format'      => self::convert_to_moment_format( get_option( 'date_format' ) ),
+			'time_format'      => self::convert_to_moment_format( get_option( 'time_format' ) ),
+			'ajax_url'         => get_site_url() . '/wp-json/wc-bookings/fetch',
+			'username'         => $args['username'],
+			'password'         => $args['password'],
+			'product_id'       => $args['product_id'],
+			'action'           => 'wc_bookings_booking_data',
+			'text'             => array(
+				'in_use'    => __( 'In-use', 'woocommerce-bookings-extensions' ),
+				'available' => __( 'Available', 'woocommerce-bookings-extensions' ),
+			),
+		);
+
+		wp_register_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WC_BOOKINGS_VERSION, true );
+		wp_register_script( 'booking-view', plugin_dir_url( __DIR__ ) . 'public/js/booking-view' . $suffix . '.js', array( 'jquery', 'wc-bookings-moment' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+		wp_localize_script( 'booking-view', 'booking_view_params', $script_params );
+
+		wc_get_template(
+			'booking-view.php',
+			array(
+				'bookings' => $_bookings,
+				'product'  => $product,
+			),
+			'woocommerce-bookings-extensions',
+			plugin_dir_path( __DIR__ ) . 'templates/'
+		);
 
 	}
 
@@ -831,8 +899,11 @@ class WC_Bookings_Extensions_Public {
 			'range'      => 'now',
 			'product_id' => null,
 		);
-		$args     = wp_parse_args( sanitize_post( $_GET ), $defaults );
-		$user     = wp_authenticate( $args['username'], $args['password'] );
+		$args     = wp_parse_args( sanitize_post( $_REQUEST ), $defaults );
+		if ( ! empty( $args['product_id'] ) ) {
+			$args['product_id'] = intval( $args['product_id'] );
+		}
+		$user = wp_authenticate( $args['username'], $args['password'] );
 		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings
 			wp_die( 'Invalid user or does not have sufficient privileges' );
 		}
@@ -842,7 +913,7 @@ class WC_Bookings_Extensions_Public {
 		$bookings_arr = array();
 
 		foreach ( $bookings as $key => $bookings_for_product ) {
-			foreach ( $bookings_for_product as $booking ) {
+			foreach ( $bookings_for_product as $k => $booking ) {
 				if ( ! key_exists( $key, $bookings_arr ) ) {
 					$bookings_arr[ $key ] = array();
 				}
@@ -853,6 +924,7 @@ class WC_Bookings_Extensions_Public {
 				$display_name = '';
 				$email        = '';
 				$company_name = '';
+				$organizer    = '';
 				if ( property_exists( $customer, 'user_id' ) ) {
 					$user = get_user_by( 'id', $customer->user_id );
 					if ( is_a( $user, 'WP_User' ) ) {
@@ -864,9 +936,16 @@ class WC_Bookings_Extensions_Public {
 					}
 					if ( is_a( $order, 'WC_Order' ) ) {
 						$company_name = $order->get_billing_company();
+						if ( empty( $company_name ) ) {
+							$organizer = $display_name;
+						} else {
+							$organizer = $company_name;
+						}
+					} else {
+						$organizer = __( 'Private function', 'woocommerce-bookings-extensions' );
 					}
 				}
-				$bookings_arr[ $key ][] = array(
+				$bookings_arr[ $key ][ $k ] = array(
 					'product_id'      => $booking->get_product_id(),
 					'product_name'    => $product->get_name(),
 					'unix_start_time' => $booking->get_start(),
@@ -876,6 +955,7 @@ class WC_Bookings_Extensions_Public {
 					'order_id'        => $booking->get_order_id(),
 					'status'          => $booking->get_status(), // unpaid|complete|in-cart
 					'company_name'    => $company_name,
+					'organizer'       => $organizer,
 				);
 			}
 		}
@@ -888,7 +968,7 @@ class WC_Bookings_Extensions_Public {
 			require_once plugin_dir_path( __DIR__ ) . 'includes/class-wp-route.php';
 		}
 
-		WP_Route::get( 'wc-bookings/fetch', array( $this, 'get_bookings_html' ) );
+		WP_Route::get( 'wc-bookings/fetch', array( $this, 'get_bookings_page' ) );
 	}
 
 	public function add_rest_routes() {
@@ -896,10 +976,60 @@ class WC_Bookings_Extensions_Public {
 			'wc-bookings',
 			'/fetch',
 			array(
-				'methods' => 'GET',
+				'methods'  => 'GET',
 				'callback' => array( $this, 'get_bookings_json' ),
 			)
 		);
+	}
+
+	/**
+	 * Attempt to convert a date formatting string from PHP to Moment
+	 *
+	 * @param string $format
+	 * @return string
+	 */
+	public static function convert_to_moment_format( $format ) {
+		$replacements = array(
+			'd' => 'DD',
+			'D' => 'ddd',
+			'j' => 'D',
+			'l' => 'dddd',
+			'N' => 'E',
+			'S' => 'o',
+			'w' => 'e',
+			'z' => 'DDD',
+			'W' => 'W',
+			'F' => 'MMMM',
+			'm' => 'MM',
+			'M' => 'MMM',
+			'n' => 'M',
+			't' => '', // no equivalent
+			'L' => '', // no equivalent
+			'o' => 'YYYY',
+			'Y' => 'YYYY',
+			'y' => 'YY',
+			'a' => 'a',
+			'A' => 'A',
+			'B' => '', // no equivalent
+			'g' => 'h',
+			'G' => 'H',
+			'h' => 'hh',
+			'H' => 'HH',
+			'i' => 'mm',
+			's' => 'ss',
+			'u' => 'SSS',
+			'e' => 'zz', // deprecated since version 1.6.0 of moment.js
+			'I' => '', // no equivalent
+			'O' => '', // no equivalent
+			'P' => '', // no equivalent
+			'T' => '', // no equivalent
+			'Z' => '', // no equivalent
+			'c' => '', // no equivalent
+			'r' => '', // no equivalent
+			'U' => 'X',
+		);
+
+		return strtr( $format, $replacements );
 	}
 
 }
