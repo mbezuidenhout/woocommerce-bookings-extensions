@@ -84,6 +84,7 @@ wp_enqueue_script( 'booking-view' );
 			transform: translateY(-10%);
 			padding: 10px 15px;
 			right: 0;
+			font-size: 4.2em;
 		}
 
 		.current-status {
