@@ -24,45 +24,48 @@ jQuery(document).ready(function($) {
 				xhr[index].abort();
 			}
 
-			$form.find('.wc-booking-extensions-search-result').block({message: null, overlayCSS: {background: '#fff', backgroundSize: '16px 16px', opacity: 0.6}}).show();
-			xhr[index] = $.ajax({
-				type: 		'POST',
-				url: 		booking_form_params.ajax_url,
-				data: 		{
-					action:      booking_form_params.action,
-					_ajax_nonce: nonce,
-					day:         date.getDate(),
-					month:       date.getMonth() + 1,
-					year:        date.getFullYear(),
-					form:        $form.serialize()
-				},
-				success: 	function( code ) {
-					if ( code.charAt(0) !== '{' ) {
-						console.log( code );
-						code = '{' + code.split(/\{(.+)?/)[1];
-					}
+			if ( null != date ) {
+				$form.find('.wc-booking-extensions-search-result').block({message: null, overlayCSS: {background: '#fff', backgroundSize: '16px 16px', opacity: 0.6}}).show();
+				xhr[index] = $.ajax({
+					type: 'POST',
+					url: booking_form_params.ajax_url,
+					data: {
+						action: booking_form_params.action,
+						_ajax_nonce: nonce,
+						day: date.getDate(),
+						month: date.getMonth() + 1,
+						year: date.getFullYear(),
+						form: $form.serialize()
+					},
+					success: function (code) {
+						if (code.charAt(0) !== '{') {
+							console.log(code);
+							code = '{' + code.split(/\{(.+)?/)[1];
+						}
 
-					result = $.parseJSON( code );
+						result = $.parseJSON(code);
 
-					if ( result.result == 'ERROR' ) {
-						$form.find('.wc-booking-extensions-result-list').html( result.html );
-						$form.find('.wc-booking-extensions-search-result').unblock();
-					} else if ( result.result == 'SUCCESS' ) {
-						$form.find('.wc-booking-extensions-result-list').html( result.html );
-						$form.find('.wc-booking-extensions-search-result').unblock();
+						if (result.result == 'ERROR') {
+							$form.find('.wc-booking-extensions-result-list').html(result.html);
+							$form.find('.wc-booking-extensions-search-result').unblock();
+						} else if (result.result == 'SUCCESS') {
+							$form.find('.wc-booking-extensions-result-list').html(result.html);
+							$form.find('.wc-booking-extensions-search-result').unblock();
 
-					} else {
+						} else {
+							$form.find('.wc-booking-extensions-search-result').hide();
+							console.log(code);
+						}
+
+						$(document.body).trigger('wc_booking_form_changed');
+					},
+					error: function () {
 						$form.find('.wc-booking-extensions-search-result').hide();
-						console.log( code );
-					}
-
-					$( document.body ).trigger( 'wc_booking_form_changed' );
-				},
-				error: function() {
-					$form.find('.wc-booking-extensions-search-result').hide();
-				},
-				dataType: 	"html"
-			});
+						$form.find('.wc-booking-extensions-search-result').unblock();
+					},
+					dataType: "html"
+				});
+			}
 		})
 		.each(function(){
 			var button = $(this).closest('form').find('.single_add_to_cart_button');
