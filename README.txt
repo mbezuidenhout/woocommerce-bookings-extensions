@@ -2,9 +2,9 @@
 Contributors: mbezuidenhout
 Tags: bookings
 Requires PHP: 5.6
-Requires at least: 3.0.1
+Requires at least: 4.9
 Tested up to: 5.0.3
-Stable tag: 1.2.1
+Stable tag: 1.4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,15 @@ wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer valu
 
 = 1.2.1 =
 * Fix: Linked products field in admin section has missing bookable products from options list
+
+= 1.4.0 =
+* New: Added global route to show a page for upcoming bookings
+
+= 1.4.1 =
+* Fix: Global search form would be blocked without ajax query being sent
+
+= 1.4.2 =
+* New: In the admin calendar view for the day show more details than just the order number.
 
 == Frequently Asked Questions ==
 

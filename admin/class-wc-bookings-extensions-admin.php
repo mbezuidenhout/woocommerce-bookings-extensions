@@ -191,6 +191,11 @@ class WC_Bookings_Extensions_Admin {
 
 	}
 
+	public function calendar_page_scripts() {
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+		wp_enqueue_script( 'calendar-view', plugin_dir_url( __FILE__ ) . 'js/calendar-view' . $suffix . '.js', array( 'jquery' ), $this->version, false );
+	}
 
 
 }

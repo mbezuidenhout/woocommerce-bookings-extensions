@@ -195,6 +195,9 @@ class WC_Bookings_Extensions {
 
 		/** @see WC_Bookings_Extensions_Admin::show_booking_dependencies_options */
 		$this->loader->add_action( 'woocommerce_product_options_related', $plugin_admin, 'show_booking_dependencies_options' );
+
+		/** @see WC_Bookings_Extensions_Admin::calendar_page_scripts */
+		$this->loader->add_action( 'admin_print_scripts-wc_booking_page_booking_calendar', $plugin_admin, 'calendar_page_scripts' );
 	}
 
 	/**
