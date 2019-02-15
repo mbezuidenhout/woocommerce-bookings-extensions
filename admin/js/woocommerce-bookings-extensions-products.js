@@ -21,7 +21,7 @@
 						var ruleNum = ruleType[0].name.slice(ruleType[0].name.indexOf('[') + 1, ruleType[0].name.indexOf(']'));
 						$('<td><input type="checkbox" name="wc_booking_ext_pricing_override[' + ruleNum + ']"></td>').insertAfter($(this).find('td:nth-child(7)'));
 
-						if ( $.inArray( ruleNum, wc_bookings_extensions_product_data.ext_override ) ) {
+						if ( 0 === $.inArray( parseInt( ruleNum ), wc_bookings_extensions_product_data.ext_override ) ) {
 							$('input[name="wc_booking_ext_pricing_override[' + ruleNum + ']"]').prop('checked', true);
 						}
 
