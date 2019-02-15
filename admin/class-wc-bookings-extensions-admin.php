@@ -99,6 +99,62 @@ class WC_Bookings_Extensions_Admin {
 
 	}
 
+	/**
+	 * Add product fields
+	 *
+	 * @param int $product_id
+	 */
+	public function enqueue_product_data_scripts( $product_id ) {
+		$js_data = array(
+			'data_tip'     => __( 'Rules with the override flag set will override any other rule if matched.' ),
+			'ext_override' => array(),
+		);
+
+		/** @var WC_Product_Booking $bookable_product */
+		$bookable_product = wc_get_product( $product_id );
+		if ( is_a( $bookable_product, 'WC_Product_Booking' ) ) {
+			$pricing = $bookable_product->get_pricing();
+			foreach ( $pricing as $key => $val ) {
+				if ( isset( $val['ext_override'] ) && true === $val['ext_override'] ) {
+					$js_data['ext_override'][] = $key;
+				}
+			}
+		}
+
+		wp_enqueue_script( $this->plugin_name . '-product-data-js', plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-products.min.js', array( 'jquery' ), $this->version, true );
+		wp_localize_script(
+			$this->plugin_name . '-product-data-js',
+			'wc_bookings_extensions_product_data',
+			$js_data
+		);
+	}
+
+	/**
+	 * Set props
+	 *
+	 * @param \WC_Product_Booking $product
+	 */
+	public function set_ext_props( $product ) {
+		// Only set props if the product is a bookable product.
+		if ( ! is_a( $product, 'WC_Product_Booking' ) ) {
+			return;
+		}
+
+		$pricing = $product->get_pricing();
+
+		$row_size = isset( $_POST['wc_booking_pricing_type'] ) ? sizeof( $_POST['wc_booking_pricing_type'] ) : 0;
+		for ( $i = 0; $i < $row_size; $i ++ ) {
+			if ( isset( $_POST['wc_booking_ext_pricing_override'][ $i ] ) && 'days' === $pricing[ $i ]['type'] ) {
+				$pricing[ $i ]['ext_override'] = true;
+			} else {
+				unset( $pricing[ $i ]['ext_override'] );
+			}
+		}
+
+		$product->set_pricing( $pricing );
+
+	}
+
 	public function booking_extensions_data() {
 		global $post, $bookable_product;
 

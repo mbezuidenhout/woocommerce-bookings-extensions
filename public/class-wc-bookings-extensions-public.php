@@ -983,6 +983,106 @@ class WC_Bookings_Extensions_Public {
 	}
 
 	/**
+	 * Overrides the booking cost for scenarios where there is a different block cost for specific days
+	 *
+	 * @param int $booking_cost
+	 * @param WC_Booking_Form $booking_form
+	 * @param array $posted
+	 *
+	 * @return int
+	 */
+	public function override_booking_cost( $booking_cost, $booking_form, $posted ) {
+		// Get posted data
+		$data = $booking_form->get_posted_data( $posted );
+
+		// Get costs
+		$costs   = $booking_form->product->get_costs();
+		$pricing = $booking_form->product->get_pricing();
+
+		$index = 1;
+		foreach ( $pricing as $pricing_rule ) {
+			if ( true === $pricing_rule['ext_override'] ) {
+				$costs[ $index ]['ext_override'] = true;
+			}
+			$index++;
+		}
+
+		$block_duration  = $booking_form->product->get_duration();
+		$blocks_booked   = isset( $data['_duration'] ) ? absint( $data['_duration'] ) : $block_duration;
+		$block_unit      = $booking_form->product->get_duration_unit();
+		$block_timestamp = $data['_start_date'];
+
+		$block_cost       = 0;
+		$base_cost        = 0;
+		$total_block_cost = 0;
+		$has_override     = false;
+
+		for ( $block = 0; $block < $blocks_booked; $block ++ ) {
+			$block_start_time_offset = $block * $block_duration;
+			$block_start_time        = $booking_form->get_formatted_times( strtotime( "+{$block_start_time_offset} {$block_unit}", $block_timestamp ) );
+			foreach ( $costs as $rule ) {
+				$type  = $rule[0];
+				$rules = $rule[1];
+				if ( isset( $rule['ext_override'] ) && true === $rule['ext_override'] && 'days' === $type ) {
+					$check_date    = $block_start_time['timestamp'];
+					$checking_date = $booking_form->get_formatted_times( $check_date );
+					$date_key      = 'days' === $type ? 'day_of_week' : substr( $type, 0, -1 );
+					$rule          = $rules[ $checking_date[ $date_key ] ];
+					if ( is_array( $rule ) ) {
+						$has_override = true;
+						$block_cost   = $this->apply_cost( $block_cost, $rule['block'][0], $rule['block'][1] );
+						$base_cost    = $this->apply_cost( $base_cost, $rule['base'][0], $rule['base'][1] );
+					}
+				}
+			}
+			$total_block_cost += $block_cost;
+		}
+
+		if ( $has_override ) {
+			$booking_cost = max( 0, $total_block_cost + $base_cost );
+
+			if ( ! empty( $data['_persons'] ) ) {
+				if ( $booking_form->product->get_has_person_cost_multiplier() ) {
+					$booking_cost = $booking_cost * array_sum( $data['_persons'] );
+				}
+			}
+		}
+
+		return $booking_cost;
+	}
+
+	/**
+	 * Apply a cost
+	 * @param  float $base
+	 * @param  string $multiplier
+	 * @param  float $cost
+	 * @return float
+	 */
+	private function apply_cost( $base, $multiplier, $cost ) {
+		$base = floatval( $base );
+		$cost = floatval( $cost );
+
+		switch ( $multiplier ) {
+			case 'times':
+				$new_cost = $base * $cost;
+				break;
+			case 'divide':
+				$new_cost = $base / $cost;
+				break;
+			case 'minus':
+				$new_cost = $base - $cost;
+				break;
+			case 'equals':
+				$new_cost = $cost;
+				break;
+			default:
+				$new_cost = $base + $cost;
+				break;
+		}
+		return $new_cost;
+	}
+
+	/**
 	 * Attempt to convert a date formatting string from PHP to Moment
 	 *
 	 * @param string $format

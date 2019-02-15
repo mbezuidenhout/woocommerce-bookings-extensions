@@ -198,6 +198,9 @@ class WC_Bookings_Extensions {
 
 		/** @see WC_Bookings_Extensions_Admin::calendar_page_scripts */
 		$this->loader->add_action( 'admin_print_scripts-wc_booking_page_booking_calendar', $plugin_admin, 'calendar_page_scripts' );
+
+		$this->loader->add_action( 'woocommerce_bookings_after_bookings_pricing', $plugin_admin, 'enqueue_product_data_scripts' );
+		$this->loader->add_action( 'woocommerce_admin_process_product_object', $plugin_admin, 'set_ext_props', 30 );
 	}
 
 	/**
@@ -244,6 +247,9 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'init', $plugin_public, 'add_routes' );
 		/** @see WC_Bookings_Extensions_Public::add_rest_routes */
 		$this->loader->add_action( 'rest_api_init', $plugin_public, 'add_rest_routes' );
+
+		/** @see WC_Bookings_Extensions_Public::adjust_booking_cost */
+		$this->loader->add_filter( 'booking_form_calculated_booking_cost', $plugin_public, 'override_booking_cost', 8, 3 );
 
 		// Notice that the global search does not support multi level dependencies
 		// Short codes should not be active in the admin panel
