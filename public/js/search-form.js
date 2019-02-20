@@ -45,13 +45,23 @@ jQuery(document).ready(function($) {
 
 						result = $.parseJSON(code);
 
-						if (result.result == 'ERROR') {
+						if ( -1 !== $.inArray(result.result, [ 'SUCCESS', 'ERROR' ] ) ) {
 							$form.find('.wc-booking-extensions-result-list').html(result.html);
 							$form.find('.wc-booking-extensions-search-result').unblock();
-						} else if (result.result == 'SUCCESS') {
-							$form.find('.wc-booking-extensions-result-list').html(result.html);
-							$form.find('.wc-booking-extensions-search-result').unblock();
-
+							$form.find('.wc-booking-extensions-result-list a').each( $.proxy(function(key, value) {
+								var href = $(value).attr('href');
+								if( -1 === href.indexOf('#') ) {
+									var params = Object.assign(getUrlVars(this.data), getUrlVars(decodeURIComponent(getUrlVars(this.data).form)));
+									var str = encodeURIComponent($.param({
+										year: params.year,
+										month: params.month,
+										day: params.day,
+										duration: params.wc_bookings_field_duration,
+										persons: params.wc_bookings_field_persons,
+									}));
+									$(value).attr('href', $(value).attr('href') + '?wc_booking_search_data=' + str);
+								}
+							}, this) );
 						} else {
 							$form.find('.wc-booking-extensions-search-result').hide();
 							console.log(code);
@@ -97,3 +107,14 @@ function get_client_server_timezone_offset_hrs( date ) {
 	return (client_offset - server_offset)/60;
 }
 
+var getUrlVars = function (getStr) {
+	var vars = [], hash;
+	var hashes = getStr.split('&');
+	for(var i = 0; i < hashes.length; i++)
+	{
+		hash = hashes[i].split('=');
+		vars.push(hash[0]);
+		vars[hash[0]] = hash[1];
+	}
+	return vars;
+}

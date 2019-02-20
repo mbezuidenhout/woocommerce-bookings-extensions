@@ -219,9 +219,6 @@ class WC_Bookings_Extensions {
 
 		$this->loader->add_action( 'plugins_loaded', $this, 'load_extensions', 11 );
 		// Replace WooCommerce Bookings ajax handlers
-		// $this->loader->remove_action( 'wp_ajax_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
-		// $this->loader->remove_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', 'WC_Bookings_Ajax', 'get_time_blocks_for_date', 10 );
-		// $this->loader->remove_action( 'wc_ajax_wc_bookings_find_booked_day_blocks', 'WC_Bookings_WC_Ajax', 'find_booked_day_blocks', 10);
 		/** @see WC_Bookings_Extensions_Public::get_time_blocks_for_date */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
@@ -255,6 +252,8 @@ class WC_Bookings_Extensions {
 		// Short codes should not be active in the admin panel
 		/** @see WC_Bookings_Extensions_Public::global_search_shortcode() */
 		$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
+
+		$this->loader->add_action( 'woocommerce_before_booking_form', $plugin_public, 'add_booking_form_scripts' );
 	}
 
 	/**

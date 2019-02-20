@@ -824,7 +824,7 @@ class WC_Bookings_Extensions_Public {
 			'product_id' => null,
 		);
 
-		define( SCRIPT_DEBUG, true );
+		define( SCRIPT_DEBUG, false );
 
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
@@ -1049,6 +1049,14 @@ class WC_Bookings_Extensions_Public {
 		}
 
 		return $booking_cost;
+	}
+
+	public function add_booking_form_scripts() {
+		define( SCRIPT_DEBUG, true );
+
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+		wp_enqueue_script( 'wc-booking-extensions-form-js', plugin_dir_url( __DIR__ ) . 'public/js/single-product' . $suffix . '.js', array( 'jquery' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
 	}
 
 	/**
