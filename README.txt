@@ -37,6 +37,12 @@ wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer valu
 = 1.4.2 =
 * New: In the admin calendar view for the day show more details than just the order number.
 
+= 1.5.0 =
+* New: Added new admin option for overriding block costs for specific days
+
+= 1.6.0 =
+* New: Transfer options from global search to product page
+
 == Frequently Asked Questions ==
 
 = Why doesn't Adjacent Buffering work? =
