@@ -15,13 +15,18 @@
 		$('.wc-bookings-date-picker .picker').attr('data-default_date', params.year + '-' + params.month.lpad('0', 2) + '-' + params.day.lpad('0', 2));
 		//$(".wc-bookings-date-picker").find(".picker:eq(0)").datepicker("setDate", params.year + '-' + params.month + '-' + params.day);
 
+		var i = 0;
 		$.blockUI.defaults.onUnblock = function( element, options ) {
 			if( $(element).hasClass('picker') ) {
 				var cell = $(element).find('.bookable a').not('.ui-priority-secondary').filter(function () {
 					return $(this).text() === params.day;
 				});
-				if (!cell.hasClass('.ui-state-active')) {
+				if (!cell.hasClass('.ui-state-active') && !cell.hasClass('.ui-datepicker-unselectable')) {
 					cell.parent().click();
+					if( 1 === i ) {
+						$.blockUI.defaults.onUnblock = null;
+					}
+					i++;
 				}
 			}
 		};
