@@ -326,8 +326,10 @@ class WC_Bookings_Extensions {
 	 * Replaces parts of the WooCommerce Bookings components
 	 */
 	public function load_extensions() {
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-custom.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-product-booking.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-cart-manager.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-form.php';
 
 		$plugin_public = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
 		$cart_manager  = new WC_Bookings_Extensions_Cart_Manager();

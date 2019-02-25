@@ -387,7 +387,7 @@ class WC_Bookings_Extensions_Public {
 
 		$product = new WC_Bookings_Extensions_Product_Booking( $product->get_id() );
 
-		$booking_form = new WC_Booking_Form( $product );
+		$booking_form = new WC_Bookings_Extensions_Form( $product );
 		$cost         = $booking_form->calculate_booking_cost( $posted );
 
 		if ( is_wp_error( $cost ) ) {
