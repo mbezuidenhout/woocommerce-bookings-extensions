@@ -60,3 +60,12 @@ By enabling this plugin it disables the adjacent buffering feature.
 Check your parameters passed to the shortcode ex. [wcbooking_search duration_unit="minute" duration="60"]
 This will only search through bookings that has a duration unit of 60 minutes.
 The search shortcode cannot be used on the same page as a product booking.
+
+= How do I display the booking webpage? =
+
+The current and upcoming booking display page can be accessed by using the following pattern:
+https://<server>/wc-bookings/fetch?username=<username>&password=<password>&product_id=<product_id>
+Where <server> is the hostname of the server.
+<username> and <password> is the urlencoded username and password respectively of a user that has permission to view all bookings.
+<product_id> is the ID of the product as can be seen while hovering over the product name in the "All products" list
+Eg. https://example.com/fetch?username=user%40domain.com&password=p%4055w0rd%5C%21&product_id=900
