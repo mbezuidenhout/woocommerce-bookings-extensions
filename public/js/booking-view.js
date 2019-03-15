@@ -5,16 +5,16 @@ jQuery( function( $ ) {
 	var timeDiff = serverTime - localTime;
 	var xhr = [];
 
-	function updateTime( firstRun ) {
+	var updateTime = function( firstRun ) {
 		var currentTime = new Date();
 		currentTime.setTime( currentTime.getTime() + timeDiff );
-		$('#current-time').text( moment( currentTime.getTime() ).format(booking_view_params.time_format) );
-		$('#current-date').text( moment( serverTime.getTime() ).format(booking_view_params.date_format) );
+		$('#current-time').text( moment( currentTime.getTime() ).format( booking_view_params.time_format ) );
+		$('#current-date').text( moment( serverTime.getTime() ).format( booking_view_params.date_format ) );
 		if( firstRun ) {
 			setInterval( updateTime, 60000 ); // Run every subsequent call on the minute basis
 		}
-	}
-	function updateBooking() {
+	};
+	var updateBooking = function() {
 		if ( typeof xhr['booking'] !== 'undefined' && xhr['booking'].hasOwnProperty( 'abort' ) ) {
 			xhr['booking'].abort();
 		}
@@ -40,8 +40,8 @@ jQuery( function( $ ) {
 						$('#current-booking-end').text('');
 					}
 					if ( booking.hasOwnProperty( 'next' ) && booking.next.hasOwnProperty( 'unix_start_time' ) ) {
-						$('#next-booking-date').text(moment.utc( booking.next.unix_start_time * 1000 ).format( booking_view_params.date_format ));
-						$('#next-booking-time').text(moment.utc( booking.next.unix_start_time * 1000 ).format( booking_view_params.time_format ));
+						$('#next-booking-date').text( moment.utc( booking.next.unix_start_time * 1000 ).format( booking_view_params.date_format ) );
+						$('#next-booking-time').text( moment.utc( booking.next.unix_start_time * 1000 ).format( booking_view_params.time_format ) );
 					} else {
 						$('#next-booking-date').text('');
 						$('#next-booking-time').text('');
@@ -54,10 +54,10 @@ jQuery( function( $ ) {
 			},
 			dataType: "json"
 		});
-	}
+	};
 
-	$('#current-time').text( moment( serverTime.getTime() ).format(booking_view_params.time_format) );
-	$('#current-date').text( moment( serverTime.getTime() ).format(booking_view_params.date_format) );
-	setTimeout(updateTime, 60 - serverTime.getSeconds() * 1000, true ); // First run on the minute
+	$('#current-time').text( moment( serverTime.getTime() ).format( booking_view_params.time_format ) );
+	$('#current-date').text( moment( serverTime.getTime() ).format( booking_view_params.date_format ) );
+	setTimeout( updateTime, 60 - serverTime.getSeconds() * 1000, true ); // First run on the minute
 	setInterval( updateBooking, 60000);
 });

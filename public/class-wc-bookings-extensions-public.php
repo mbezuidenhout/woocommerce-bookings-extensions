@@ -824,8 +824,6 @@ class WC_Bookings_Extensions_Public {
 			'product_id' => null,
 		);
 
-		define( SCRIPT_DEBUG, false );
-
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		$args               = wp_parse_args( sanitize_post( $_GET ), $defaults );
