@@ -74,6 +74,6 @@ jQuery( function( $ ) {
 
 	$('#current-time').text( moment( serverTime.getTime() ).format( booking_view_params.time_format ) );
 	$('#current-date').text( moment( serverTime.getTime() ).format( booking_view_params.date_format ) );
-	setTimeout( updateTime, 60 - serverTime.getSeconds() * 1000, true ); // First run on the minute
+	setTimeout( updateTime, (60 - serverTime.getSeconds()) * 1000, true ); // First run on the minute
 	setInterval( updateBooking, 60000);
 });
