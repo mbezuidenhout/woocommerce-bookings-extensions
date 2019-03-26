@@ -4,7 +4,7 @@ Tags: bookings
 Requires PHP: 5.6
 Requires at least: 4.9
 Tested up to: 5.1
-Stable tag: 1.6.4
+Stable tag: 1.6.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,7 +49,7 @@ wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer valu
 = 1.6.3 =
 * Fix: Check that check in date does not fall before an unbookable date.
 
-= 1.6.4 =
+= 1.6.5 =
 * Fix: Current and upcoming bookings not displaying correctly.
 
 == Frequently Asked Questions ==

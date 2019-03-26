@@ -58,12 +58,24 @@ jQuery( function( $ ) {
 			},
 			success: function ( data ) {
 				$('#error').hide();
+				var displayObject = {
+					'product_title': '',
+					'current_booking_title': '',
+					'current_booking_end': '',
+					'current_status': booking_view_params.text.available,
+					'next_booking_container': false,
+					'next_booking_title': '',
+					'next_booking_time': '',
+					'next_booking_date': '',
+				};
+
 				if( data.hasOwnProperty( 'options' )) {
 					localTime = new Date();
 					serverTime = new Date( data.options.server_unix_time * 1000 );
 					timeDiff = serverTime - localTime;
 
 					console.log( 'Query time is: ' +  (Date.now() - now) / 1000 + ' seconds');
+					displayObject.product_title = data.options.default_product_name;
 
 					booking_view_params.date_format = data.options.date_format;
 					booking_view_params.time_format = data.options.time_format;
@@ -71,16 +83,6 @@ jQuery( function( $ ) {
 				setTimeout( updateClock, (60 - serverTime.getSeconds()) * 1000, true ); // First run on the minute
 
 				if ( data.hasOwnProperty( 'bookings' ) ) {
-					var displayObject = {
-						'product_title': '',
-						'current_booking_title': '',
-						'current_booking_end': '',
-						'current_status': booking_view_params.text.available,
-						'next_booking_container': false,
-						'next_booking_title': '',
-						'next_booking_time': '',
-						'next_booking_date': '',
-					};
 					var unix_now_time = serverTime / 1000 | 0;
 					for ( var i = 0; i < data.bookings.length; i++ ) {
 						var order = data.bookings[i].order;
