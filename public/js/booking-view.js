@@ -19,8 +19,7 @@ jQuery( function( $ ) {
 		}
 
 		if ( setRunInterval ) {
-			//setInterval( updateClock, 60000 ); // Run every subsequent call on the minute basis
-			setInterval( updateClock, 1000 ); // Run every subsequent call on the second basis
+			setInterval( updateClock, 60000 ); // Run every subsequent call on the minute basis
 		}
 	};
 

@@ -55,20 +55,6 @@ foreach ( $bookings as $booking ) {
 	}
 }
 
-if ( ! empty( $bookings['next'] ) ) {
-	/** @var WC_Booking $booking */
-	$booking           = $bookings['next']['booking'];
-	$next_booking_time = date( get_option( 'time_format' ), $booking->get_start() );
-	$next_booking_date = date( get_option( 'date_format' ), $booking->get_start() );
-}
-
-if ( ! empty( $bookings['now'] ) ) {
-	/** @var WC_Booking $booking */
-	$booking               = $bookings['now']['booking'];
-	$current_booking_end   = date( get_option( 'time_format' ), $booking->get_end() );
-	$current_booking_title = $bookings['now']['organizer'];
-}
-
 wp_enqueue_script( 'booking-view' );
 
 ?>
@@ -157,7 +143,7 @@ wp_enqueue_script( 'booking-view' );
 			<h2 class="current-booking current-booking-title" id="current-booking-title"><?php echo esc_html( $current_booking_title ); ?></h2>
 			<h3 class="current-booking current-booking-end" id="current-booking-end"><?php echo $current_booking_end; ?></h3>
 		</div>
-		<h2 class="current-booking current-status" id="current-status"><?php empty( $bookings['now'] ) ? esc_html_e( 'Available', 'woocommerce-bookings-extensions' ) : esc_html_e( 'In-use', 'woocommerce-bookings-extensions' ); ?></h2>
+		<h2 class="current-booking current-status" id="current-status"><?php echo $current_status; ?></h2>
 		<div class="next-booking-container" id="next-booking-container">
 			<h2 class="next-booking next-booking-heading" id="next-booking-heading"><?php esc_html_e( 'Next booking', 'woocommerce-bookings-extensions' ); ?></h2>
 			<h3 class="next-booking next-booking-title" id="next-booking-title"><?php echo $next_booking_title; ?></h3>
