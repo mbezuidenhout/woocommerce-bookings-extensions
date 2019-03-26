@@ -704,7 +704,7 @@ class WC_Bookings_Extensions_Public {
 	 * @return \WC_Booking[][]
 	 * @throws Exception
 	 */
-	protected function get_bookings( $product_id, $range = 'now' ) {
+	protected function get_bookings_v1( $product_id, $range = 'now' ) { // Remove complate function by 2019-07
 		$products = array();
 		if ( is_null( $product_id ) ) {
 			/** @var \WC_Product_Data_Store_CPT $data_store */
@@ -776,6 +776,71 @@ class WC_Bookings_Extensions_Public {
 	}
 
 	/**
+	 * Get an array of bookings ordered by booking start date
+	 *
+	 * @param $product_id
+	 * @param $from
+	 * @param $to
+	 * @return \WC_Booking[]
+	 * @throws Exception
+	 */
+	protected function get_bookings_v2( $product_id, $from, $to ) {
+		$products = array();
+		if ( is_null( $product_id ) ) {
+			/** @var \WC_Product_Data_Store_CPT $data_store */
+			$data_store = WC_Data_Store::load( 'product' );
+			$ids        = $data_store->search_products( null, 'booking', false, false, null );
+			foreach ( $ids as $id ) {
+				$product = wc_get_product( $id );
+				if ( is_a( $product, 'WC_Product_Booking' ) ) {
+					$products[] = $product;
+				}
+			}
+		} else {
+			$product = wc_get_product( $product_id );
+			if ( $product && 'booking' === $product->get_type() ) {
+				$products[] = $product;
+			}
+			foreach ( $product->get_meta( 'booking_dependencies' ) as $dependency ) { // Get dependent bookable products
+				$product = wc_get_product( intval( $dependency ) );
+				if ( $product && 'booking' === $product->get_type() ) {
+					$products[] = $product;
+				}
+			}
+		}
+
+		$bookings = array();
+
+		foreach ( $products as $product ) {
+			$bookings = array_merge( $bookings, $product->get_bookings_in_date_range( $from, $to ) );
+		}
+
+		usort( $bookings, array( 'WC_Bookings_Extensions_Public', 'bookings_sort_by_date' ) );
+
+		return $bookings;
+	}
+
+	/**
+	 * Compare two bookings start dates for sorting
+	 *
+	 * @param $a \WC_Booking
+	 * @param $b \WC_Booking
+	 * @throws Exception
+	 * @return int
+	 */
+	public static function bookings_sort_by_date( $a, $b ) {
+		if ( is_a( $a, 'WC_Booking' ) && is_a( $b, 'WC_Booking' ) ) {
+			if ( $a->get_start() === $b->get_start() ) {
+				return 0;
+			}
+
+			return ( $a->get_start() > $b->get_start() ) ? 1 : - 1;
+		} else {
+			throw new \Exception( 'Array element not an instance of WC_Booking' );
+		}
+	}
+
+	/**
 	 * Extract data from the booking
 	 *
 	 * @param \WC_Booking $booking
@@ -826,7 +891,7 @@ class WC_Bookings_Extensions_Public {
 
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		$args               = wp_parse_args( sanitize_post( $_GET ), $defaults );
+		$args               = wp_parse_args( sanitize_post( $_GET ), $defaults ); //phpcs:ignore
 		$user               = wp_authenticate( $args['username'], $args['password'] );
 		$args['product_id'] = intval( $args['product_id'] );
 		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings
@@ -842,16 +907,7 @@ class WC_Bookings_Extensions_Public {
 			wp_die( 'Invalid product ID' );
 		}
 
-		$bookings = $this->get_bookings( $args['product_id'], 'now-next' );
-
-		$_bookings = array();
-		if ( ! empty( $bookings[ $args['product_id'] ]['now'] ) ) {
-			$_bookings['now'] = $this->get_booking_properties( $bookings[ $args['product_id'] ]['now'] );
-		}
-
-		if ( ! empty( $bookings[ $args['product_id'] ]['next'] ) ) {
-			$_bookings['next'] = $this->get_booking_properties( $bookings[ $args['product_id'] ]['next'] );
-		}
+		$bookings = $this->get_bookings_v2( $args['product_id'], time(), time() + 86400 );
 
 		$script_params = array(
 			'server_unix_time' => strtotime( 'now' ),
@@ -875,7 +931,7 @@ class WC_Bookings_Extensions_Public {
 		wc_get_template(
 			'booking-view.php',
 			array(
-				'bookings' => $_bookings,
+				'bookings' => $bookings,
 				'product'  => $product,
 			),
 			'woocommerce-bookings-extensions',
@@ -896,20 +952,39 @@ class WC_Bookings_Extensions_Public {
 			'password'   => '',
 			'range'      => 'now',
 			'product_id' => null,
+			'version'    => 1,
+			'from'       => null,
+			'to'         => null,
 		);
-		$args     = wp_parse_args( sanitize_post( $_REQUEST ), $defaults );
+		$args     = wp_parse_args( sanitize_post( $_REQUEST ), $defaults ); //phpcs:ignore
 		if ( ! empty( $args['product_id'] ) ) {
 			$args['product_id'] = intval( $args['product_id'] );
 		}
-		$user = wp_authenticate( $args['username'], $args['password'] );
+		$args['version'] = intval( $args['version'] );
+		$user            = wp_authenticate( $args['username'], $args['password'] );
 		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings
 			wp_die( 'Invalid user or does not have sufficient privileges' );
 		}
 
-		$bookings = $this->get_bookings( $args['product_id'], $args['range'] );
+		if ( 1 === $args['version'] ) {
+			$bookings = $this->get_bookings_v1( $args['product_id'], $args['range'] );
+			return $this->get_bookings_text_v1( $bookings );
+		} elseif ( 2 === $args['version'] ) {
+			$bookings = $this->get_bookings_v2( $args['product_id'], $args['from'], $args['to'] );
+			$bookings = array_map( array( 'WC_Bookings_Extensions_Public', 'get_bookings_text_v2' ), $bookings );
+			return array(
+				'options'  => array(
+					'server_unix_time' => strtotime( 'now' ),
+					'date_format'      => self::convert_to_moment_format( get_option( 'date_format' ) ),
+					'time_format'      => self::convert_to_moment_format( get_option( 'time_format' ) ),
+				),
+				'bookings' => $bookings,
+			);
+		}
+	}
 
+	private function get_bookings_text_v1( $bookings ) { // Remove complate function by 2019-07
 		$bookings_arr = array();
-
 		foreach ( $bookings as $key => $bookings_for_product ) {
 			foreach ( $bookings_for_product as $k => $booking ) {
 				if ( ! key_exists( $key, $bookings_arr ) ) {
@@ -957,8 +1032,80 @@ class WC_Bookings_Extensions_Public {
 				);
 			}
 		}
-
 		return $bookings_arr;
+	}
+
+	/**
+	 * Get booking parameters in text
+	 *
+	 * @param $booking \WC_Booking
+	 * @throws \Exception
+	 * @return array
+	 */
+	public static function get_bookings_text_v2( $booking ) {
+		if ( ! is_a( $booking, 'WC_Booking' ) ) {
+			throw new \Exception( 'Not an instance of WC_Booking' );
+		}
+
+		return array(
+			'product_id'      => $booking->get_product_id(),
+			'product_name'    => $booking->get_product()->get_name(),
+			'unix_start_time' => $booking->get_start(),
+			'unix_end_time'   => $booking->get_end(),
+			'status'          => $booking->get_status(),
+			'order'           => self::map_order( $booking->get_order() ),
+			'customer'        => self::map_customer( $booking->get_customer() ),
+		);
+	}
+
+	/**
+	 * Maps the order class to strings
+	 *
+	 * @param $order \WC_Order
+	 *
+	 * @return array
+	 */
+	public static function map_order( $order ) {
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return null;
+		}
+		return array(
+			'order_number'       => $order->get_order_number(),
+			'billing_company'    => $order->get_billing_company(),
+			'billing_first_name' => $order->get_billing_first_name(),
+			'billing_last_name'  => $order->get_billing_last_name(),
+		);
+	}
+
+	/**
+	 * Maps the customer class to strings
+	 *
+	 * @param $customer
+	 *
+	 * @return array
+	 */
+	public static function map_customer( $customer ) {
+		$customer_data = array();
+		if ( property_exists( $customer, 'user_id' ) ) {
+			$user = get_user_by( 'id', $customer->user_id );
+			if ( is_a( $user, 'WP_User' ) ) {
+				$customer_data = array(
+					'user_id'      => $user->ID,
+					'display_name' => $user->display_name,
+					'email'        => $user->user_email,
+				);
+			} else {
+				$customer_data = array(
+					'user_id'      => $customer->user_id,
+					'display_name' => str_replace( ' (Guest)', '', $customer->name ),
+					'email'        => $customer->email,
+				);
+				if ( empty( $customer_data['display_name'] ) ) {
+					$customer_data['display_name'] = __( 'Private function', 'woocommerce-bookings-extensions' );
+				}
+			}
+		}
+		return $customer_data;
 	}
 
 	public function add_routes() {

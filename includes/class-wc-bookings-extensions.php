@@ -237,7 +237,7 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
 
-		/** @see WC_Bookings_Extensions_Public::get_bookings */
+		/** @see WC_Bookings_Extensions_Public::get_bookings_v1 */
 		//$this->loader->add_action( 'woocommerce_api_wc_bookings_fetch', $plugin_public, 'get_bookings' );
 
 		/** @see WC_Bookings_Extensions_Public::add_routes */

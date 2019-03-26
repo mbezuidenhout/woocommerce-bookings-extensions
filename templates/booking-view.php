@@ -21,10 +21,39 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** @var \WC_Booking[] $bookings */
 // default template
 $unix_timestamp        = strtotime( 'now' );
+$product_title         = '';
+$next_booking_title    = '';
 $next_booking_time     = '';
 $next_booking_date     = '';
 $current_booking_title = '';
 $current_booking_end   = '';
+$current_status        = __( 'Available', 'woocommerce-bookings-extensions' );
+
+foreach ( $bookings as $booking ) {
+	$customer = WC_Bookings_Extensions_Public::map_customer( $booking->get_customer() );
+	if ( $booking->get_start() < $unix_timestamp && $booking->get_end() > $unix_timestamp ) {
+		$current_status        = __( 'In-use', 'woocommerce-bookings-extensions' );
+		$product_title         = $booking->get_product()->get_name();
+		$current_booking_end   = date( get_option( 'time_format' ), $booking->get_end() );
+		$current_booking_title = $customer['display_name'];
+		if ( is_a( $booking->get_order(), 'WC_Order' ) && strlen( $booking->get_order()->get_billing_company() ) > 0 ) {
+			$current_booking_title = $booking->get_order()->get_billing_company();
+		} else {
+			$current_booking_title = $customer['display_name'];
+		}
+	} elseif ( $booking->get_start() > $unix_timestamp ) {
+		$next_booking_title = $booking->get_product()->get_name();
+		$next_booking_time  = date( get_option( 'time_format' ), $booking->get_start() );
+		$next_booking_date  = date( get_option( 'date_format' ), $booking->get_start() );
+		if ( is_a( $booking->get_order(), 'WC_Order' ) && strlen( $booking->get_order()->get_billing_company() ) > 0 ) {
+			$next_booking_title = $booking->get_order()->get_billing_company();
+		} else {
+			$next_booking_title = $customer['display_name'];
+		}
+
+		break;
+	}
+}
 
 if ( ! empty( $bookings['next'] ) ) {
 	/** @var WC_Booking $booking */
@@ -122,15 +151,16 @@ wp_enqueue_script( 'booking-view' );
 </head>
 <body class="single-screen">
 	<div class="unselectable">
-		<h1 class="product product-title"><?php echo esc_html( $product->get_name() ); ?></h1>
+		<h1 class="product product-title" id="product-title"><?php echo esc_html( $product_title ); ?></h1>
 		<h2 class="server current-time" id="current-time"></h2>
 		<div class="current-booking-container">
 			<h2 class="current-booking current-booking-title" id="current-booking-title"><?php echo esc_html( $current_booking_title ); ?></h2>
 			<h3 class="current-booking current-booking-end" id="current-booking-end"><?php echo $current_booking_end; ?></h3>
 		</div>
 		<h2 class="current-booking current-status" id="current-status"><?php empty( $bookings['now'] ) ? esc_html_e( 'Available', 'woocommerce-bookings-extensions' ) : esc_html_e( 'In-use', 'woocommerce-bookings-extensions' ); ?></h2>
-		<div class="next-booking-container">
-			<h2 class="next-booking next-booking-title" id="next-booking-title"><?php esc_html_e( 'Next booking', 'woocommerce-bookings-extensions' ); ?></h2>
+		<div class="next-booking-container" id="next-booking-container">
+			<h2 class="next-booking next-booking-heading" id="next-booking-heading"><?php esc_html_e( 'Next booking', 'woocommerce-bookings-extensions' ); ?></h2>
+			<h3 class="next-booking next-booking-title" id="next-booking-title"><?php echo $next_booking_title; ?></h3>
 			<div class="next-booking next-booking-time" id="next-booking-time"><?php echo $next_booking_time; ?></div>
 			<div class="next-booking next-booking-date" id="next-booking-date"><?php echo $next_booking_date; ?></div>
 		</div>
