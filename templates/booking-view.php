@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** @var \WC_Booking[] $bookings */
 // default template
 $unix_timestamp        = strtotime( 'now' );
-$product_title         = '';
+$product_title         = $product->get_name();
 $next_booking_title    = '';
 $next_booking_time     = '';
 $next_booking_date     = '';

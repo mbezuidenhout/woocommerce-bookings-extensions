@@ -971,12 +971,14 @@ class WC_Bookings_Extensions_Public {
 			return $this->get_bookings_text_v1( $bookings );
 		} elseif ( 2 === $args['version'] ) {
 			$bookings = $this->get_bookings_v2( $args['product_id'], $args['from'], $args['to'] );
+			$product  = wc_get_product( $args['product_id'] );
 			$bookings = array_map( array( 'WC_Bookings_Extensions_Public', 'get_bookings_text_v2' ), $bookings );
 			return array(
 				'options'  => array(
-					'server_unix_time' => strtotime( 'now' ),
-					'date_format'      => self::convert_to_moment_format( get_option( 'date_format' ) ),
-					'time_format'      => self::convert_to_moment_format( get_option( 'time_format' ) ),
+					'server_unix_time'     => strtotime( 'now' ),
+					'date_format'          => self::convert_to_moment_format( get_option( 'date_format' ) ),
+					'time_format'          => self::convert_to_moment_format( get_option( 'time_format' ) ),
+					'default_product_name' => $product->get_name(),
 				),
 				'bookings' => $bookings,
 			);
