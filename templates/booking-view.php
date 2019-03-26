@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** @var \WC_Booking[] $bookings */
 // default template
-$unix_timestamp        = strtotime( 'now' );
+$unix_timestamp        = strtotime( 'now' ) + get_option( 'gmt_offset' ) * 3600;
 $product_title         = $product->get_name();
 $next_booking_title    = '';
 $next_booking_time     = '';
