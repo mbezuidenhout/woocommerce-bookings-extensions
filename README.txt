@@ -1,10 +1,10 @@
 === WooCommerce Bookings Extensions ===
 Contributors: mbezuidenhout
-Tags: bookings
+Tags: bookings, booking, woocommerce, woo-booking-extensions, accommodation, search
 Requires PHP: 5.6
 Requires at least: 4.9
-Tested up to: 5.1
-Stable tag: 1.6.5
+Tested up to: 5.1.1
+Stable tag: 1.6.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,18 @@ wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer valu
 
 = 1.6.5 =
 * Fix: Current and upcoming bookings not displaying correctly.
+
+= 1.6.6 =
+* Fix: Check for WooCommerce activation.
+
+== Upgrade Notice ==
+
+= 1.6.5 =
+Current and upcoming bookings did not display properly.
+
+= 1.6.6 =
+Fixes issue where pages will not load if WooCommerce is not activated.
+All users shoud upgrade to this version.
 
 == Frequently Asked Questions ==
 
