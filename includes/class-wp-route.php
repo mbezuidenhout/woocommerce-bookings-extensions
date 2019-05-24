@@ -166,42 +166,44 @@ final class WP_Route {
 	// -----------------------------------------------------
 	public function handle() {
 		$method                = strtoupper( $_SERVER['REQUEST_METHOD'] );
-		$routes                = array_merge( $this->routes[ $method ], $this->routes['ANY'] );
+		$routes                = is_array($this->routes[ $method ]) ? array_merge( $this->routes[ $method ], $this->routes['ANY'] ) : null;
 		$request_uri           = $this->requestURI();
 		$tokenized_request_uri = $this->tokenize( $request_uri );
 		$request_uri_path      = explode( '?', $this->tokenize( $request_uri )[0] )[0];
 
-		foreach ( $routes as $key => $route ) {
-			// First, filter routes that do not have equal tokenized lengths
-			if ( count( $this->tokenize( $route->route ) ) !== count( $tokenized_request_uri ) ) {
-				unset( $routes[ $key ] );
-				continue;
-			}
-			if ( $this->tokenize( $route->route )[0] !== $request_uri_path ) {
-				unset( $routes[ $key ] );
-				continue;
-			}
+		if ( is_array($routes) ) {
+            foreach ( $routes as $key => $route ) {
+                // First, filter routes that do not have equal tokenized lengths
+                if ( count( $this->tokenize( $route->route ) ) !== count( $tokenized_request_uri ) ) {
+                    unset( $routes[ $key ] );
+                    continue;
+                }
+                if ( $this->tokenize( $route->route )[0] !== $request_uri_path ) {
+                    unset( $routes[ $key ] );
+                    continue;
+                }
 
-			// Add more filtering here as routing gets more complex.
-		}
-		$routes = array_values( $routes );
-		if ( isset( $routes[0] ) ) {
-			$route = $routes[0];
-			if ( is_string( $route->callable ) &&
-			   class_exists( $route->callable ) &&
-			   is_subclass_of( $route->callable, 'WP_AJAX' ) ) {
-				$callable   = $route->callable;
-				$controller = new $callable();
-				call_user_func_array( array( $controller, 'boot' ), $this->get_route_params( $route->route ) );
-				exit;
-			} elseif ( isset( $routes[0]->redirect ) ) {
-				$redirect = $routes[0]->redirect;
-				header( "Location: {$redirect}", true, $routes[0]->code );
-				wp_die();
-			} else {
-				call_user_func_array( $route->callable, $this->get_route_params( $route->route ) );
-				exit;
-			}
-		}
+                // Add more filtering here as routing gets more complex.
+            }
+            $routes = array_values( $routes );
+            if ( isset( $routes[0] ) ) {
+                $route = $routes[0];
+                if ( is_string( $route->callable ) &&
+                   class_exists( $route->callable ) &&
+                   is_subclass_of( $route->callable, 'WP_AJAX' ) ) {
+                    $callable   = $route->callable;
+                    $controller = new $callable();
+                    call_user_func_array( array( $controller, 'boot' ), $this->get_route_params( $route->route ) );
+                    exit;
+                } elseif ( isset( $routes[0]->redirect ) ) {
+                    $redirect = $routes[0]->redirect;
+                    header( "Location: {$redirect}", true, $routes[0]->code );
+                    wp_die();
+                } else {
+                    call_user_func_array( $route->callable, $this->get_route_params( $route->route ) );
+                    exit;
+                }
+            }
+        }
 	}
 }
