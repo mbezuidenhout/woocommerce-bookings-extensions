@@ -201,6 +201,9 @@ class WC_Bookings_Extensions {
 
 		$this->loader->add_action( 'woocommerce_bookings_after_bookings_pricing', $plugin_admin, 'enqueue_product_data_scripts' );
 		$this->loader->add_action( 'woocommerce_admin_process_product_object', $plugin_admin, 'set_ext_props', 30 );
+
+		$this->loader->add_action( 'woocommerce_admin_booking_data_after_booking_details', $plugin_admin, 'add_admin_booking_fields' );
+		$this->loader->add_action( 'save_post', $plugin_admin, 'save_meta_box', 10, 2 );
 	}
 
 	/**

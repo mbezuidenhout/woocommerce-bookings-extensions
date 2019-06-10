@@ -3,8 +3,8 @@ Contributors: mbezuidenhout
 Tags: bookings, booking, woocommerce, woo-booking-extensions, accommodation, search
 Requires PHP: 5.6
 Requires at least: 4.9
-Tested up to: 5.1.1
-Stable tag: 1.6.6
+Tested up to: 5.2.1
+Stable tag: 1.6.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,9 @@ Current and upcoming bookings did not display properly.
 = 1.6.6 =
 Fixes issue where pages will not load if WooCommerce is not activated.
 All users shoud upgrade to this version.
+
+= 1.6.8 =
+Added field to admin booking details for guest name
 
 == Frequently Asked Questions ==
 

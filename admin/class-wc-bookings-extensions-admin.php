@@ -253,5 +253,47 @@ class WC_Bookings_Extensions_Admin {
 		wp_enqueue_script( 'calendar-view', plugin_dir_url( __FILE__ ) . 'js/calendar-view' . $suffix . '.js', array( 'jquery' ), $this->version, false );
 	}
 
+	public function add_admin_booking_fields( $post_id ) {
+        $booking = new WC_Booking( $post_id );
+        $value   = $booking->get_meta('booking_guest_name');
+	    ?>
+        <p class="form-field form-field-wide">
+            <label for="booking_guest_name"><?php _e('Guest Name', 'flatsome-vodacom' ) ?></label><input type="text" style="" name="booking_guest_name" id="booking_guest_name" value="<?php echo $value ?>" placeholder="N/A"> </p>
+        <?php
+    }
+
+    /**
+     * Save handler.
+     *
+     * @version 1.10.2
+     *
+     * @param  int     $post_id Post ID.
+     * @param  WP_Post $post    Post object.
+     */
+    public function save_meta_box( $post_id, $post ) {
+        if ( ! isset( $_POST['wc_bookings_details_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['wc_bookings_details_meta_box_nonce'], 'wc_bookings_details_meta_box' ) ) {
+            return $post_id;
+        }
+
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return $post_id;
+        }
+
+        // Check the post being saved == the $post_id to prevent triggering this call for other save_post events
+        if ( empty( $_POST['post_ID'] ) || intval( $_POST['post_ID'] ) !== $post_id ) {
+            return $post_id;
+        }
+
+        if ( ! in_array( $post->post_type, array( 'wc_booking' ) ) ) {
+            return $post_id;
+        }
+
+        // Get booking object.
+        $booking    = new WC_Booking( $post_id );
+
+        update_post_meta( $booking->get_id(), 'booking_guest_name', $_POST['booking_guest_name'] );
+
+        $booking->save_meta_data();
+    }
 
 }
