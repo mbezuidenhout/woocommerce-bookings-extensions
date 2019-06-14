@@ -204,6 +204,8 @@ class WC_Bookings_Extensions {
 
 		$this->loader->add_action( 'woocommerce_admin_booking_data_after_booking_details', $plugin_admin, 'add_admin_booking_fields' );
 		$this->loader->add_action( 'save_post', $plugin_admin, 'save_meta_box', 10, 2 );
+
+		$this->loader->add_action( 'plugins_loaded', $plugin_admin, 'load_extensions', 12 );
 	}
 
 	/**
@@ -344,5 +346,6 @@ class WC_Bookings_Extensions {
 		/** @see WC_Booking_Cart_Manager::add_cart_item_data */
 		$this->remove_filter_by_class( 'woocommerce_add_cart_item_data', 'WC_Booking_Cart_Manager', 'add_cart_item_data', 10 );
 		add_filter( 'woocommerce_add_cart_item_data', array( $cart_manager, 'add_cart_item_data' ), 10, 3 );
-	}
+    }
+
 }

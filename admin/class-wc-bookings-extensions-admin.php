@@ -296,4 +296,29 @@ class WC_Bookings_Extensions_Admin {
         $booking->save_meta_data();
     }
 
+    public function load_extensions() {
+        // Replace Calendar page
+        remove_submenu_page( 'edit.php?post_type=wc_booking', 'booking_calendar' );
+        $calendar_page       = add_submenu_page( 'edit.php?post_type=wc_booking', __( 'Calendar', 'woocommerce-bookings' ), __( 'Calendar', 'woocommerce-bookings' ), 'manage_bookings', 'booking_calendar', array( $this, 'calendar_page' ) );
+
+        // Add action for screen options on this new page
+        add_action( 'admin_print_scripts-' . $calendar_page, array( $this, 'admin_calendar_page_scripts' ) );
+    }
+
+    /**
+     * calendar_page_scripts.
+     */
+    public function admin_calendar_page_scripts() {
+        wp_enqueue_script( 'jquery-ui-datepicker' );
+    }
+
+    /**
+     * Output the calendar page.
+     */
+    public function calendar_page() {
+        require_once( 'class-wc-bookings-extensions-calendar.php' );
+        $page = new WC_Bookings_Extensions_Calendar();
+        $page->output();
+    }
+
 }
