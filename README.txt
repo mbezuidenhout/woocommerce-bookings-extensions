@@ -67,6 +67,9 @@ All users shoud upgrade to this version.
 = 1.6.8 =
 Added field to admin booking details for guest name
 
+= 1.6.9 =
+Added field to calendar view for guest name
+
 == Frequently Asked Questions ==
 
 = Why doesn't Adjacent Buffering work? =

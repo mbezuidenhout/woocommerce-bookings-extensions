@@ -1,0 +1,1 @@
+.calendar_days ul.bookings a::after{content:" " attr(data-tip)}.calendar_days ul.bookings a{white-space:pre-line;overflow:scroll}

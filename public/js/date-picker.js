@@ -1,6 +1,9 @@
-/* globals: jQuery, wc_bookings_booking_form, booking_form_params */
+/**
+ *
+ */
+/* globals: jQuery, wc_bookings_booking_form, booking_form_params, moment, wc_bookings_extensions_date_picker_args */
 // globally accessible for tests
-wc_bookings_extensions_date_picker = {};
+var wc_bookings_extensions_date_picker = {};
 
 jQuery( function( $ ) {
 	var wc_bookings_locale			 = window.navigator.userLanguage || window.navigator.language,
@@ -20,8 +23,9 @@ jQuery( function( $ ) {
 	// Replace jQuery date format with momentjs
 	$.datepicker.parseDate = function(format, value) {
 		var date = moment(value, format).toDate();
-		if( 'Invalid Date' == date )
-			return '';
+		if( 'Invalid Date' === date.toString() ) {
+            return '';
+        }
 		return date;
 	};
 	$.datepicker.formatDate = function (format, value) {
