@@ -1201,8 +1201,6 @@ class WC_Bookings_Extensions_Public {
 	}
 
 	public function add_booking_form_scripts() {
-		define( SCRIPT_DEBUG, true );
-
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_script( 'wc-booking-extensions-form-js', plugin_dir_url( __DIR__ ) . 'public/js/single-product' . $suffix . '.js', array( 'jquery' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
