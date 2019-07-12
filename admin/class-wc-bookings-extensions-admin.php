@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -26,7 +25,7 @@ class WC_Bookings_Extensions_Admin {
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
+	 * @var      string $plugin_name The ID of this plugin.
 	 */
 	private $plugin_name;
 
@@ -35,16 +34,17 @@ class WC_Bookings_Extensions_Admin {
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @var      string $version The current version of this plugin.
 	 */
 	private $version;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
+	 * @param string $plugin_name The name of this plugin.
+	 * @param string $version The version of this plugin.
+	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
 
@@ -72,7 +72,7 @@ class WC_Bookings_Extensions_Admin {
 		 * class.
 		 */
 
-        $suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
+		$suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/woocommerce-bookings-extensions-admin' . $suffix . '.css', array(), $this->version, 'all' );
 
@@ -170,8 +170,9 @@ class WC_Bookings_Extensions_Admin {
 	/**
 	 * Set data in 3.0.x
 	 *
+	 * @param int $post_id
+	 *
 	 * @version  1.10.7
-	 * @param    int    $post_id
 	 */
 	public function add_extra_props( $post_id ) {
 		$product = wc_get_product( $post_id );
@@ -255,72 +256,100 @@ class WC_Bookings_Extensions_Admin {
 		wp_enqueue_script( 'calendar-view', plugin_dir_url( __FILE__ ) . 'js/calendar-view' . $suffix . '.js', array( 'jquery' ), $this->version, false );
 	}
 
+	/** Add custom admin input fields for new bookings
+	 *
+	 * @param int $post_id WordPress post ID.
+	 */
 	public function add_admin_booking_fields( $post_id ) {
-        $booking = new WC_Booking( $post_id );
-        $value   = $booking->get_meta('booking_guest_name');
-	    ?>
+		$booking = new WC_Booking( $post_id );
+		$value   = $booking->get_meta( 'booking_guest_name' );
+		?>
         <p class="form-field form-field-wide">
-            <label for="booking_guest_name"><?php _e('Guest Name', 'flatsome-vodacom' ) ?></label><input type="text" style="" name="booking_guest_name" id="booking_guest_name" value="<?php echo $value ?>" placeholder="N/A"> </p>
-        <?php
-    }
+            <label for="booking_guest_name"><?php _e( 'Guest Name', 'flatsome-vodacom' ) ?></label>
+            <input type="text" style="" name="booking_guest_name" id="booking_guest_name" value="<?php echo $value ?>"
+                   placeholder="N/A">
+        </p>
+		<?php
+	}
 
-    /**
-     * Save handler.
-     *
-     * @version 1.10.2
-     *
-     * @param  int     $post_id Post ID.
-     * @param  WP_Post $post    Post object.
-     */
-    public function save_meta_box( $post_id, $post ) {
-        if ( ! isset( $_POST['wc_bookings_details_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['wc_bookings_details_meta_box_nonce'], 'wc_bookings_details_meta_box' ) ) {
-            return $post_id;
-        }
+	/**
+	 * Save handler.
+	 *
+	 * @param int $post_id Post ID.
+	 * @param WP_Post $post Post object.
+	 *
+	 * @return int
+	 * @version 1.10.2
+	 *
+	 */
+	public function save_meta_box( $post_id, $post ) {
+		if ( ! isset( $_POST['wc_bookings_details_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['wc_bookings_details_meta_box_nonce'], 'wc_bookings_details_meta_box' ) ) {
+			return $post_id;
+		}
 
-        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-            return $post_id;
-        }
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return $post_id;
+		}
 
-        // Check the post being saved == the $post_id to prevent triggering this call for other save_post events
-        if ( empty( $_POST['post_ID'] ) || intval( $_POST['post_ID'] ) !== $post_id ) {
-            return $post_id;
-        }
+		// Check the post being saved == the $post_id to prevent triggering this call for other save_post events
+		if ( empty( $_POST['post_ID'] ) || intval( $_POST['post_ID'] ) !== $post_id ) {
+			return $post_id;
+		}
 
-        if ( ! in_array( $post->post_type, array( 'wc_booking' ) ) ) {
-            return $post_id;
-        }
+		if ( ! in_array( $post->post_type, array( 'wc_booking' ), true ) ) {
+			return $post_id;
+		}
 
-        // Get booking object.
-        $booking    = new WC_Booking( $post_id );
+		// Get booking object.
+		$booking = new WC_Booking( $post_id );
 
-        update_post_meta( $booking->get_id(), 'booking_guest_name', $_POST['booking_guest_name'] );
+		update_post_meta( $booking->get_id(), 'booking_guest_name', sanitize_text_field( wp_unslash( $_POST['booking_guest_name'] ) ) );
 
-        $booking->save_meta_data();
-    }
+		$booking->save_meta_data();
+	}
 
-    public function load_extensions() {
-        // Replace Calendar page
-        remove_submenu_page( 'edit.php?post_type=wc_booking', 'booking_calendar' );
-        $calendar_page       = add_submenu_page( 'edit.php?post_type=wc_booking', __( 'Calendar', 'woocommerce-bookings' ), __( 'Calendar', 'woocommerce-bookings' ), 'manage_bookings', 'booking_calendar', array( $this, 'calendar_page' ) );
+	public function load_extensions() {
+		// Replace Calendar page.
+		remove_submenu_page( 'edit.php?post_type=wc_booking', 'booking_calendar' );
+		$calendar_page = add_submenu_page( 'edit.php?post_type=wc_booking', __( 'Calendar', 'woocommerce-bookings' ), __( 'Calendar', 'woocommerce-bookings' ), 'manage_bookings', 'booking_calendar', array(
+			$this,
+			'calendar_page',
+		) );
 
-        // Add action for screen options on this new page
-        add_action( 'admin_print_scripts-' . $calendar_page, array( $this, 'admin_calendar_page_scripts' ) );
-    }
+		// Add action for screen options on this new page.
+		add_action( 'admin_print_scripts-' . $calendar_page, array( $this, 'admin_calendar_page_scripts' ) );
 
-    /**
-     * calendar_page_scripts.
-     */
-    public function admin_calendar_page_scripts() {
-        wp_enqueue_script( 'jquery-ui-datepicker' );
-    }
+		// This will replace the calendar above.
+		$new_calendar_page = add_submenu_page( 'edit.php?post_type=wc_booking', __( 'New Calendar', 'woocommerce-booking-extensions' ), __( 'New Calendar', 'woocommerce-booking-extensions' ), 'manage_bookings', 'new_calendar', array(
+			$this,
+			'new_calendar_page'
+		) );
 
-    /**
-     * Output the calendar page.
-     */
-    public function calendar_page() {
-        require_once( 'class-wc-bookings-extensions-calendar.php' );
-        $page = new WC_Bookings_Extensions_Calendar();
-        $page->output();
-    }
+	}
+
+	/**
+	 * Calendar_page_scripts.
+	 */
+	public function admin_calendar_page_scripts() {
+		wp_enqueue_script( 'jquery-ui-datepicker' );
+	}
+
+	/**
+	 * Output the calendar page.
+	 */
+	public function calendar_page() {
+		require_once 'class-wc-bookings-extensions-calendar.php';
+		$page = new WC_Bookings_Extensions_Calendar();
+		$page->output();
+	}
+
+	/**
+	 * Output for the new calendar page.
+	 */
+	public function new_calendar_page() {
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wc-bookings-extensions-new-calendar.php';
+		$page = new WC_Bookings_Extensions_New_Calendar();
+		$page->output();
+	}
 
 }

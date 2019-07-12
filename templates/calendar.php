@@ -1,0 +1,1 @@
+<div id='calendar' style="max-width:900px; margin: 50px auto;"></div>
