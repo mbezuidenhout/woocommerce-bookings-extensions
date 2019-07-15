@@ -206,6 +206,8 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'save_post', $plugin_admin, 'save_meta_box', 10, 2 );
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_admin, 'load_extensions', 12 );
+
+		$this->loader->add_action( 'load-admin_page_new_calendar', $plugin_admin, 'load_new_calendar' );
 	}
 
 	/**

@@ -352,4 +352,23 @@ class WC_Bookings_Extensions_Admin {
 		$page->output();
 	}
 
+	/**
+	 * Show screen options on calendar page.
+	 */
+	public function load_new_calendar() {
+	    $screen = get_current_screen();
+	    $screen->add_option('test', array());
+		add_meta_box(
+			'content-on-page',
+			'Content On Page',
+			array( $this, 'ila_render_meta_box' ),
+			$screen,
+			'high'
+		);
+    }
+
+    public function ila_render_meta_box() {
+	    echo "HALO";
+    }
+
 }

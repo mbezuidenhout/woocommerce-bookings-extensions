@@ -116,7 +116,8 @@ class WC_Bookings_Extensions_New_Calendar {
 				),
 			)
 		);
-
+		$screen = get_current_screen();
+		$screen->show_screen_options();
 	}
 
 	/**
@@ -137,17 +138,6 @@ class WC_Bookings_Extensions_New_Calendar {
 		}
 
 		return $resources;
-	}
-
-	/**
-	 * Add meta boxes to calendar
-	 */
-	public static function add_meta_boxes() {
-		add_meta_box( 'resources', __( 'Resources', 'woocommerce-booking-extensions' ), 'WC_Bookings_Extensions_New_Calendar::output_resource_options', 'admin_page_new_calendar' );
-	}
-
-	public static function output_resource_options() {
-		echo "HALLO";
 	}
 
 	/**
