@@ -308,13 +308,10 @@ class WC_Bookings_Extensions_Admin {
 		$booking->save_meta_data();
 	}
 
-	public function load_extensions() {
-		// Replace Calendar page.
-		remove_submenu_page( 'edit.php?post_type=wc_booking', 'booking_calendar' );
-		$calendar_page = add_submenu_page( 'edit.php?post_type=wc_booking', __( 'Calendar', 'woocommerce-bookings' ), __( 'Calendar', 'woocommerce-bookings' ), 'manage_bookings', 'booking_calendar', array(
-			$this,
-			'calendar_page',
-		) );
+    public function change_calendar() {
+        // Replace Calendar page
+        remove_submenu_page( 'edit.php?post_type=wc_booking', 'booking_calendar' );
+        $calendar_page       = add_submenu_page( 'edit.php?post_type=wc_booking', __( 'Calendar', 'woocommerce-bookings' ), __( 'Calendar', 'woocommerce-bookings' ), 'manage_bookings', 'booking_calendar', array( $this, 'calendar_page' ) );
 
 		// Add action for screen options on this new page.
 		add_action( 'admin_print_scripts-' . $calendar_page, array( $this, 'admin_calendar_page_scripts' ) );
