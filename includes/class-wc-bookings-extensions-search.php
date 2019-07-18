@@ -22,13 +22,16 @@ class WC_Bookings_Extensions_Bookings_Search {
 
 	/** @var array Date picker max date */
 	protected $max_date;
+
 	/**
+	 * WC_Bookings_Extensions_Booking_Search constructor.
 	 *
+	 * @param string $method        Include or exclude below list of $ids.
+	 * @param array  $ids           List of ids to include or exclude.
+	 * @param string $duration_unit Unit of month, day, hour or minute.
+	 * @param int    $duration      Duration block of $duration_unit size.
 	 *
-	 * @param string $method        include or exclude below list of $ids
-	 * @param array $ids            List of ids to include or exclude
-	 * @param string $duration_unit Unit of month, day, hour or minute
-	 * @param int $duration         Duration block of $duration_unit size
+	 * @throws Exception WC_Data_Store Exception.
 	 */
 	public function __construct( $method, $ids, $duration_unit, $duration ) {
 		$this->duration_unit = $duration_unit;
@@ -57,14 +60,16 @@ class WC_Bookings_Extensions_Bookings_Search {
 		foreach ( $bookings_ids as $id ) {
 			$product = wc_get_product( $id );
 			if ( is_a( $product, 'WC_Product_Booking' ) && $product->is_purchasable() === true &&
-				$this->duration_unit === $product->get_duration_unit() &&
-				$this->duration === $product->get_duration() ) {
+			     $this->duration_unit === $product->get_duration_unit() &&
+			     $this->duration === $product->get_duration() ) {
 				$this->products[] = $product;
 			}
 		}
-
 	}
 
+	/**
+	 * Rendering function.
+	 */
 	public function output() {
 
 		$this->scripts();
