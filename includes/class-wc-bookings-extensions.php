@@ -261,6 +261,9 @@ class WC_Bookings_Extensions {
 		$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
 
 		$this->loader->add_action( 'woocommerce_before_booking_form', $plugin_public, 'add_booking_form_scripts' );
+
+		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_get_bookings', $plugin_public, 'get_bookings_ajax' );
+		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_update_booking', $plugin_public, 'update_booking_ajax' );
 	}
 
 	/**

@@ -1241,6 +1241,39 @@ class WC_Bookings_Extensions_Public {
 		return $new_cost;
 	}
 
+	public function update_booking_ajax() {
+		if ( false === check_ajax_referer( 'fullcalendar_options' ) ) {
+			http_response_code( 401 );
+			echo json_encode(array('status' => 401, 'error' => 'Invalid nonce'));
+		}
+		try {
+			$timezone = new DateTimeZone( wc_timezone_string() );
+			$offset   = $timezone->getOffset( new DateTime() );
+			$booking  = new WC_Booking( $_REQUEST['id'] );
+			if ( 'true' === $_REQUEST['allDay'] ) {
+				$booking->set_all_day( true );
+			} else {
+				$booking->set_all_day( false );
+			}
+			if ( ! empty( $_REQUEST['start'] ) ) {
+				$start = new DateTime( $_REQUEST['start'] );
+				$booking->set_start( (int) $start->format( 'U' ) + $offset );
+			}
+			if ( ! empty( $_REQUEST['end'] ) ) {
+				$end = new DateTime( $_REQUEST['end'] );
+				$booking->set_end( (int) $end->format( 'U' ) + $offset );
+			}
+			if ( ! empty( $_REQUEST['resource'] ) ) {
+				$booking->set_product_id( (int) $_REQUEST['resource'] );
+			}
+			$booking->save();
+			echo json_encode(array('status' => 200));
+		} catch (Exception $e) {
+			http_response_code( 400 );
+			echo json_encode(array('status' => 400, 'error' => 'Bad Request'));
+		}
+	}
+
 	public function get_bookings_ajax() {
 		if ( false === check_ajax_referer( 'fullcalendar_options' ) ) {
 			return false;
@@ -1254,7 +1287,14 @@ class WC_Bookings_Extensions_Public {
 			$from->modify( '-1 month' );
 			$to->modify( '+1 month' );
 		}
-		$bookings = $this->get_bookings_v2( null, $from->getTimestamp(), $to->getTimestamp() );
+
+		try {
+			$bookings = $this->get_bookings_v2( null, $from->getTimestamp(), $to->getTimestamp() );
+		} catch ( Exception $e ) {
+			$logger = new WC_Logger();
+			$logger->add( 'getbookings', $e->getMessage() );
+			$bookings = array();
+		}
 
 		$events = array();
 
@@ -1262,17 +1302,33 @@ class WC_Bookings_Extensions_Public {
 		$offset = $timezone->getOffset(new DateTime());
 		foreach ($bookings as $booking) {
 			try {
-				$start    = DateTime::createFromFormat( 'U', $booking->get_start() - $offset, $timezone );
-				$end      = DateTime::createFromFormat( 'U', $booking->get_end() - $offset, $timezone );
-				$events[] = array(
-					'id'         => $booking->get_id(),
-					'resourceId' => $booking->get_product_id(),
-					'start'      => $start->format( 'c' ),
-					'end'        => $end->format( 'c' ),
-					'title'      => $booking->get_product()->get_name()
+				$start      = DateTime::createFromFormat( 'U', $booking->get_start() - $offset, $timezone );
+				$end        = DateTime::createFromFormat( 'U', $booking->get_end() - $offset, $timezone );
+				$customer   = $booking->get_customer();
+				$guest_name = $booking->get_meta( 'booking_guest_name' );
+				$persons    = $booking->get_persons();
+				$event = array(
+					'id'             => $booking->get_id(),
+					'resourceId'     => $booking->get_product_id(),
+					'start'          => $start->format( 'c' ),
+					'end'            => $end->format( 'c' ),
+					'title'          => $booking->get_product()->get_name(),
+					'url'            => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
+					'allDay'         => $booking->is_all_day() ? true : false,
 				);
+				if( ! empty( $guest_name ) ) {
+					$event['bookedFor'] = $guest_name;
+				}
+				if ( ! empty( $customer->name ) ) {
+					$event['bookedBy'] = $customer->name;
+				}
+				if( $persons > 0 ) {
+					$event['persons'] = $persons;
+				}
+				$events[] = $event;
 			} catch (Exception $e) {
-				echo $e->getMessage();
+				$logger = new WC_Logger();
+				$logger->add( 'getbookings', $e->getMessage() );
 			}
 		}
 

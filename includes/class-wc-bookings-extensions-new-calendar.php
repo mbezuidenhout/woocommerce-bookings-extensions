@@ -110,12 +110,17 @@ class WC_Bookings_Extensions_New_Calendar {
 				'schedulerLicenseKey' => 'GPL-My-Project-Is-Open-Source',
 				'defaultDate'         => date( 'Y-m-d' ),
 				'defaultView'         => 'resourceTimeGridDay',
+				'confirmMessage'      => __( 'Are you sure you want to change this event?', 'woo-booking-extensions' ),
 				'events'              => array(
 					'sourceUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
+					'targetUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_update_booking' ),
 					'nonce'     => wp_create_nonce( 'fullcalendar_options' ),
 				),
 			)
 		);
+
+		wp_enqueue_script( 'jquery-blockui' );
+
 		$screen = get_current_screen();
 		$screen->show_screen_options();
 	}
