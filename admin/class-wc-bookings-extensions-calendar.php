@@ -1,4 +1,13 @@
 <?php
+/**
+ * Calendar customizations
+ *
+ * @since      1.0.0
+ *
+ * @package    Woocommerce_Bookings_Extensions
+ * @subpackage Woocommerce_Bookings_Extensions/admin
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

@@ -1,0 +1,1 @@
+(function(b,a){typeof exports==="object"&&typeof module!=="undefined"?module.exports=a():typeof define==="function"&&define.amd?define(a):(b=b||self,(b.FullCalendarLocales=b.FullCalendarLocales||{},b.FullCalendarLocales["en-gb"]=a()))}(this,function(){var a={code:"en-gb",week:{dow:1,doy:4}};return a}));

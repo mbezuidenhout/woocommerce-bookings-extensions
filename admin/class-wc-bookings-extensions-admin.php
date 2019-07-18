@@ -104,7 +104,7 @@ class WC_Bookings_Extensions_Admin {
 	/**
 	 * Add product fields
 	 *
-	 * @param int $product_id
+	 * @param int $product_id WooCommerce product id.
 	 */
 	public function enqueue_product_data_scripts( $product_id ) {
 		$js_data = array(
@@ -112,7 +112,11 @@ class WC_Bookings_Extensions_Admin {
 			'ext_override' => array(),
 		);
 
-		/** @var WC_Product_Booking $bookable_product */
+		/**
+		 * Bookable product
+		 *
+		 * @var WC_Product_Booking $bookable_product
+		 */
 		$bookable_product = wc_get_product( $product_id );
 		if ( is_a( $bookable_product, 'WC_Product_Booking' ) ) {
 			$pricing = $bookable_product->get_pricing();
@@ -134,7 +138,7 @@ class WC_Bookings_Extensions_Admin {
 	/**
 	 * Set props
 	 *
-	 * @param \WC_Product_Booking $product
+	 * @param WC_Product_Booking $product Instance of WC_Product_Booking.
 	 */
 	public function set_ext_props( $product ) {
 		// Only set props if the product is a bookable product.
@@ -157,6 +161,9 @@ class WC_Bookings_Extensions_Admin {
 
 	}
 
+	/**
+	 * Output extra options for bookable products.
+	 */
 	public function booking_extensions_data() {
 		global $post, $bookable_product;
 
@@ -170,7 +177,7 @@ class WC_Bookings_Extensions_Admin {
 	/**
 	 * Set data in 3.0.x
 	 *
-	 * @param int $post_id
+	 * @param int $post_id WooCommerce post id.
 	 *
 	 * @version  1.10.7
 	 */
@@ -180,7 +187,7 @@ class WC_Bookings_Extensions_Admin {
 			$block_start  = isset( $_POST['_wc_booking_extensions_block_start'] ) ? $_POST['_wc_booking_extensions_block_start'] : '';
 			$dependencies = isset( $_POST['_wc_booking_extensions_dependent_products'] ) ? $_POST['_wc_booking_extensions_dependent_products'] : array();
 
-			// Remove vica-versa dependencies
+			// Remove vice-versa dependencies.
 			$old_dependencies    = $product->get_meta( 'booking_dependencies' );
 			$remove_depencendies = array_diff( $old_dependencies, $dependencies );
 			foreach ( $remove_depencendies as $dependency ) {
@@ -197,7 +204,7 @@ class WC_Bookings_Extensions_Admin {
 				}
 			}
 
-			// Add vice-versa dependency
+			// Add vice-versa dependency.
 			foreach ( $dependencies as $key => $dependency ) {
 				$dependent_product = wc_get_product( $dependency );
 				if ( 'booking' !== $dependent_product->get_type() ) {
@@ -233,7 +240,11 @@ class WC_Bookings_Extensions_Admin {
 		$product = wc_get_product( $post->ID );
 		$action  = wc_clean( $_GET['action'] );
 
-		/** @var \WC_Product_Data_Store_CPT $data_store */
+		/**
+		 * Instance of WC_Product_Data_Store_CPT.
+		 *
+		 * @var \WC_Product_Data_Store_CPT $data_store
+		 */
 		$data_store = WC_Data_Store::load( 'product' );
 		$ids        = $data_store->search_products( null, 'booking', false, false, null );
 
@@ -250,6 +261,9 @@ class WC_Bookings_Extensions_Admin {
 
 	}
 
+	/**
+	 * Add options to booking details page.
+	 */
 	public function calendar_page_scripts() {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
@@ -280,7 +294,6 @@ class WC_Bookings_Extensions_Admin {
 	 *
 	 * @return int
 	 * @version 1.10.2
-	 *
 	 */
 	public function save_meta_box( $post_id, $post ) {
 		if ( ! isset( $_POST['wc_bookings_details_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['wc_bookings_details_meta_box_nonce'], 'wc_bookings_details_meta_box' ) ) {
@@ -291,7 +304,7 @@ class WC_Bookings_Extensions_Admin {
 			return $post_id;
 		}
 
-		// Check the post being saved == the $post_id to prevent triggering this call for other save_post events
+		// Check the post being saved == the $post_id to prevent triggering this call for other save_post events.
 		if ( empty( $_POST['post_ID'] ) || intval( $_POST['post_ID'] ) !== $post_id ) {
 			return $post_id;
 		}
@@ -300,28 +313,53 @@ class WC_Bookings_Extensions_Admin {
 			return $post_id;
 		}
 
-		// Get booking object.
-		$booking = new WC_Booking( $post_id );
+		if ( isset( $_POST['booking_guest_name'] ) ) {
+			// Get booking object.
+			$booking = new WC_Booking( $post_id );
 
-		update_post_meta( $booking->get_id(), 'booking_guest_name', sanitize_text_field( wp_unslash( $_POST['booking_guest_name'] ) ) );
+			update_post_meta( $booking->get_id(), 'booking_guest_name', sanitize_text_field( wp_unslash( $_POST['booking_guest_name'] ) ) );
 
-		$booking->save_meta_data();
+			$booking->save_meta_data();
+		}
 	}
 
-    public function change_calendar() {
-        // Replace Calendar page
-        remove_submenu_page( 'edit.php?post_type=wc_booking', 'booking_calendar' );
-        $calendar_page       = add_submenu_page( 'edit.php?post_type=wc_booking', __( 'Calendar', 'woocommerce-bookings' ), __( 'Calendar', 'woocommerce-bookings' ), 'manage_bookings', 'booking_calendar', array( $this, 'calendar_page' ) );
+	/**
+	 * Removes old calendar menu page and add FullCalendar page.
+	 */
+	public function change_calendar() {
+		remove_submenu_page( 'edit.php?post_type=wc_booking', 'booking_calendar' );
 
-		// Add action for screen options on this new page.
-		add_action( 'admin_print_scripts-' . $calendar_page, array( $this, 'admin_calendar_page_scripts' ) );
+		$enable_calendar = get_option( 'woocommerce_bookings_extensions_fullcalendar', false );
+		if ( 'yes' === $enable_calendar ) {
+			// This will replace the calendar above.
+			$new_calendar_page = add_submenu_page(
+				'edit.php?post_type=wc_booking',
+				__( 'Full Calendar', 'woocommerce-booking-extensions' ),
+				__( 'Full Calendar', 'woocommerce-booking-extensions' ),
+				'manage_bookings',
+				'full_calendar',
+				array(
+					$this,
+					'full_calendar_page',
+				)
+			);
+		} else {
+			// Replace Calendar page.
+			$calendar_page = add_submenu_page(
+				'edit.php?post_type=wc_booking',
+				__( 'Calendar', 'woocommerce-bookings' ),
+				__( 'Calendar', 'woocommerce-bookings' ),
+				'manage_bookings',
+				'new_booking_calendar',
+				array(
+					$this,
+					'calendar_page',
+				)
+			);
 
-		// This will replace the calendar above.
-		$new_calendar_page = add_submenu_page( 'edit.php?post_type=wc_booking', __( 'New Calendar', 'woocommerce-booking-extensions' ), __( 'New Calendar', 'woocommerce-booking-extensions' ), 'manage_bookings', 'new_calendar', array(
-			$this,
-			'new_calendar_page'
-		) );
-
+			// Add action for screen options on this new page.
+			add_action( 'admin_print_scripts-' . $calendar_page, array( $this, 'admin_calendar_page_scripts' ) );
+		}
 	}
 
 	/**
@@ -343,29 +381,50 @@ class WC_Bookings_Extensions_Admin {
 	/**
 	 * Output for the new calendar page.
 	 */
-	public function new_calendar_page() {
+	public function full_calendar_page() {
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wc-bookings-extensions-new-calendar.php';
 		$page = new WC_Bookings_Extensions_New_Calendar();
 		$page->output();
 	}
 
 	/**
-	 * Show screen options on calendar page.
+	 * Callback action to add admin menu options.
+	 *
+	 * @param array $settings An array of options.
+	 *
+	 * @return array
 	 */
-	public function load_new_calendar() {
-	    $screen = get_current_screen();
-	    $screen->add_option('test', array());
-		add_meta_box(
-			'content-on-page',
-			'Content On Page',
-			array( $this, 'ila_render_meta_box' ),
-			$screen,
-			'high'
+	public function add_admin_settings( $settings ) {
+		$insert_pos = array_search(
+			array(
+				'type' => 'sectionend',
+				'id'   => 'woocommerce_bookings_calendar_settings',
+			),
+			$settings,
+			true
 		);
-    }
 
-    public function ila_render_meta_box() {
-	    echo "HALO";
-    }
+		$bookings_settings = array(
+			array(
+				'title'   => __( 'Enable Full Calendar', 'woocommerce-bookings-extensions' ),
+				'id'      => 'woocommerce_bookings_extensions_fullcalendar',
+				'default' => false,
+				'type'    => 'checkbox',
+				'desc'    => __( 'Enable the interactive calendar feature.', 'woocommerce-bookings-extensions' ),
+			),
+			array(
+				'title'    => __( 'Full Calendar License', 'woocommerce-bookings-extensions' ),
+				'id'       => 'woocommerce_bookings_extensions_fullcalendar_license',
+				'default'  => '',
+				'type'     => 'text',
+				'desc_tip' => true,
+				'desc'     => 'If using FullCalendar then enter license here. https://fullcalendar.io/license ',
+			),
+		);
+
+		array_splice( $settings, $insert_pos, 0, $bookings_settings );
+
+		return $settings;
+	}
 
 }
