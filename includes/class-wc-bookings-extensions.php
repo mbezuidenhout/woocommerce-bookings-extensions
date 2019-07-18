@@ -205,7 +205,8 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'woocommerce_admin_booking_data_after_booking_details', $plugin_admin, 'add_admin_booking_fields' );
 		$this->loader->add_action( 'save_post', $plugin_admin, 'save_meta_box', 10, 2 );
 
-		$this->loader->add_action( 'admin_menu', $plugin_admin, 'change_calendar', 12 );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'change_calendar', 50 );
+		$this->loader->add_filter( 'woocommerce_general_settings', $plugin_admin, 'add_admin_settings', 12 );
 	}
 
 	/**
@@ -259,6 +260,9 @@ class WC_Bookings_Extensions {
 		$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
 
 		$this->loader->add_action( 'woocommerce_before_booking_form', $plugin_public, 'add_booking_form_scripts' );
+
+		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_get_bookings', $plugin_public, 'get_bookings_ajax' );
+		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_update_booking', $plugin_public, 'update_booking_ajax' );
 	}
 
 	/**

@@ -4,7 +4,7 @@ Tags: bookings, booking, woocommerce, woo-booking-extensions, accommodation, sea
 Requires PHP: 5.6
 Requires at least: 4.9
 Tested up to: 5.2.2
-Stable tag: 1.6.9
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,9 @@ wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer valu
 
 = 1.6.6 =
 * Fix: Check for WooCommerce activation.
+
+= 1.7.0 =
+* New: Added interactive calendar. Uses the fullcalendar.io JS libraries.
 
 == Upgrade Notice ==
 
