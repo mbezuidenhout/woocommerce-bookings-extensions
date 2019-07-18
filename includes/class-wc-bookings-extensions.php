@@ -258,6 +258,7 @@ class WC_Bookings_Extensions {
 		// Short codes should not be active in the admin panel
 		/** @see WC_Bookings_Extensions_Public::global_search_shortcode() */
 		$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
+		$this->loader->add_shortcode( 'wcbooking_calendar', $plugin_public, 'calendar_shortcode' );
 
 		$this->loader->add_action( 'woocommerce_before_booking_form', $plugin_public, 'add_booking_form_scripts' );
 

@@ -99,7 +99,7 @@ class WC_Bookings_Extensions_New_Calendar {
 		wp_enqueue_style( 'fullcalendar-timegrid' );
 
 		wp_register_script(
-			'fullcalendar-init',
+			'fullcalendar-admin-init',
 			plugin_dir_url( __DIR__ ) . 'assets/js/fullcalendar-init.js',
 			array(
 				'fullcalendar-daygrid',
@@ -108,33 +108,22 @@ class WC_Bookings_Extensions_New_Calendar {
 				'fullcalendar-resource-daygrid',
 				'fullcalendar-resource-timegrid',
 			),
-			'4.2.0',
+			WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION,
 			true
 		);
 
-		wp_enqueue_script( 'fullcalendar-init' );
-
-		wp_localize_script(
-			'fullcalendar-init',
-			'fullcalendarOptions',
+		wp_register_script(
+			'fullcalendar-user-init',
+			plugin_dir_url( __DIR__ ) . 'assets/js/fullcalendar-user-init.js',
 			array(
-				'resources'           => $this->get_resources(),
-				'schedulerLicenseKey' => get_option( 'woocommerce_bookings_extensions_fullcalendar_license', '' ),
-				'defaultDate'         => date( 'Y-m-d' ),
-				'defaultView'         => 'resourceTimeGridDay',
-				'confirmMessage'      => __( 'Are you sure you want to change this event?', 'woo-booking-extensions' ),
-				'events'              => array(
-					'sourceUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
-					'targetUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_update_booking' ),
-					'nonce'     => wp_create_nonce( 'fullcalendar_options' ),
-				),
-			)
+				'fullcalendar-daygrid',
+				'fullcalendar-timegrid',
+			),
+			WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION,
+			true
 		);
 
 		wp_enqueue_script( 'jquery-blockui' );
-
-		$screen = get_current_screen();
-		$screen->show_screen_options();
 	}
 
 	/**
@@ -176,13 +165,80 @@ class WC_Bookings_Extensions_New_Calendar {
 	/**
 	 * Output the calendar view.
 	 */
-	public function output() {
+	public function admin_output() {
+		wp_enqueue_script( 'fullcalendar-admin-init' );
+
+		wp_localize_script(
+			'fullcalendar-admin-init',
+			'fullcalendarOptions',
+			array(
+				'resources'           => $this->get_resources(),
+				'schedulerLicenseKey' => get_option( 'woocommerce_bookings_extensions_fullcalendar_license', '' ),
+				'defaultDate'         => date( 'Y-m-d' ),
+				'defaultView'         => 'resourceTimeGridDay',
+				'confirmMoveMessage'  => __( 'Are you sure you want to change this event?', 'woo-booking-extensions' ),
+				'confirmAddMessage'   => __( 'Do you want to add an event here?', 'woo-booking-extensions' ),
+				'events'              => array(
+					'sourceUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
+					'targetUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_update_booking' ),
+					'nonce'     => wp_create_nonce( 'fullcalendar_options' ),
+				),
+			)
+		);
+
+		$screen = get_current_screen();
+		$screen->show_screen_options();
+
 		wc_get_template(
 			'calendar.php',
 			array(),
 			'woocommerce-bookings-extensions',
 			plugin_dir_path( __DIR__ ) . 'templates/'
 		);
+	}
+
+	/**
+	 * Get the template for the calendar shortcode
+	 *
+	 * @param array $atts Shortcode attributes.
+	 *
+	 * @return string
+	 */
+	public function get_shortcode_output( $atts = array() ) {
+		$atts = shortcode_atts(
+			array(
+				'product_id' => false,
+			),
+			$atts,
+			'wcbooking_calendar'
+		);
+
+		$product = wc_get_product( $atts['product_id'] ? intval( $atts['product_id'] ) : false );
+
+		$element_id = 'wbe-calendar-' . $product->get_id() . '-' . wp_rand( 1000, 9999 );
+
+		wp_enqueue_script( 'fullcalendar-user-init' );
+
+		wp_localize_script(
+			'fullcalendar-user-init',
+			'fullcalendarOptions',
+			array(
+				'schedulerLicenseKey' => get_option( 'woocommerce_bookings_extensions_fullcalendar_license', '' ),
+				'defaultDate'         => date( 'Y-m-d' ),
+				'elementId'           => $element_id,
+				'events'              => array(
+					'sourceUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
+					'nonce'     => wp_create_nonce( 'fullcalendar_options' ),
+					'productId' => $product->get_id(),
+				),
+			)
+		);
+
+		ob_start();
+
+		wc_get_template( 'fullcalendar.php', array( 'element_id' => $element_id ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
+
+		return ob_get_clean();
 	}
 
 }

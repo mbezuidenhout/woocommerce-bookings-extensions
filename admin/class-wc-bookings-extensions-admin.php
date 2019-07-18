@@ -384,7 +384,7 @@ class WC_Bookings_Extensions_Admin {
 	public function full_calendar_page() {
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wc-bookings-extensions-new-calendar.php';
 		$page = new WC_Bookings_Extensions_New_Calendar();
-		$page->output();
+		$page->admin_output();
 	}
 
 	/**

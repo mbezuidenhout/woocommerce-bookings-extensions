@@ -1,0 +1,1 @@
+<div id='<?php echo $element_id; ?>' style="max-width:900px; margin: 50px auto;"></div>

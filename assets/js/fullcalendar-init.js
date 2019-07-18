@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var xhr = [];
 
     function eventMove ( info ) {
-        if (!confirm(fullcalendarOptions.confirmMessage)) {
+        if (!confirm(fullcalendarOptions.confirmMoveMessage)) {
             info.revert();
         } else {
             var eventEnd = info.event.end;
@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'resource': info.hasOwnProperty("newResource") && info.newResource !== null ? info.newResource.id : null,
                 },
                 success: function (data) {
+                    calendar.refetchEvents();
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     info.revert();
@@ -122,12 +123,17 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         eventResize: eventMove,
         eventDrop: eventMove,
-        select: function(arg) {
+        select: function( info ) {
+            // if( info.resource && confirm(fullcalendarOptions.confirmAddMessage) ) {
+            //     // Show add add event pop-over.
+            // } else {
+            //     calendar.unselect();
+            // }
             console.log(
                 'select',
-                arg.startStr,
-                arg.endStr,
-                arg.resource ? arg.resource.id : '(no resource)'
+                info.startStr,
+                info.endStr,
+                info.resource ? info.resource.id : '(no resource)'
             );
         },
         dateClick: function(arg) {

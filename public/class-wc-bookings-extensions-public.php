@@ -60,7 +60,6 @@ class WC_Bookings_Extensions_Public {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 		$this->uri         = $uri;
-
 	}
 
 	/**
@@ -520,7 +519,7 @@ class WC_Bookings_Extensions_Public {
 	 *
 	 * The search will only include products of type Bookable Product/WC_Bookings
 	 *
-	 * @param array $atts Attributes passed by the shortcode
+	 * @param array $atts Attributes passed by the shortcode.
 	 *
 	 * @return string
 	 */
@@ -544,7 +543,14 @@ class WC_Bookings_Extensions_Public {
 
 		$ids = array_values( $ids );
 
-		$search_form = new WC_Bookings_Extensions_Bookings_Search( $atts['method'], $ids, $atts['duration_unit'], intval( $atts['duration'] ) );
+		try {
+			$search_form = new WC_Bookings_Extensions_Bookings_Search( $atts['method'], $ids, $atts['duration_unit'], intval( $atts['duration'] ) );
+		} catch ( Exception $e ) {
+			$logger = new WC_Logger();
+			$logger->add( 'globalsearchshortcode', $e->getMessage() );
+
+			return '';
+		}
 
 		ob_start();
 
@@ -1278,6 +1284,13 @@ class WC_Bookings_Extensions_Public {
 		if ( false === check_ajax_referer( 'fullcalendar_options' ) ) {
 			return false;
 		}
+		$product_id = null;
+		if( isset( $_REQUEST['product_id'] ) ) {
+			$product_id = intval( $_REQUEST['product_id'] );
+		} elseif( ! wp_get_current_user()->has_cap('manage_bookings') ) {
+			http_response_code( 401 );
+			return json_encode(array(array()));
+		}
 		try {
 			$from = new DateTime( $_REQUEST['start'] );
 			$to   = new DateTime( $_REQUEST['end'] );
@@ -1289,7 +1302,7 @@ class WC_Bookings_Extensions_Public {
 		}
 
 		try {
-			$bookings = $this->get_bookings_v2( null, $from->getTimestamp(), $to->getTimestamp() );
+			$bookings = $this->get_bookings_v2( $product_id, $from->getTimestamp(), $to->getTimestamp() );
 		} catch ( Exception $e ) {
 			$logger = new WC_Logger();
 			$logger->add( 'getbookings', $e->getMessage() );
@@ -1301,30 +1314,60 @@ class WC_Bookings_Extensions_Public {
 		$timezone = new DateTimeZone( wc_timezone_string() );
 		$offset = $timezone->getOffset(new DateTime());
 		foreach ($bookings as $booking) {
+			$start = DateTime::createFromFormat( 'U', $booking->get_start() - $offset, $timezone );
+			$end   = DateTime::createFromFormat( 'U', $booking->get_end() - $offset, $timezone );
+
+			if( empty( $product_id ) ) {
+				// Add background events to each dependent product.
+				$dependent_product_ids = $booking->get_product()->get_meta( 'booking_dependencies' );
+				foreach ( $dependent_product_ids as $id ) {
+					$events[] = array(
+						'resourceId' => $id,
+						'start'      => $start->format( 'c' ),
+						'end'        => $end->format( 'c' ),
+						'rendering'  => 'background',
+					);
+				}
+			}
 			try {
-				$start      = DateTime::createFromFormat( 'U', $booking->get_start() - $offset, $timezone );
-				$end        = DateTime::createFromFormat( 'U', $booking->get_end() - $offset, $timezone );
-				$customer   = $booking->get_customer();
-				$guest_name = $booking->get_meta( 'booking_guest_name' );
-				$persons    = $booking->get_persons();
-				$event = array(
-					'id'             => $booking->get_id(),
-					'resourceId'     => $booking->get_product_id(),
-					'start'          => $start->format( 'c' ),
-					'end'            => $end->format( 'c' ),
-					'title'          => $booking->get_product()->get_name(),
-					'url'            => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
-					'allDay'         => $booking->is_all_day() ? true : false,
-				);
-				if( ! empty( $guest_name ) ) {
-					$event['bookedFor'] = $guest_name;
+				if ( wp_get_current_user()->has_cap('manage_bookings') ) {
+					$customer   = $booking->get_customer();
+					$guest_name = $booking->get_meta( 'booking_guest_name' );
+					$persons    = $booking->get_persons();
+					$event      = array(
+						'id'         => $booking->get_id(),
+						'resourceId' => $booking->get_product_id(),
+						'start'      => $start->format( 'c' ),
+						'end'        => $end->format( 'c' ),
+						'title'      => $booking->get_product()->get_name(),
+						'url'        => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
+						'allDay'     => $booking->is_all_day() ? true : false,
+					);
+					if ( ! empty( $guest_name ) ) {
+						$event['bookedFor'] = $guest_name;
+					}
+					if ( ! empty( $customer->name ) ) {
+						$event['bookedBy'] = $customer->name;
+					}
+					if ( $persons > 0 ) {
+						$event['persons'] = $persons;
+					}
+				} else {
+					$event = array(
+						'id'              => hash( 'md4', $booking->get_id() ),
+						'resourceId'      => hash( 'md4', $booking->get_product_id() ),
+						'start'           => $start->format( 'c' ),
+						'end'             => $end->format( 'c' ),
+						'title'           => 'Booked on: ' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $booking->get_date_created()),
+					);
+					$user = wp_get_current_user();
+					if( $user->ID !== $booking->get_customer_id() ) {
+						$event['backgroundColor'] = 'lightgray';
+						$event['borderColor']     = 'silver';
+						$event['title']           = '';
+					}
 				}
-				if ( ! empty( $customer->name ) ) {
-					$event['bookedBy'] = $customer->name;
-				}
-				if( $persons > 0 ) {
-					$event['persons'] = $persons;
-				}
+
 				$events[] = $event;
 			} catch (Exception $e) {
 				$logger = new WC_Logger();
@@ -1333,6 +1376,18 @@ class WC_Bookings_Extensions_Public {
 		}
 
 		echo json_encode( $events );
+	}
+
+	/**
+	 * Output a calendar for the currently displaying product.
+	 *
+	 * @param array $atts Shortcode attributes array.
+	 * @return string
+	 */
+	public function calendar_shortcode( $atts ) {
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wc-bookings-extensions-new-calendar.php';
+		$page = new WC_Bookings_Extensions_New_Calendar();
+		return $page->get_shortcode_output();
 	}
 
 	/**
