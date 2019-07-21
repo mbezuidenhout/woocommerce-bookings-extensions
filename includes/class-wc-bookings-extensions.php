@@ -157,6 +157,11 @@ class WC_Bookings_Extensions {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-lib.php';
 
+		/**
+		 * Plugin shortcode functions
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wc-bookings-extensions-shortcodes.php';
+
 		$this->loader = new WC_Bookings_Extensions_Loader();
 
 	}
@@ -223,7 +228,8 @@ class WC_Bookings_Extensions {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
+		$plugin_public     = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
+		$plugin_shortcodes = new WC_Bookings_Extensions_Shortcodes();
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
@@ -241,8 +247,8 @@ class WC_Bookings_Extensions {
 		add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', 'WC_Bookings_Extensions_Lib::calculate_costs', 9 );
 
 		/** @see WC_Bookings_Extensions_Public::search_booking_products */
-		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search', $plugin_public, 'search_booking_products' );
-		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search', $plugin_public, 'search_booking_products' );
+		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search', $plugin_shortcodes, 'search_booking_products' );
+		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search', $plugin_shortcodes, 'search_booking_products' );
 
 		/** @see WC_Bookings_Extensions_Public::search_result */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
@@ -260,10 +266,10 @@ class WC_Bookings_Extensions {
 		$this->loader->add_filter( 'booking_form_calculated_booking_cost', $plugin_public, 'override_booking_cost', 8, 3 );
 
 		// Notice that the global search does not support multi level dependencies
-		// Short codes should not be active in the admin panel
+		// Short codes should not be active in the admin panel.
 		/** @see WC_Bookings_Extensions_Public::global_search_shortcode() */
-		$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
-		$this->loader->add_shortcode( 'wcbooking_calendar', $plugin_public, 'calendar_shortcode' );
+		$this->loader->add_shortcode( 'wcbooking_search', $plugin_shortcodes, 'global_search_shortcode' );
+		$this->loader->add_shortcode( 'wcbooking_calendar', $plugin_shortcodes, 'calendar_shortcode' );
 
 		$this->loader->add_action( 'woocommerce_before_booking_form', $plugin_public, 'add_booking_form_scripts' );
 

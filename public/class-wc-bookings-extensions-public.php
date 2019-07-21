@@ -364,107 +364,6 @@ class WC_Bookings_Extensions_Public {
 		return $available_slots;
 	}
 
-
-	/**
-	 * Add posted data to the cart item
-	 *
-	 * @param mixed $cart_item_meta
-	 * @param mixed $product_id
-	 * @return array $cart_item_meta
-	 */
-	public function add_cart_item_data( $cart_item_meta, $product_id ) {
-		$product = wc_get_product( $product_id );
-
-		if ( ! is_wc_booking_product( $product ) ) {
-			return $cart_item_meta;
-		}
-
-		$product = new WC_Bookings_Extensions_Product_Booking( $product->get_id() );
-
-		$booking_form                       = new WC_Booking_Form( $product );
-		$cart_item_meta['booking']          = $booking_form->get_posted_data( $_POST );
-		$cart_item_meta['booking']['_cost'] = $booking_form->calculate_booking_cost( $_POST );
-
-		// Create the new booking
-		$new_booking = $this->create_booking_from_cart_data( $cart_item_meta, $product_id );
-
-		// Store in cart
-		$cart_item_meta['booking']['_booking_id'] = $new_booking->get_id();
-
-		// Schedule this item to be removed from the cart if the user is inactive.
-		$this->schedule_cart_removal( $new_booking->get_id() );
-
-		return $cart_item_meta;
-	}
-
-	/**
-	 * Processes the shortcode wcbooking_search.
-	 *
-	 * Usage: wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer value of unit size>"
-	 * [method="{include|exclude}" ids="<Comma separated ist of product ids>"]
-	 *
-	 * The search will only include products of type Bookable Product/WC_Bookings
-	 *
-	 * @param array $atts Attributes passed by the shortcode.
-	 *
-	 * @return string
-	 */
-	public function global_search_shortcode( $atts ) {
-		$atts = shortcode_atts(
-			array(
-				'method'        => 'exclude',
-				'ids'           => '',
-				'duration_unit' => 'day',
-				'duration'      => 1,
-			),
-			$atts,
-			'wcbooking_search'
-		);
-
-		$ids = array_unique( explode( ',', preg_replace( '/[^0-9,]/', '', $atts['ids'] ) ) );
-		$key = array_search( '', $ids, true );
-		if ( false !== $key ) {
-			unset( $ids[ $key ] );
-		}
-
-		$ids = array_values( $ids );
-
-		try {
-			$search_form = new WC_Bookings_Extensions_Bookings_Search( $atts['method'], $ids, $atts['duration_unit'], intval( $atts['duration'] ) );
-		} catch ( Exception $e ) {
-			$logger = new WC_Logger();
-			$logger->add( 'globalsearchshortcode', $e->getMessage() );
-
-			return '';
-		}
-
-		ob_start();
-
-		wc_get_template( 'globalsearch.php', array( 'bookings_search_form' => $search_form ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
-
-		return ob_get_clean();
-	}
-
-	/**
-	 * Sends back array for bookings global search shortcode js
-	 */
-	public function search_booking_products() {
-		$request = $_GET;
-
-		$data = array(
-			'availability_rules'    => array(),
-			'buffer_days'           => array(),
-			'fully_booked_days'     => array(),
-			'max_date'              => strtotime( $request['max_date'] ),
-			'min_date'              => strtotime( $request['min_date'] ),
-			'partially_booked_days' => array(),
-			'restricted_days'       => false,
-			'unavailable_days'      => array(),
-		);
-
-		wp_send_json( $data );
-	}
-
 	/**
 	 * Sends html of bookable products that are available for specified date
 	 */
@@ -718,44 +617,6 @@ class WC_Bookings_Extensions_Public {
 		return $bookings;
 	}
 
-	/**
-	 * Extract data from the booking
-	 *
-	 * @param \WC_Booking $booking
-	 *
-	 * @return array
-	 */
-	private function get_booking_properties( $booking ) {
-		$customer = $booking->get_customer();
-		$order    = $booking->get_order();
-		$product  = $booking->get_product();
-		$user     = null;
-		if ( property_exists( $customer, 'user_id' ) ) {
-			$user = get_user_by( 'id', $customer->user_id );
-		}
-
-		if ( is_a( $order, 'WC_Order' ) ) {
-			if ( empty( $order->get_billing_company() ) ) {
-				$organizer = str_replace( ' (Guest)', '', $customer->name );
-			} else {
-				$organizer = $order->get_billing_company();
-			}
-		} else {
-			$organizer = __( 'Private function', 'woocommerce-bookings-extensions' );
-		}
-
-		$booking = array(
-			'booking'   => $booking,
-			'customer'  => $customer,
-			'order'     => $order,
-			'product'   => $product,
-			'user'      => $user,
-			'organizer' => $organizer,
-		);
-		return $booking;
-	}
-
-	/**
 	 * Usage: https://<server>/wc-bookings/fetch?username=<username>&password=<password>&product_id=<product_id>
 	 *
 	 * @throws Exception
@@ -982,8 +843,8 @@ class WC_Bookings_Extensions_Public {
 					$rule          = $rules[ $checking_date[ $date_key ] ];
 					if ( is_array( $rule ) ) {
 						$has_override = true;
-						$block_cost   = $this->apply_cost( $block_cost, $rule['block'][0], $rule['block'][1] );
-						$base_cost    = $this->apply_cost( $base_cost, $rule['base'][0], $rule['base'][1] );
+						$block_cost   = self::apply_cost( $block_cost, $rule['block'][0], $rule['block'][1] );
+						$base_cost    = self::apply_cost( $base_cost, $rule['base'][0], $rule['base'][1] );
 					}
 				}
 			}
@@ -1016,7 +877,7 @@ class WC_Bookings_Extensions_Public {
 	 * @param  float $cost
 	 * @return float
 	 */
-	private function apply_cost( $base, $multiplier, $cost ) {
+	private static function apply_cost( $base, $multiplier, $cost ) {
 		$base = floatval( $base );
 		$cost = floatval( $cost );
 
@@ -1169,18 +1030,6 @@ class WC_Bookings_Extensions_Public {
 		}
 
 		echo json_encode( $events );
-	}
-
-	/**
-	 * Output a calendar for the currently displaying product.
-	 *
-	 * @param array $atts Shortcode attributes array.
-	 * @return string
-	 */
-	public function calendar_shortcode( $atts ) {
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wc-bookings-extensions-new-calendar.php';
-		$page = new WC_Bookings_Extensions_New_Calendar();
-		return $page->get_shortcode_output();
 	}
 
 
