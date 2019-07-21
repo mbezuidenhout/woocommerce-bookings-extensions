@@ -418,7 +418,15 @@ class WC_Bookings_Extensions_Admin {
 				'default'  => '',
 				'type'     => 'text',
 				'desc_tip' => true,
-				'desc'     => 'If using FullCalendar then enter license here. https://fullcalendar.io/license ',
+				'desc'     => __( 'If using FullCalendar then enter license here. https://fullcalendar.io/license ', 'woocommerce-bookings-extensions' ),
+			),
+			array(
+				'title'    => __( 'Holidays ICS URI', 'woocommerce-bookings-extensions' ),
+				'id'       => 'woocommerce_bookings_extensions_holidays',
+				'default'  => '',
+				'type'     => 'text',
+				'desc_tip' => true,
+				'desc'     => __( 'URI where a ICS file can be found with holidays', 'woocommerce-bookings-extensions' ),
 			),
 		);
 

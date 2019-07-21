@@ -147,7 +147,7 @@ class WC_Bookings_Extensions_Bookings_Search {
 			'datepicker_args' => array(
 				'minDate'    => 0,
 				'maxDae'     => '+6M',
-				'dateFormat' => $this->convert_to_moment_format( get_option( 'date_format' ) ),
+				'dateFormat' => WC_Bookings_Extensions_Lib::convert_to_moment_format( get_option( 'date_format' ) ),
 			),
 		);
 
@@ -176,7 +176,7 @@ class WC_Bookings_Extensions_Bookings_Search {
 			'timezone_conversion'        => wc_should_convert_timezone(),
 			'client_firstday'            => 'yes' === get_option( 'woocommerce_bookings_client_firstday', 'no' ),
 			'server_timezone'            => wc_booking_get_timezone_string(),
-			'server_time_format'         => $this->convert_to_moment_format( get_option( 'time_format' ) ),
+			'server_time_format'         => WC_Bookings_Extensions_Lib::convert_to_moment_format( get_option( 'time_format' ) ),
 		);
 
 		wp_localize_script( 'wc-bookings-booking-form', 'booking_form_params', apply_filters( 'booking_form_params', $booking_form_params ) );
@@ -406,56 +406,6 @@ class WC_Bookings_Extensions_Bookings_Search {
 		$field['class'][] = $nicename;
 
 		$this->fields[ sanitize_title( $field['name'] ) ] = $field;
-	}
-
-	/**
-	 * Attempt to convert a date formatting string from PHP to Moment
-	 *
-	 * @param string $format
-	 * @return string
-	 */
-	protected function convert_to_moment_format( $format ) {
-		$replacements = array(
-			'd' => 'DD',
-			'D' => 'ddd',
-			'j' => 'D',
-			'l' => 'dddd',
-			'N' => 'E',
-			'S' => 'o',
-			'w' => 'e',
-			'z' => 'DDD',
-			'W' => 'W',
-			'F' => 'MMMM',
-			'm' => 'MM',
-			'M' => 'MMM',
-			'n' => 'M',
-			't' => '', // no equivalent
-			'L' => '', // no equivalent
-			'o' => 'YYYY',
-			'Y' => 'YYYY',
-			'y' => 'YY',
-			'a' => 'a',
-			'A' => 'A',
-			'B' => '', // no equivalent
-			'g' => 'h',
-			'G' => 'H',
-			'h' => 'hh',
-			'H' => 'HH',
-			'i' => 'mm',
-			's' => 'ss',
-			'u' => 'SSS',
-			'e' => 'zz', // deprecated since version 1.6.0 of moment.js
-			'I' => '', // no equivalent
-			'O' => '', // no equivalent
-			'P' => '', // no equivalent
-			'T' => '', // no equivalent
-			'Z' => '', // no equivalent
-			'c' => '', // no equivalent
-			'r' => '', // no equivalent
-			'U' => 'X',
-		);
-
-		return strtr( $format, $replacements );
 	}
 
 	public function get_availability_html( $date, $duration, $persons = null ) {

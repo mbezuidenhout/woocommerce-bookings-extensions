@@ -27,68 +27,68 @@ class WC_Bookings_Extensions_New_Calendar {
 	public function __construct() {
 		wp_register_style(
 			'fullcalendar-core',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/core/main.css',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/core/main.css',
 			null,
 			'4.2.0'
 		);
 		wp_register_style(
 			'fullcalendar-daygrid',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/daygrid/main.css',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/daygrid/main.css',
 			null,
 			'4.2.0'
 		);
 		wp_register_style(
 			'fullcalendar-timegrid',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/timegrid/main.css',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/timegrid/main.css',
 			null,
 			'4.2.0'
 		);
 
 		wp_register_script(
 			'fullcalendar-core',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/core/main.js',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/core/main.js',
 			null,
 			'4.2.0',
 			true
 		);
 		wp_register_script(
 			'fullcalendar-interaction',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/interaction/main.js',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/interaction/main.js',
 			array( 'fullcalendar-core' ),
 			'4.2.0',
 			true
 		);
 		wp_register_script(
 			'fullcalendar-daygrid',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/daygrid/main.js',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/daygrid/main.js',
 			array( 'fullcalendar-core' ),
 			'4.2.0',
 			true
 		);
 		wp_register_script(
 			'fullcalendar-timegrid',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/timegrid/main.js',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/timegrid/main.js',
 			array( 'fullcalendar-core' ),
 			'4.2.0',
 			true
 		);
 		wp_register_script(
 			'fullcalendar-resource-common',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/resource-common/main.js',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/resource-common/main.js',
 			null,
 			'4.2.0',
 			true
 		);
 		wp_register_script(
 			'fullcalendar-resource-daygrid',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/resource-daygrid/main.js',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/resource-daygrid/main.js',
 			array( 'fullcalendar-resource-common' ),
 			'4.2.0',
 			true
 		);
 		wp_register_script(
 			'fullcalendar-resource-timegrid',
-			plugin_dir_url( __DIR__ ) . 'assets/fullcalendar-scheduler-4.2.0/packages/resource-timegrid/main.js',
+			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/resource-timegrid/main.js',
 			array( 'fullcalendar-resource-common' ),
 			'4.2.0',
 			true

@@ -152,6 +152,11 @@ class WC_Bookings_Extensions {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-search.php';
 
+		/**
+		 * Class of static functions.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-lib.php';
+
 		$this->loader = new WC_Bookings_Extensions_Loader();
 
 	}
@@ -232,8 +237,8 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'wc_ajax_wc_bookings_find_booked_day_blocks', $plugin_public, 'find_booked_day_blocks_ajax', 9 );
 
 		/** @see WC_Bookings_Extensions_Public::calculate_costs */
-		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
-		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
+		add_action( 'wp_ajax_wc_bookings_calculate_costs', 'WC_Bookings_Extensions_Lib::calculate_costs', 9 );
+		add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', 'WC_Bookings_Extensions_Lib::calculate_costs', 9 );
 
 		/** @see WC_Bookings_Extensions_Public::search_booking_products */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search', $plugin_public, 'search_booking_products' );
@@ -341,12 +346,11 @@ class WC_Bookings_Extensions {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-cart-manager.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-form.php';
 
-		$plugin_public = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
 		$cart_manager  = new WC_Bookings_Extensions_Cart_Manager();
 
 		/** @see WC_Booking_Cart_Manager::validate_add_cart_item */
 		$this->remove_filter_by_class( 'woocommerce_add_to_cart_validation', 'WC_Booking_Cart_Manager', 'validate_add_cart_item', 10 );
-		add_filter( 'woocommerce_add_to_cart_validation', array( $plugin_public, 'validate_add_cart_item' ), 10, 3 );
+		add_filter( 'woocommerce_add_to_cart_validation', array( $cart_manager, 'validate_add_cart_item' ), 10, 3 );
 
 		/** @see WC_Booking_Cart_Manager::add_cart_item_data */
 		$this->remove_filter_by_class( 'woocommerce_add_cart_item_data', 'WC_Booking_Cart_Manager', 'add_cart_item_data', 10 );
