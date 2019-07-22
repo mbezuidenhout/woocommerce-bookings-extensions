@@ -95,8 +95,7 @@ class WC_Bookings_Extensions_Shortcodes {
 	 * @return string
 	 */
 	public function calendar_shortcode( $atts ) {
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wc-bookings-extensions-new-calendar.php';
-		$page = new WC_Bookings_Extensions_New_Calendar();
+		$page = WC_Bookings_Extensions_New_Calendar::get_instance();
 		return $page->get_shortcode_output();
 	}
 

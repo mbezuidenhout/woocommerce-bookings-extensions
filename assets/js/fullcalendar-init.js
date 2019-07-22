@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
-        plugins: [ 'interaction', 'resourceDayGrid', 'resourceTimeGrid' ],
+        plugins: [ 'interaction', 'resourceDayGrid', 'resourceTimeGrid', 'list' ],
         defaultView: fullcalendarOptions.defaultView,
         defaultDate: fullcalendarOptions.defaultDate,
         schedulerLicenseKey: fullcalendarOptions.schedulerLicenseKey,
@@ -68,13 +68,16 @@ document.addEventListener('DOMContentLoaded', function() {
         header: {
             left: 'prev,next today',
             center: 'title',
-            right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth'
+            right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth,listWeek'
         },
         views: {
             resourceTimeGridTwoDay: {
                 type: 'resourceTimeGrid',
                 duration: { days: 2 },
                 buttonText: '2 days',
+            },
+            listWeek: {
+                buttonText: 'list',
             }
         },
 
@@ -93,7 +96,9 @@ document.addEventListener('DOMContentLoaded', function() {
         ],
         eventRender: function( info ) {
             if(info.view.constructor.name === "DayGridView") {
-                $(info.el).find(".fc-title").first().before("<span class=\"wbe-booking-id\">#" + info.event.id + "</span>");
+                if ( ! info.event.extendedProps.hasOwnProperty("isExternal") || ! info.event.extendedProps.isExternal ) {
+                    $(info.el).find(".fc-title").first().before("<span class=\"wbe-booking-id\">#" + info.event.id + "</span>");
+                }
                 if (info.event.extendedProps.hasOwnProperty("bookedBy")) {
                     $(info.el).find(".fc-content").first().append("<span class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</span>");
                 }
@@ -105,7 +110,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
             } else {
-                $(info.el).find(".fc-title").first().before("<div class=\"wbe-booking-id\">#" + info.event.id + "</div>");
+                if ( ! info.event.extendedProps.hasOwnProperty("isExternal") || ! info.event.extendedProps.isExternal ) {
+                    $(info.el).find(".fc-title").first().before("<div class=\"wbe-booking-id\">#" + info.event.id + "</div>");
+                }
                 if (info.event.extendedProps.hasOwnProperty("bookedBy")) {
                     $(info.el).find(".fc-content").first().append("<div class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</div>");
                 }

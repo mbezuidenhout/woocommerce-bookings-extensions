@@ -162,6 +162,16 @@ class WC_Bookings_Extensions {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wc-bookings-extensions-shortcodes.php';
 
+		/**
+		 * Full calendar class
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-new-calendar.php';
+
+		/**
+		 * Composer libraries
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'vendor/autoload.php';
+
 		$this->loader = new WC_Bookings_Extensions_Loader();
 
 	}
@@ -230,6 +240,7 @@ class WC_Bookings_Extensions {
 
 		$plugin_public     = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
 		$plugin_shortcodes = new WC_Bookings_Extensions_Shortcodes();
+		$plugin_calendar   = WC_Bookings_Extensions_New_Calendar::get_instance();
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
@@ -273,8 +284,8 @@ class WC_Bookings_Extensions {
 
 		$this->loader->add_action( 'woocommerce_before_booking_form', $plugin_public, 'add_booking_form_scripts' );
 
-		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_get_bookings', $plugin_public, 'get_bookings_ajax' );
-		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_update_booking', $plugin_public, 'update_booking_ajax' );
+		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_get_bookings', $plugin_calendar, 'get_bookings_ajax' );
+		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_update_booking', $plugin_calendar, 'update_booking_ajax' );
 	}
 
 	/**

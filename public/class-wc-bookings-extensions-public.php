@@ -214,12 +214,12 @@ class WC_Bookings_Extensions_Public {
 	/**
 	 * Find available blocks and return HTML for the user to choose a block. Used in class-wc-bookings-ajax.php.
 	 *
-	 * @param \WC_Product_Booking $bookable_product
-	 * @param array $blocks
-	 * @param array $intervals
-	 * @param integer $resource_id
-	 * @param integer $from The starting date for the set of blocks
-	 * @param integer $to
+	 * @param \WC_Product_Booking $bookable_product Instance of WC_Product_Booking.
+	 * @param array               $blocks           Number of blocks.
+	 * @param array               $intervals        Array of available blocks.
+	 * @param integer             $resource_id      WooCommerce product ID.
+	 * @param integer             $from             The starting date for the set of blocks.
+	 * @param integer             $to               The end date for the set of blocks.
 	 *
 	 * @return string
 	 * @throws WC_Data_Exception
@@ -243,12 +243,14 @@ class WC_Bookings_Extensions_Public {
 	}
 
 	/**
-	 * @param WC_Bookings_Extensions_Product_Booking $bookable_product
-	 * @param array $blocks
-	 * @param array $intervals
-	 * @param int $resource_id
-	 * @param int $from
-	 * @param int $to
+	 * Get an array of time slots.
+	 *
+	 * @param WC_Bookings_Extensions_Product_Booking $bookable_product Instance of WC_Bookings_Extensions_Product_Booking.
+	 * @param array                                  $blocks           An array of blocks.
+	 * @param array                                  $intervals        An array of intervals in minutes.
+	 * @param int                                    $resource_id      WooCommerce product id.
+	 * @param int                                    $from             Unix from time.
+	 * @param int                                    $to               Unix to time.
 	 *
 	 * @return array
 	 * @throws WC_Data_Exception
@@ -274,7 +276,7 @@ class WC_Bookings_Extensions_Public {
 
 		/** @var WC_Booking[] $existing_bookings */
 		$existing_bookings = WC_Bookings_Controller::get_all_existing_bookings( $bookable_product, $from, $to );
-		// Add buffer period to each booking
+		// Add buffer period to each booking.
 		foreach ( $existing_bookings as &$existing_booking ) {
 			$existing_booking->set_end( strtotime( "+{$bookable_product->get_buffer_period_minutes()} minutes", $existing_booking->get_end() ) );
 		}
@@ -405,6 +407,16 @@ class WC_Bookings_Extensions_Public {
 		wp_send_json( $res );
 	}
 
+	/**
+	 * Get an array of booked day blocks.
+	 *
+	 * @param int $product_id      WooCommerce product id.
+	 * @param int $min_date        Unix start time.
+	 * @param int $max_date        Unix end time.
+	 * @param int $timezone_offset Time offset in hours.
+	 *
+	 * @return array
+	 */
 	public function find_booked_day_blocks( $product_id, $min_date = null, $max_date = null, $timezone_offset = null ) {
 		try {
 
@@ -470,9 +482,9 @@ class WC_Bookings_Extensions_Public {
 			foreach ( $dependent_products_ids as $dependent_product_id ) {
 				$dependent_args = $this->find_booked_day_blocks( intval( $dependent_product_id ), $_GET['min_date'], $_GET['max_date'], $_GET['timezone_offset'] );
 
-				// Merge data together. Note that only fully and partially booked data gets merged
+				// Merge data together. Note that only fully and partially booked data gets merged.
 
-				// Add fully booked days and remove out of partially booked list
+				// Add fully booked days and remove out of partially booked list.
 				foreach ( $dependent_args['fully_booked_days'] as $day => $val ) {
 					$args['fully_booked_days'][ $day ] = $val;
 					if ( array_key_exists( $day, $args['partially_booked_days'] ) ) {
@@ -480,7 +492,7 @@ class WC_Bookings_Extensions_Public {
 					}
 				}
 
-				// Add partially booked days
+				// Add partially booked days.
 				foreach ( $dependent_args['partially_booked_days'] as $day => $val ) {
 					if ( ! array_key_exists( $day, $args['fully_booked_days'] ) ) {
 						$args['partially_booked_days'][ $day ] = $val;
@@ -496,12 +508,12 @@ class WC_Bookings_Extensions_Public {
 	/**
 	 * Get an array of bookings
 	 *
-	 * @param int $product_id Product ID to fetch
-	 * @param string $range Range of dates to fetch [now|next]
+	 * @param int    $product_id Product ID to fetch.
+	 * @param string $range Range of dates to fetch [now|next].
 	 * @return \WC_Booking[][]
 	 * @throws Exception
 	 */
-	protected function get_bookings_v1( $product_id, $range = 'now' ) { // Remove complate function by 2019-07
+	protected function get_bookings_v1( $product_id, $range = 'now' ) { // Remove complate function by 2019-07.
 		$products = array();
 		if ( is_null( $product_id ) ) {
 			/** @var \WC_Product_Data_Store_CPT $data_store */
@@ -573,50 +585,6 @@ class WC_Bookings_Extensions_Public {
 	}
 
 	/**
-	 * Get an array of bookings ordered by booking start date
-	 *
-	 * @param $product_id
-	 * @param $from
-	 * @param $to
-	 * @return \WC_Booking[]
-	 * @throws Exception
-	 */
-	protected function get_bookings_v2( $product_id, $from, $to ) {
-		$products = array();
-		if ( is_null( $product_id ) ) {
-			/** @var \WC_Product_Data_Store_CPT $data_store */
-			$data_store = WC_Data_Store::load( 'product' );
-			$ids        = $data_store->search_products( null, 'booking', false, false, null );
-			foreach ( $ids as $id ) {
-				$product = wc_get_product( $id );
-				if ( is_a( $product, 'WC_Product_Booking' ) ) {
-					$products[] = $product;
-				}
-			}
-		} else {
-			$product = wc_get_product( $product_id );
-			if ( $product && 'booking' === $product->get_type() ) {
-				$products[] = $product;
-			}
-			foreach ( $product->get_meta( 'booking_dependencies' ) as $dependency ) { // Get dependent bookable products
-				$product = wc_get_product( intval( $dependency ) );
-				if ( $product && 'booking' === $product->get_type() ) {
-					$products[] = $product;
-				}
-			}
-		}
-
-		$bookings = array();
-
-		foreach ( $products as $product ) {
-			$bookings = array_merge( $bookings, $product->get_bookings_in_date_range( $from, $to ) );
-		}
-
-		usort( $bookings, array( 'WC_Bookings_Extensions_Lib', 'bookings_sort_by_date' ) );
-
-		return $bookings;
-	}
-
 	 * Usage: https://<server>/wc-bookings/fetch?username=<username>&password=<password>&product_id=<product_id>
 	 *
 	 * @throws Exception
@@ -633,7 +601,7 @@ class WC_Bookings_Extensions_Public {
 		$args               = wp_parse_args( sanitize_post( $_GET ), $defaults ); //phpcs:ignore
 		$user               = wp_authenticate( $args['username'], $args['password'] );
 		$args['product_id'] = intval( $args['product_id'] );
-		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings
+		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings.
 			wp_die( 'Invalid user or does not have sufficient privileges' );
 		}
 
@@ -646,7 +614,9 @@ class WC_Bookings_Extensions_Public {
 			wp_die( 'Invalid product ID' );
 		}
 
-		$bookings = $this->get_bookings_v2( $args['product_id'], time(), time() + 86400 );
+		$calendar = WC_Bookings_Extensions_New_Calendar::get_instance();
+
+		$bookings = $calendar->get_bookings( $args['product_id'], time(), time() + 86400 );
 
 		$script_params = array(
 			'server_unix_time' => strtotime( 'now' ),
@@ -709,7 +679,8 @@ class WC_Bookings_Extensions_Public {
 			$bookings = $this->get_bookings_v1( $args['product_id'], $args['range'] );
 			return $this->get_bookings_text_v1( $bookings );
 		} elseif ( 2 === $args['version'] ) {
-			$bookings = $this->get_bookings_v2( $args['product_id'], $args['from'], $args['to'] );
+			$calendar = WC_Bookings_Extensions_New_Calendar::get_instance();
+			$bookings = $calendar->get_bookings( $args['product_id'], $args['from'], $args['to'] );
 			$product  = wc_get_product( $args['product_id'] );
 			$bookings = array_map( array( 'WC_Bookings_Extensions_Lib', 'get_bookings_text_v2' ), $bookings );
 			return array(
@@ -724,7 +695,7 @@ class WC_Bookings_Extensions_Public {
 		}
 	}
 
-	private function get_bookings_text_v1( $bookings ) { // Remove complete function by 2019-07
+	private function get_bookings_text_v1( $bookings ) { // Remove complete function by 2019-07.
 		$bookings_arr = array();
 		foreach ( $bookings as $key => $bookings_for_product ) {
 			foreach ( $bookings_for_product as $k => $booking ) {
@@ -767,7 +738,7 @@ class WC_Bookings_Extensions_Public {
 					'display_name'    => $display_name,
 					'email'           => $email,
 					'order_id'        => $booking->get_order_id(),
-					'status'          => $booking->get_status(), // unpaid|complete|in-cart
+					'status'          => $booking->get_status(), // unpaid|complete|in-cart.
 					'company_name'    => $company_name,
 					'organizer'       => $organizer,
 				);
@@ -776,6 +747,9 @@ class WC_Bookings_Extensions_Public {
 		return $bookings_arr;
 	}
 
+	/**
+	 * Add routes used for event displays.
+	 */
 	public function add_routes() {
 		if ( ! class_exists( 'WP_Route' ) ) {
 			require_once plugin_dir_path( __DIR__ ) . 'includes/class-wp-route.php';
@@ -784,6 +758,9 @@ class WC_Bookings_Extensions_Public {
 		WP_Route::get( 'wc-bookings/fetch', array( $this, 'get_bookings_page' ) );
 	}
 
+	/**
+	 * Add routes used for event display data.
+	 */
 	public function add_rest_routes() {
 		register_rest_route(
 			'wc-bookings',
@@ -798,17 +775,17 @@ class WC_Bookings_Extensions_Public {
 	/**
 	 * Overrides the booking cost for scenarios where there is a different block cost for specific days
 	 *
-	 * @param int $booking_cost
-	 * @param WC_Booking_Form $booking_form
-	 * @param array $posted
+	 * @param int             $booking_cost Booking cost in predefined currency.
+	 * @param WC_Booking_Form $booking_form Instance of WC_Booking_Form.
+	 * @param array           $posted       Form data.
 	 *
 	 * @return int
 	 */
 	public function override_booking_cost( $booking_cost, $booking_form, $posted ) {
-		// Get posted data
+		// Get posted data.
 		$data = $booking_form->get_posted_data( $posted );
 
-		// Get costs
+		// Get costs.
 		$costs   = $booking_form->product->get_costs();
 		$pricing = $booking_form->product->get_pricing();
 
@@ -864,6 +841,9 @@ class WC_Bookings_Extensions_Public {
 		return $booking_cost;
 	}
 
+	/**
+	 * Scripts for booking form.
+	 */
 	public function add_booking_form_scripts() {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
@@ -872,9 +852,10 @@ class WC_Bookings_Extensions_Public {
 
 	/**
 	 * Apply a cost
-	 * @param  float $base
-	 * @param  string $multiplier
-	 * @param  float $cost
+	 *
+	 * @param  float  $base       Base cost for time slot.
+	 * @param  string $multiplier Calculation action to perform [times|divide|minus|equals].
+	 * @param  float  $cost       New cost for calculation.
 	 * @return float
 	 */
 	private static function apply_cost( $base, $multiplier, $cost ) {
@@ -900,137 +881,5 @@ class WC_Bookings_Extensions_Public {
 		}
 		return $new_cost;
 	}
-
-	public function update_booking_ajax() {
-		if ( false === check_ajax_referer( 'fullcalendar_options' ) ) {
-			http_response_code( 401 );
-			echo json_encode(array('status' => 401, 'error' => 'Invalid nonce'));
-		}
-		try {
-			$timezone = new DateTimeZone( wc_timezone_string() );
-			$offset   = $timezone->getOffset( new DateTime() );
-			$booking  = new WC_Booking( $_REQUEST['id'] );
-			if ( 'true' === $_REQUEST['allDay'] ) {
-				$booking->set_all_day( true );
-			} else {
-				$booking->set_all_day( false );
-			}
-			if ( ! empty( $_REQUEST['start'] ) ) {
-				$start = new DateTime( $_REQUEST['start'] );
-				$booking->set_start( (int) $start->format( 'U' ) + $offset );
-			}
-			if ( ! empty( $_REQUEST['end'] ) ) {
-				$end = new DateTime( $_REQUEST['end'] );
-				$booking->set_end( (int) $end->format( 'U' ) + $offset );
-			}
-			if ( ! empty( $_REQUEST['resource'] ) ) {
-				$booking->set_product_id( (int) $_REQUEST['resource'] );
-			}
-			$booking->save();
-			echo json_encode(array('status' => 200));
-		} catch (Exception $e) {
-			http_response_code( 400 );
-			echo json_encode(array('status' => 400, 'error' => 'Bad Request'));
-		}
-	}
-
-	public function get_bookings_ajax() {
-		if ( false === check_ajax_referer( 'fullcalendar_options' ) ) {
-			return false;
-		}
-		$product_id = null;
-		if( isset( $_REQUEST['product_id'] ) ) {
-			$product_id = intval( $_REQUEST['product_id'] );
-		} elseif( ! wp_get_current_user()->has_cap('manage_bookings') ) {
-			http_response_code( 401 );
-			return json_encode(array(array()));
-		}
-		try {
-			$from = new DateTime( $_REQUEST['start'] );
-			$to   = new DateTime( $_REQUEST['end'] );
-		} catch (Exception $e) {
-			$from = new DateTime();
-			$to = new DateTime();
-			$from->modify( '-1 month' );
-			$to->modify( '+1 month' );
-		}
-
-		try {
-			$bookings = $this->get_bookings_v2( $product_id, $from->getTimestamp(), $to->getTimestamp() );
-		} catch ( Exception $e ) {
-			$logger = new WC_Logger();
-			$logger->add( 'getbookings', $e->getMessage() );
-			$bookings = array();
-		}
-
-		$events = array();
-
-		$timezone = new DateTimeZone( wc_timezone_string() );
-		$offset = $timezone->getOffset(new DateTime());
-		foreach ($bookings as $booking) {
-			$start = DateTime::createFromFormat( 'U', $booking->get_start() - $offset, $timezone );
-			$end   = DateTime::createFromFormat( 'U', $booking->get_end() - $offset, $timezone );
-
-			if( empty( $product_id ) ) {
-				// Add background events to each dependent product.
-				$dependent_product_ids = $booking->get_product()->get_meta( 'booking_dependencies' );
-				foreach ( $dependent_product_ids as $id ) {
-					$events[] = array(
-						'resourceId' => $id,
-						'start'      => $start->format( 'c' ),
-						'end'        => $end->format( 'c' ),
-						'rendering'  => 'background',
-					);
-				}
-			}
-			try {
-				if ( wp_get_current_user()->has_cap('manage_bookings') ) {
-					$customer   = $booking->get_customer();
-					$guest_name = $booking->get_meta( 'booking_guest_name' );
-					$persons    = $booking->get_persons();
-					$event      = array(
-						'id'         => $booking->get_id(),
-						'resourceId' => $booking->get_product_id(),
-						'start'      => $start->format( 'c' ),
-						'end'        => $end->format( 'c' ),
-						'title'      => $booking->get_product()->get_name(),
-						'url'        => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
-						'allDay'     => $booking->is_all_day() ? true : false,
-					);
-					if ( ! empty( $guest_name ) ) {
-						$event['bookedFor'] = $guest_name;
-					}
-					if ( ! empty( $customer->name ) ) {
-						$event['bookedBy'] = $customer->name;
-					}
-					if ( $persons > 0 ) {
-						$event['persons'] = $persons;
-					}
-				} else {
-					$event = array(
-						'id'              => hash( 'md4', $booking->get_id() ),
-						'resourceId'      => hash( 'md4', $booking->get_product_id() ),
-						'start'           => $start->format( 'c' ),
-						'end'             => $end->format( 'c' ),
-						'title'           => 'Booked on: ' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $booking->get_date_created()),
-					);
-					$user = wp_get_current_user();
-					if( $user->ID !== $booking->get_customer_id() ) {
-						$event['backgroundColor'] = 'lightgray';
-						$event['borderColor']     = 'silver';
-						$event['title']           = '';
-					}
-				}
-
-				$events[] = $event;
-			} catch (Exception $e) {
-				$logger = new WC_Logger();
-				$logger->add( 'getbookings', $e->getMessage() );
-			}
-		}
-
-		echo json_encode( $events );
-	}
-
 
 }
