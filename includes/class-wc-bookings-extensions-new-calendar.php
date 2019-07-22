@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use \ICal\ICal;
+use ICal\ICal;
 
 /**
  * WC_Bookings_Calendar.
@@ -204,6 +204,7 @@ class WC_Bookings_Extensions_New_Calendar {
 	 * Output the calendar view.
 	 */
 	public function admin_output() {
+		add_thickbox(); // Add the WordPress admin thickbox js and css.
 		wp_enqueue_script( 'fullcalendar-admin-init' );
 
 		wp_localize_script(
@@ -216,9 +217,11 @@ class WC_Bookings_Extensions_New_Calendar {
 				'defaultView'         => 'resourceTimeGridDay',
 				'confirmMoveMessage'  => __( 'Are you sure you want to change this event?', 'woo-booking-extensions' ),
 				'confirmAddMessage'   => __( 'Do you want to add an event here?', 'woo-booking-extensions' ),
+				'createEventTitle'    => __( 'Create event', 'woo-booking-extensions' ),
 				'events'              => array(
 					'sourceUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
 					'targetUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_update_booking' ),
+					'newUrl'    => admin_url( 'admin-ajax.php?action=wc_bookings_extensions_update_booking' ),
 					'nonce'     => wp_create_nonce( 'fullcalendar_options' ),
 				),
 			)
@@ -233,6 +236,38 @@ class WC_Bookings_Extensions_New_Calendar {
 			'woocommerce-bookings-extensions',
 			plugin_dir_path( __DIR__ ) . 'templates/'
 		);
+	}
+
+	/**
+	 * Booking page
+	 */
+	public function booking_page() {
+		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( wp_unslash( $_REQUEST['_wpnonce'] ), 'fullcalendar_options' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+
+			$timezone = new DateTimeZone( wc_timezone_string() );
+			$interval = DateInterval::createFromDateString( $timezone->getOffset( new DateTime() ) . ' seconds' );
+
+			$start   = isset( $_REQUEST['start'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['start'] ), $timezone ) ) : null;
+			$end     = isset( $_REQUEST['end'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ), $timezone ) : null;
+			$product = isset( $_REQUEST['resource'] ) ? wc_get_product( sanitize_key( wp_unslash( $_REQUEST['resource'] ) ) ) : null;
+			$all_day = isset( $_REQUEST['allDay'] ) && 'true' === $_REQUEST['allDay'] ? 'yes' : 'no';
+			if ( ! empty( $start ) ) {
+				$start->add( $interval );
+			}
+			if ( ! empty( $end ) ) {
+				$end->add( $interval );
+			}
+			add_filter(
+				'get_booking_products_args',
+				function ( $post_args ) {
+					$post_args['post_status'] = array( 'publish', 'private' );
+					return $post_args;
+				}
+			);
+
+			include plugin_dir_path( __DIR__ ) . 'admin/partials/event.php';
+		}
+		wp_die(); // this is required to terminate immediately and return a proper response.
 	}
 
 	/**
@@ -320,7 +355,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			echo wp_json_encode(
 				array(
 					'status' => 400,
-					'error' => 'Bad Request',
+					'error'  => 'Bad Request',
 				)
 			);
 		}

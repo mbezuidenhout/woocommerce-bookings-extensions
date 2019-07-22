@@ -1,3 +1,5 @@
+var calendar;
+
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var xhr = [];
@@ -34,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(calendarEl, {
         plugins: [ 'interaction', 'resourceDayGrid', 'resourceTimeGrid', 'list' ],
         defaultView: fullcalendarOptions.defaultView,
         defaultDate: fullcalendarOptions.defaultDate,
@@ -47,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
         //maxTime: '17:00:00', // End at 6pm
         nowIndicator: true,
         navLinks: true,
+        contentHeight: 'auto',
         businessHours: [ // specify an array instead
             {
                 daysOfWeek: [ 1, 2, 3, 4, 5 ], // Monday, Tuesday, Wednesday, Thursday, Friday
@@ -65,8 +68,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
         ],
+        customButtons: {
+            addButton: {
+                icon: 'fc-icon-plus-square',
+                click: function() {
+                    tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.newUrl );
+                },
+            }
+        },
         header: {
-            left: 'prev,next today',
+            left: 'addButton, prev,next today',
             center: 'title',
             right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth,listWeek'
         },
@@ -136,12 +147,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // } else {
             //     calendar.unselect();
             // }
-            console.log(
-                'select',
-                info.startStr,
-                info.endStr,
-                info.resource ? info.resource.id : '(no resource)'
-            );
+            var params = {
+                _wpnonce: fullcalendarOptions.events.nonce,
+                'start': info.start !== null ? info.start.toISOString() : null,
+                'end': info.end !== null ? info.end.toISOString() : null,
+                'allDay': info.allDay,
+                'resource': info.hasOwnProperty("resource") && info.resource !== null ? info.resource.id : null,
+            };
+            tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.newUrl + '&' + $.param( params ) );
         },
         dateClick: function(arg) {
             console.log(
