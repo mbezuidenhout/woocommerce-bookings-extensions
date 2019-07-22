@@ -78,7 +78,7 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 
 				woocommerce_wp_checkbox(
 					array(
-						'id'          => '_booking_all_day',
+						'id'          => 'booking_all_day',
 						'label'       => __( 'All day booking:', 'woocommerce-bookings' ),
 						'description' => __( 'Check this box if the booking is for all day.', 'woocommerce-bookings' ),
 						'value'       => $all_day,
@@ -123,10 +123,33 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
     $(function () {
         $('#post').submit(function( event ) {
             debugger;
-            tb_remove();
-            calendar.refetchEvents();
-            event.preventDefault();
+            var d = new Date();
+            var start = new Date( $(this).find('#booking_start_date').val() + 'T' + $(this).find('#booking_start_time').val() + ':00Z' );
+            var end = new Date( $(this).find('#booking_end_date').val() + 'T' + $(this).find('#booking_end_time').val() + ':00Z' );
+            start.setTime( start.getTime() + d.getTimezoneOffset() * 60000 );
+            end.setTime( end.getTime() + d.getTimezoneOffset() * 60000 );
+            $.ajax({
+                type: 'POST',
+                url: fullcalendarOptions.events.targetUrl,
+                data: {
+                    '_ajax_nonce': fullcalendarOptions.events.nonce,
+                    'start': start.toISOString(),
+                    'end': end.toISOString(),
+                    'allDay': $(this).find('#booking_all_day').is(':checked'),
+                    'resource': $(this).find('#product_or_resource_id').val(),
+                },
+                success: function (data) {
+                    calendar.refetchEvents();
+                    tb_remove();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+
+                },
+                complete: function() {
+                }
             });
+            event.preventDefault();
+        });
     });
 })( jQuery );
 /* ]]> */
