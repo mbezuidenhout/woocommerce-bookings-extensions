@@ -22,8 +22,8 @@ class WC_Bookings_Extensions_Cart_Manager extends WC_Booking_Cart_Manager {
 		$product = new WC_Bookings_Extensions_Product_Booking( $product->get_id() );
 
 		$booking_form                       = new WC_Booking_Form( $product );
-		$cart_item_meta['booking']          = $booking_form->get_posted_data( $_POST ); // phpcs:ignore
-		$cart_item_meta['booking']['_cost'] = $booking_form->calculate_booking_cost( $_POST ); // phpcs:ignore
+		$cart_item_meta['booking']          = $booking_form->get_posted_data( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification
+		$cart_item_meta['booking']['_cost'] = $booking_form->calculate_booking_cost( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		// Create the new booking.
 		$new_booking = $this->create_booking_from_cart_data( $cart_item_meta, $product_id );
@@ -40,9 +40,9 @@ class WC_Bookings_Extensions_Cart_Manager extends WC_Booking_Cart_Manager {
 	/**
 	 * Create booking from cart data
 	 *
-	 * @param        $cart_item_meta
-	 * @param        $product_id
-	 * @param string $status
+	 * @param array  $cart_item_meta Array of cart data.
+	 * @param int    $product_id     WooCommerce product id.
+	 * @param string $status         Status in-cart or other.
 	 *
 	 * @return WC_Booking
 	 */

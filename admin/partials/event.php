@@ -1,10 +1,11 @@
 <?php
-// phpcs:disable
 /**
  * Create event or event details.
  *
  * @global \WC_Booking $booking
  */
+
+//phpcs:disable Generic.WhiteSpace.DisallowSpaceIndent
 
 $bookable_products = array( '' => __( 'N/A', 'woocommerce-bookings' ) );
 
@@ -26,14 +27,17 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 ?>
 <form name="post" action="" method="post" id="post">
     <div class="panel-wrap woocommerce">
+	    <?php
+	    do_action( 'woo_booking_extensions_event_page_before', $booking );
+	    ?>
         <div id="booking_data" class="panel wbe-booking-data-thickbox">
             <div class="booking_data_column">
-                <h4><?php _e( 'General details', 'woocommerce-bookings' ); ?></h4>
+                <h4><?php esc_html_e( 'General details', 'woocommerce-bookings' ); ?></h4>
 
                 <p class="form-field form-field-wide">
-                    <label for="_booking_order_id"><?php _e( 'Order ID:', 'woocommerce-bookings' ); ?></label>
+                    <label for="_booking_order_id"><?php esc_html_e( 'Order ID:', 'woocommerce-bookings' ); ?></label>
                     <select name="_booking_order_id" id="_booking_order_id"
-                            data-placeholder="<?php _e( 'N/A', 'woocommerce-bookings' ); ?>" data-allow_clear="true">
+                            data-placeholder="<?php esc_html_e( 'N/A', 'woocommerce-bookings' ); ?>" data-allow_clear="true">
 			            <?php if ( $booking->get_order_id() && $order ) : ?>
                             <option selected="selected"
                                     value="<?php echo esc_attr( $booking->get_order_id() ); ?>"><?php echo esc_html( $order->get_order_number() . ' &ndash; ' . date_i18n( wc_date_format(), strtotime( is_callable( array(
@@ -43,12 +47,16 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 			            <?php endif; ?>
                     </select>
                 </p>
+                <?php
+                if ( ! empty( $booking->get_date_created() ) ) :
+                    ?>
                 <p class="form-field form-field-wide">
                     <?php _e( 'Date created:', 'woocommerce-bookings' ); ?><br>
 	                <?php echo date_i18n( wc_date_format() . ' ' . wc_time_format(), $booking->get_date_created() ); ?>
                 </p>
+                <?php endif; ?>
                 <p class="form-field form-field-wide">
-                    <label for="_booking_status"><?php _e( 'Booking status:', 'woocommerce-bookings' ); ?></label>
+                    <label for="_booking_status"><?php esc_html_e( 'Booking status:', 'woocommerce-bookings' ); ?></label>
                     <select id="_booking_status" name="_booking_status" class="wc-enhanced-select">
 						<?php
 						foreach ( $statuses as $key => $value ) {
@@ -59,7 +67,7 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
                 </p>
 
             <p class="form-field form-field-wide">
-                <label for="_booking_customer_id"><?php _e( 'Customer:', 'woocommerce-bookings' ); ?></label>
+                <label for="_booking_customer_id"><?php esc_html_e( 'Customer:', 'woocommerce-bookings' ); ?></label>
 		        <?php
 		        $name = ! empty( $customer->name ) ? ' &ndash; ' . $customer->name : '';
 		        $guest_placeholder = __( 'Guest', 'woocommerce-bookings' );
@@ -71,7 +79,7 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 		        if ( $booking->get_customer_id() ) {
 			        $user            = get_userdata( $booking->get_customer_id() );
 			        $customer_string = sprintf(
-			        /* translators: 1: full name 2: user id 3: email */
+			            /* translators: 1: full name 2: user id 3: email */
 				        esc_html__( '%1$s (#%2$s &ndash; %3$s)', 'woocommerce-bookings' ),
 				        trim( $user->first_name . ' ' . $user->last_name ),
 				        $customer->user_id,
@@ -92,23 +100,25 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 		        <?php endif; ?>
             </p>
             <p class="form-field form-field-wide">
-                <label for="booking_guest_name"><?php _e( 'Guest Name:', 'woocommerce-booking-extensions' ) ?></label>
-                <input type="text" style="" name="booking_guest_name" id="booking_guest_name" value="<?php echo $booking->get_meta( 'booking_guest_name' ); ?>"
+                <label for="booking_guest_name"><?php esc_html_e( 'Guest name:', 'woocommerce-booking-extensions' ); ?></label>
+                <input type="text" style="" name="booking_guest_name" id="booking_guest_name" value="<?php echo esc_attr( $booking->get_meta( 'booking_guest_name' ) ); ?>"
                        placeholder="N/A">
             </p>
         </div>
             <div class="booking_data_column">
-                <h4><?php _e( 'Booking specification', 'woocommerce-bookings' ); ?></h4>
+                <h4><?php esc_html_e( 'Booking specification', 'woocommerce-bookings' ); ?></h4>
 
 				<?php
-				woocommerce_wp_select( array(
-					'id'            => 'product_or_resource_id',
-					'class'         => 'wc-enhanced-select',
-					'wrapper_class' => 'form-field form-field-wide',
-					'label'         => __( 'Booked product:', 'woocommerce-bookings' ),
-					'options'       => $bookable_products,
-					'value'         => $booking->get_product_id(),
-				) );
+				woocommerce_wp_select(
+                    array(
+					    'id'            => 'product_or_resource_id',
+					    'class'         => 'wc-enhanced-select',
+					    'wrapper_class' => 'form-field form-field-wide',
+					    'label'         => __( 'Booked product:', 'woocommerce-bookings' ),
+					    'options'       => $bookable_products,
+					    'value'         => $booking->get_product_id(),
+				    )
+                );
 				?>
                 <?php
                 $person_counts = $booking->get_person_counts();
@@ -133,14 +143,16 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 		                }
 
 		                if ( $person_type ) {
-			                woocommerce_wp_text_input( array(
-				                'id'            => '_booking_person_' . $person_id,
-				                'label'         => $person_type->get_name(),
-				                'type'          => 'number',
-				                'placeholder'   => '0',
-				                'value'         => $person_count,
-				                'wrapper_class' => 'booking-person',
-			                ) );
+			                woocommerce_wp_text_input(
+                                array(
+				                    'id'            => '_booking_person_' . $person_id,
+				                    'label'         => $person_type->get_name(),
+				                    'type'          => 'number',
+				                    'placeholder'   => '0',
+				                    'value'         => $person_count,
+				                    'wrapper_class' => 'booking-person',
+			                    )
+                            );
 		                }
 	                }
 
@@ -151,34 +163,38 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 
 	                $product_booking_diff = array_diff( array_keys( $person_types ), array_keys( $person_counts ) );
 
-	                foreach ( $product_booking_diff as $id ) {
-		                $person_type = $person_types[ $id ];
-		                woocommerce_wp_text_input( array(
-			                'id'            => '_booking_person_' . $person_type->get_id(),
-			                'label'         => $person_type->get_name(),
-			                'type'          => 'number',
-			                'placeholder'   => '0',
-			                'value'         => '0',
-			                'wrapper_class' => 'booking-person',
-		                ) );
+	                foreach ( $product_booking_diff as $pid ) {
+		                $person_type = $person_types[ $pid ];
+		                woocommerce_wp_text_input(
+                            array(
+                                'id'            => '_booking_person_' . $person_type->get_id(),
+			                    'label'         => $person_type->get_name(),
+			                    'type'          => 'number',
+			                    'placeholder'   => '0',
+			                    'value'         => '0',
+			                    'wrapper_class' => 'booking-person',
+		                    )
+                        );
 	                }
                 } else {
 	                $person_counts = $booking->get_person_counts();
 	                $person_type   = new WC_Product_Booking_Person_Type( 0 );
 
-	                woocommerce_wp_text_input( array(
-		                'id'            => '_booking_person_0',
-		                'label'         => $person_type->get_name(),
-		                'type'          => 'number',
-		                'placeholder'   => '0',
-		                'value'         => ! empty( $person_counts[0] ) ? $person_counts[0] : 0,
-		                'wrapper_class' => 'booking-person',
-	                ) );
+	                woocommerce_wp_text_input(
+                        array(
+		                    'id'            => '_booking_person_0',
+		                    'label'         => $person_type->get_name(),
+		                    'type'          => 'number',
+		                    'placeholder'   => '0',
+		                    'value'         => ! empty( $person_counts[0] ) ? $person_counts[0] : 0,
+		                    'wrapper_class' => 'booking-person',
+	                    )
+                    );
                 }
                 ?>
             </div>
             <div class="booking_data_column">
-                <h4><?php _e( 'Booking date &amp; time', 'woocommerce-bookings' ); ?></h4>
+                <h4><?php esc_html_e( 'Booking date &amp; time', 'woocommerce-bookings' ); ?></h4>
 				<?php
 				woocommerce_wp_text_input(
 					array(
@@ -233,6 +249,9 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
             </div>
         </div>
         <div class="clear"></div>
+        <?php
+        do_action( 'woo_booking_extensions_event_page_after', $booking );
+        ?>
         <input type="hidden" name="_booking_id" id="_booking_id" value="<?php echo esc_attr( $booking->get_id() ); ?>"/>
         <input type="hidden">
         <input type="submit" class="button save_order button-primary tips" name="save"
@@ -259,22 +278,29 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
             var end = new Date( $(this).find('input[name=booking_end_date]').val() + 'T' + $(this).find('input[name=booking_end_time]').val() + ':00Z' );
             start.setTime( start.getTime() + d.getTimezoneOffset() * 60000 );
             end.setTime( end.getTime() + d.getTimezoneOffset() * 60000 );
+            var formdata = $(this).serializeArray();
+            var data = {};
+            $(formdata ).each(function(index, obj){
+                data[obj.name] = obj.value;
+            });
+            var extendedData = {
+                '_ajax_nonce': fullcalendarOptions.events.nonce,
+                'order_id': $(this).find('select[name=_booking_order_id]').val(),
+                'customer_id': $(this).find('select[name=_booking_customer_id]').val(),
+                'start': start.toISOString(),
+                'end': end.toISOString(),
+                'allDay': $(this).find('input[name=_booking_all_day]').is(':checked'),
+                'resource': $(this).find('select[name=product_or_resource_id]').val(),
+                'persons': $(this).find('input[name=_booking_person_0]').val(),
+                'guest_name': $(this).find('input[name=booking_guest_name]').val(),
+                'booking_status': $(this).find('select[name=_booking_status]').val(),
+                'id': $(this).find('input[name=_booking_id]').val(),
+            }
+            $.extend( data, extendedData );
             $.ajax({
                 type: 'POST',
-                url: fullcalendarOptions.events.targetUrl,
-                data: {
-                    '_ajax_nonce': fullcalendarOptions.events.nonce,
-                    'order_id': $(this).find('select[name=_booking_order_id]').val(),
-                    'customer_id': $(this).find('select[name=_booking_customer_id]').val(),
-                    'start': start.toISOString(),
-                    'end': end.toISOString(),
-                    'allDay': $(this).find('input[name=_booking_all_day]').is(':checked'),
-                    'resource': $(this).find('select[name=product_or_resource_id]').val(),
-                    'persons': $(this).find('input[name=_booking_person_0]').val(),
-                    'guest_name': $(this).find('input[name=booking_guest_name]').val(),
-                    'booking_status': $(this).find('select[name=_booking_status]').val(),
-                    'id': $(this).find('input[name=_booking_id]').val(),
-                },
+                url: fullcalendarOptions.events.wptargetUrl,
+                data: data,
                 success: function (data) {
                     calendar.refetchEvents();
                     tb_remove();
@@ -312,14 +338,14 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
                     return m;
                 },
                 ajax: {
-                    url:         '<?php echo admin_url( 'admin-ajax.php' ) ?>',
+                    url:         '<?php echo admin_url( 'admin-ajax.php' ); ?>',
                     dataType:    'json',
                     quietMillis: 250,
                     data: function( params ) {
                         return {
                             term:     params.term,
                             action:   'wc_bookings_json_search_order',
-                            security: '<?php echo wp_create_nonce( 'search-booking-order' ) ?>'
+                            security: '<?php echo wp_create_nonce( 'search-booking-order' ); ?>'
                         };
                     },
                     processResults: function( data ) {

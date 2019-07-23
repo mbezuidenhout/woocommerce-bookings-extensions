@@ -222,10 +222,11 @@ class WC_Bookings_Extensions_New_Calendar {
 				'createEventTitle'    => __( 'Create event', 'woo-booking-extensions' ),
 				'updateEventTitle'    => __( 'Update event', 'woo-booking-extensions' ),
 				'events'              => array(
-					'sourceUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
-					'targetUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_update_booking' ),
-					'newUrl'    => admin_url( 'admin-ajax.php?action=wc_bookings_extensions_update_booking' ),
-					'nonce'     => wp_create_nonce( 'fullcalendar_options' ),
+					'sourceUrl'    => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
+					'wctargetUrl'  => WC_Ajax::get_endpoint( 'wc_bookings_extensions_update_booking' ),
+					'wptargetUrl'  => admin_url( 'admin-ajax.php?action=wc_bookings_extensions_update_booking' ),
+					'eventPageUrl' => admin_url( 'admin-ajax.php?action=wc_bookings_extensions_event_page' ),
+					'nonce'        => wp_create_nonce( 'fullcalendar_options' ),
 				),
 			)
 		);
@@ -265,8 +266,8 @@ class WC_Bookings_Extensions_New_Calendar {
 				$timezone = new DateTimeZone( wc_timezone_string() );
 				$interval = DateInterval::createFromDateString( $timezone->getOffset( new DateTime() ) . ' seconds' );
 
-				$start   = isset( $_REQUEST['start'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['start'] ) ), $timezone ) : null;
-				$end     = isset( $_REQUEST['end'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ), $timezone ) : null;
+				$start = isset( $_REQUEST['start'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['start'] ) ), $timezone ) : null;
+				$end   = isset( $_REQUEST['end'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ), $timezone ) : null;
 
 
 				$product = isset( $_REQUEST['resource'] ) ? sanitize_key( wp_unslash( $_REQUEST['resource'] ) ) : null;
@@ -290,6 +291,8 @@ class WC_Bookings_Extensions_New_Calendar {
 				$booking->set_all_day( $all_day );
 
 			}
+
+			$booking = apply_filters( 'woo_booking_extensions_calendar_booking', $booking );
 
 			// Get published and private bookable products.
 			add_filter(
@@ -366,40 +369,45 @@ class WC_Bookings_Extensions_New_Calendar {
 		try {
 			$timezone = new DateTimeZone( wc_timezone_string() );
 			$offset   = $timezone->getOffset( new DateTime() );
-			$booking  = new WC_Booking( $_REQUEST['id'] );
+			$booking  = new WC_Booking( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 			if ( ! empty( $_REQUEST['order_id'] ) ) {
-				$booking->set_order_id( $_REQUEST['order_id'] );
+				$booking->set_order_id( sanitize_text_field( wp_unslash( $_REQUEST['order_id'] ) ) );
 			}
 			if ( ! empty( $_REQUEST['customer_id'] ) ) {
-				$booking->set_customer_id( $_REQUEST['customer_id'] );
+				$booking->set_customer_id( sanitize_text_field( wp_unslash( $_REQUEST['customer_id'] ) ) );
 			}
-			if ( 'true' === $_REQUEST['allDay'] ) {
+			if ( 'true' === $_REQUEST['allDay'] ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 				$booking->set_all_day( true );
 			} else {
 				$booking->set_all_day( false );
 			}
 			if ( ! empty( $_REQUEST['start'] ) ) {
-				$start = new DateTime( $_REQUEST['start'] );
+				$start = new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['start'] ) ) );
 				$booking->set_start( (int) $start->format( 'U' ) + $offset );
 			}
 			if ( ! empty( $_REQUEST['end'] ) ) {
-				$end = new DateTime( $_REQUEST['end'] );
+				$end = new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ) );
 				$booking->set_end( (int) $end->format( 'U' ) + $offset );
 			}
 			if ( ! empty( $_REQUEST['resource'] ) ) {
 				$booking->set_product_id( (int) $_REQUEST['resource'] );
 			}
 			if ( ! empty( $_REQUEST['persons'] ) ) {
-				$booking->set_person_counts( $_REQUEST['persons'] );
+				$booking->set_person_counts( sanitize_text_field( wp_unslash( $_REQUEST['persons'] ) ) );
 			}
 			if ( ! empty( $_REQUEST['booking_status'] ) ) {
-				$booking->set_status( $_REQUEST['booking_status'] );
+				$booking->set_status( sanitize_text_field( wp_unslash( $_REQUEST['booking_status'] ) ) );
 			}
+
+			do_action( 'woo_booking_extensions_before_save', $booking );
 
 			$booking_id = $booking->save();
 
 			if ( ! empty( $_REQUEST['guest_name'] ) ) {
-				update_post_meta( $booking_id, 'booking_guest_name', sanitize_text_field( $_REQUEST['guest_name'] ) );
+				update_post_meta( $booking_id, 'booking_guest_name', sanitize_text_field( wp_unslash( $_REQUEST['guest_name'] ) ) );
+
+				do_action( 'woo_booking_extensions_before_save_meta', $booking_id );
+
 				$booking->save_meta_data();
 			}
 

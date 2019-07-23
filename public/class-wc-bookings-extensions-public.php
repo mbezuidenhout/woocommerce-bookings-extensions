@@ -598,7 +598,7 @@ class WC_Bookings_Extensions_Public {
 
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		$args               = wp_parse_args( sanitize_post( $_GET ), $defaults ); //phpcs:ignore
+		$args               = wp_parse_args( sanitize_post( $_GET ), $defaults );  // phpcs:ignore WordPress.Security.NonceVerification
 		$user               = wp_authenticate( $args['username'], $args['password'] );
 		$args['product_id'] = intval( $args['product_id'] );
 		if ( ! $user instanceof WP_User || ! user_can( $user, 'edit_others_posts' ) ) { // User doesn't exist or can't see bookings.
@@ -665,7 +665,7 @@ class WC_Bookings_Extensions_Public {
 			'from'       => null,
 			'to'         => null,
 		);
-		$args     = wp_parse_args( sanitize_post( $_REQUEST ), $defaults ); //phpcs:ignore
+		$args     = wp_parse_args( sanitize_post( $_REQUEST ), $defaults ); // phpcs:ignore WordPress.Security.NonceVerification
 		if ( ! empty( $args['product_id'] ) ) {
 			$args['product_id'] = intval( $args['product_id'] );
 		}

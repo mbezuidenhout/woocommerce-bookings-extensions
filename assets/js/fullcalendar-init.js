@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             xhr['booking'] = $.ajax({
                 type: 'POST',
-                url: fullcalendarOptions.events.targetUrl,
+                url: fullcalendarOptions.events.wctargetUrl,
                 data: {
                     '_ajax_nonce': fullcalendarOptions.events.nonce,
                     'id': info.event.id,
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
             addButton: {
                 icon: 'fc-icon-plus-square',
                 click: function() {
-                    tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.newUrl  + "&" + $.param({_wpnonce: fullcalendarOptions.events.nonce}) );
+                    tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl  + "&" + $.param({_wpnonce: fullcalendarOptions.events.nonce}) );
                 },
             }
         },
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             _wpnonce: fullcalendarOptions.events.nonce,
                             "id": $(this).attr("id").substring(10),
                         };
-                        tb_show(fullcalendarOptions.updateEventTitle, fullcalendarOptions.events.newUrl + "&" + $.param(params));
+                        tb_show( fullcalendarOptions.updateEventTitle, fullcalendarOptions.events.eventPageUrl + "&" + $.param(params) );
                     }
                     event.preventDefault();
                 }
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'allDay': info.allDay,
                 'resource': info.hasOwnProperty("resource") && info.resource !== null ? info.resource.id : null,
             };
-            tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.newUrl + '&' + $.param( params ) );
+            tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl + '&' + $.param( params ) );
         },
         dateClick: function(arg) {
             console.log(
