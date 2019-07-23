@@ -11,3 +11,7 @@
 	white-space: pre-line;
 	overflow: scroll;
 }
+
+div.panel.wbe-booking-data-thickbox {
+    padding: unset !important;
+}

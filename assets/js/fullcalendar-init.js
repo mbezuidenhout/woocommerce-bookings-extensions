@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
             addButton: {
                 icon: 'fc-icon-plus-square',
                 click: function() {
-                    tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.newUrl );
+                    tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.newUrl  + "&" + $.param({_wpnonce: fullcalendarOptions.events.nonce}) );
                 },
             }
         },
@@ -99,44 +99,51 @@ document.addEventListener('DOMContentLoaded', function() {
         eventSources: [
             {
                 url: fullcalendarOptions.events.sourceUrl,
-                method: 'POST',
+                method: "POST",
                 extraParams: {
                     _ajax_nonce: fullcalendarOptions.events.nonce
                 },
             }
         ],
         eventRender: function( info ) {
+            $(info.el).on(
+                "click",
+                function( event ) {
+                    if( $(this).attr("id").length && $(this).attr( "id" ).substring(0, 10) === "wbe-event-" ) {
+                        var params = {
+                            _wpnonce: fullcalendarOptions.events.nonce,
+                            "id": $(this).attr("id").substring(10),
+                        };
+                        tb_show(fullcalendarOptions.updateEventTitle, fullcalendarOptions.events.newUrl + "&" + $.param(params));
+                    }
+                    event.preventDefault();
+                }
+            );
+            if( info.event.id.length ) {
+                if( info.event.extendedProps.hasOwnProperty( "isExternal" ) && info.event.extendedProps.isExternal ) {
+                    $(info.el).attr("id", "ext-event-" + info.event.id);
+                } else {
+                    $(info.el).attr("id", "wbe-event-" + info.event.id);
+                }
+            }
+            var domElementType = "div";
             if(info.view.constructor.name === "DayGridView") {
-                if ( ! info.event.extendedProps.hasOwnProperty("isExternal") || ! info.event.extendedProps.isExternal ) {
-                    $(info.el).find(".fc-title").first().before("<span class=\"wbe-booking-id\">#" + info.event.id + "</span>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("bookedBy")) {
-                    $(info.el).find(".fc-content").first().append("<span class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</span>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("bookedFor")) {
-                    $(info.el).find(".fc-content").first().append("<span class=\"wbe-booked-for\">Booked for " + info.event.extendedProps.bookedFor + "</span>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("persons")) {
-                    $(info.el).find(".fc-content").first().append("<span class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</span>");
-                }
-
-            } else {
-                if ( ! info.event.extendedProps.hasOwnProperty("isExternal") || ! info.event.extendedProps.isExternal ) {
-                    $(info.el).find(".fc-title").first().before("<div class=\"wbe-booking-id\">#" + info.event.id + "</div>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("bookedBy")) {
-                    $(info.el).find(".fc-content").first().append("<div class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</div>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("bookedFor")) {
-                    $(info.el).find(".fc-content").first().append("<div class=\"wbe-booked-for\">Booked for " + info.event.extendedProps.bookedFor + "</div>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("persons")) {
-                    $(info.el).find(".fc-content").first().append("<div class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</div>");
-                }
+                domElementType = "span";
+            } else if (info.view.constructor.name === "ResourceTimeGridView") {
                 // Remove title if in resource view.
-                if (info.view.constructor.name === "ResourceTimeGridView") {
-                    $(info.el).find(".fc-title").remove();
-                }
+                $(info.el).find(".fc-title").remove();
+            }
+            if ( ! info.event.extendedProps.hasOwnProperty("isExternal") || ! info.event.extendedProps.isExternal ) {
+                $(info.el).find(".fc-title").first().before("<" + domElementType + " class=\"wbe-booking-id\">#" + info.event.id + "</" + domElementType + ">");
+            }
+            if (info.event.extendedProps.hasOwnProperty("bookedBy")) {
+                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</" + domElementType + ">");
+            }
+            if (info.event.extendedProps.hasOwnProperty("bookedFor")) {
+                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-booked-for\">Booked for " + info.event.extendedProps.bookedFor + "</" + domElementType + ">");
+            }
+            if (info.event.extendedProps.hasOwnProperty("persons")) {
+                $(info.el).find(".fc-content").first().append("<" + domElementType + "n class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</" + domElementType + ">");
             }
         },
         eventResize: eventMove,
