@@ -53,6 +53,7 @@ class WC_Bookings_Extensions_Audits {
 	 */
 	public function log_booking_update( $post_ID, $data ) {
 		if ( isset( $data['post_type'] ) && 'wc_booking' === $data['post_type'] ) {
+			do_action( 'booking_updated', $post_ID, $data );
 			if ( is_user_logged_in() ) {
 				$booking = get_wc_booking( $post_ID );
 				$booking->update_meta_data( '_booking_modified_user_id', wp_get_current_user()->ID );
@@ -74,4 +75,5 @@ class WC_Bookings_Extensions_Audits {
 			$booking->save_meta_data();
 		}
 	}
+
 }

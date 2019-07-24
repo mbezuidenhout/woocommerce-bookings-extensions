@@ -19,6 +19,7 @@ div.panel.wbe-booking-data-thickbox {
 .booking-changed-data .booking-changed-column p {
     color: #777;
     padding: 0!important;
+    font-size: 0.9em;
 }
 
 .booking-changed-data .booking-changed-column .form-field {
@@ -32,7 +33,7 @@ div.panel.wbe-booking-data-thickbox {
 }
 
 .booking-changed-data .booking-changed-column {
-    width: 24%;
+    width: 23%;
     padding: 0 2% 0 0;
     float: left;
 }

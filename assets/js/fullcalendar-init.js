@@ -12,17 +12,20 @@ document.addEventListener('DOMContentLoaded', function() {
             if (null === eventEnd && false === info.event.allDay) {
                 eventEnd = new Date(info.event.start.getTime() + 3600000);
             }
+            var params = {
+                '_ajax_nonce': fullcalendarOptions.events.nonce,
+                'id': info.event.id,
+                'start': info.event.start !== null ? info.event.start.toISOString() : null,
+                'end': eventEnd !== null ? eventEnd.toISOString() : null,
+                'allDay': info.event.allDay,
+            };
+            if ( info.hasOwnProperty("newResource") && info.newResource !== null ) {
+                params.resource = info.newResource.id;
+            }
             xhr['booking'] = $.ajax({
                 type: 'POST',
                 url: fullcalendarOptions.events.wctargetUrl,
-                data: {
-                    '_ajax_nonce': fullcalendarOptions.events.nonce,
-                    'id': info.event.id,
-                    'start': info.event.start !== null ? info.event.start.toISOString() : null,
-                    'end': eventEnd !== null ? eventEnd.toISOString() : null,
-                    'allDay': info.event.allDay,
-                    'resource': info.hasOwnProperty("newResource") && info.newResource !== null ? info.newResource.id : null,
-                },
+                data: params,
                 success: function (data) {
                     calendar.refetchEvents();
                 },

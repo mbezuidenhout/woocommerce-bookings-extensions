@@ -372,10 +372,10 @@ class WC_Bookings_Extensions_New_Calendar {
 			$timezone = new DateTimeZone( wc_timezone_string() );
 			$offset   = $timezone->getOffset( new DateTime() );
 			$booking  = new WC_Booking( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-			if ( ! empty( $_REQUEST['order_id'] ) ) {
+			if ( isset( $_REQUEST['order_id'] ) ) {
 				$booking->set_order_id( sanitize_text_field( wp_unslash( $_REQUEST['order_id'] ) ) );
 			}
-			if ( ! empty( $_REQUEST['customer_id'] ) ) {
+			if ( isset( $_REQUEST['customer_id'] ) ) {
 				$booking->set_customer_id( sanitize_text_field( wp_unslash( $_REQUEST['customer_id'] ) ) );
 			}
 			if ( 'true' === $_REQUEST['allDay'] ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
@@ -391,13 +391,13 @@ class WC_Bookings_Extensions_New_Calendar {
 				$end = new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ) );
 				$booking->set_end( (int) $end->format( 'U' ) + $offset );
 			}
-			if ( ! empty( $_REQUEST['resource'] ) ) {
+			if ( isset( $_REQUEST['resource'] ) ) {
 				$booking->set_product_id( (int) $_REQUEST['resource'] );
 			}
-			if ( ! empty( $_REQUEST['persons'] ) ) {
+			if ( isset( $_REQUEST['persons'] ) ) {
 				$booking->set_person_counts( sanitize_text_field( wp_unslash( $_REQUEST['persons'] ) ) );
 			}
-			if ( ! empty( $_REQUEST['booking_status'] ) ) {
+			if ( isset( $_REQUEST['booking_status'] ) ) {
 				$booking->set_status( sanitize_text_field( wp_unslash( $_REQUEST['booking_status'] ) ) );
 			}
 
@@ -409,7 +409,7 @@ class WC_Bookings_Extensions_New_Calendar {
 				$booking_id = $booking->get_id();
 			}
 
-			if ( ! empty( $_REQUEST['guest_name'] ) ) {
+			if ( isset( $_REQUEST['guest_name'] ) ) {
 				update_post_meta( $booking_id, 'booking_guest_name', sanitize_text_field( wp_unslash( $_REQUEST['guest_name'] ) ) );
 
 				do_action( 'woo_booking_extensions_before_save_meta', $booking_id );
