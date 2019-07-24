@@ -26,7 +26,7 @@ final class WP_Route {
 
 	private function __construct() {
 		if ( ! function_exists( 'get_subdirectory_reserved_names' ) ) {
-			require_once ABSPATH . 'wp-includes/ms-functions.php';
+			require_once ABSPATH . 'wp-includes' . DIRECTORY_SEPARATOR . 'ms-functions.php';
 		}
 		$this->reserved_names = get_subdirectory_reserved_names();
 	}

@@ -47,14 +47,6 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 			            <?php endif; ?>
                     </select>
                 </p>
-                <?php
-                if ( ! empty( $booking->get_date_created() ) ) :
-                    ?>
-                <p class="form-field form-field-wide">
-                    <?php _e( 'Date created:', 'woocommerce-bookings' ); ?><br>
-	                <?php echo date_i18n( wc_date_format() . ' ' . wc_time_format(), $booking->get_date_created() ); ?>
-                </p>
-                <?php endif; ?>
                 <p class="form-field form-field-wide">
                     <label for="_booking_status"><?php esc_html_e( 'Booking status:', 'woocommerce-bookings' ); ?></label>
                     <select id="_booking_status" name="_booking_status" class="wc-enhanced-select">
@@ -69,7 +61,7 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
             <p class="form-field form-field-wide">
                 <label for="_booking_customer_id"><?php esc_html_e( 'Customer:', 'woocommerce-bookings' ); ?></label>
 		        <?php
-		        $name = ! empty( $customer->name ) ? ' &ndash; ' . $customer->name : '';
+		        $name              = ! empty( $customer->name ) ? ' &ndash; ' . $customer->name : '';
 		        $guest_placeholder = __( 'Guest', 'woocommerce-bookings' );
 		        if ( 'Guest' === $name ) {
 			        /* translators: 1: guest name */
@@ -252,11 +244,63 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
         <?php
         do_action( 'woo_booking_extensions_event_page_after', $booking );
         ?>
-        <input type="hidden" name="_booking_id" id="_booking_id" value="<?php echo esc_attr( $booking->get_id() ); ?>"/>
-        <input type="hidden">
-        <input type="submit" class="button save_order button-primary tips" name="save"
-               value="<?php esc_html_e( 'Save Booking', 'woocommerce-bookings' ); ?>"
-               data-tip="<?php esc_html_e( 'Save/update the booking', 'woocommerce-bookings' ); ?>"/>
+        <div>
+            <input type="hidden" name="_booking_id" id="_booking_id" value="<?php echo esc_attr( $booking->get_id() ); ?>"/>
+            <input type="submit" class="button save_order button-primary tips" name="save"
+                   value="<?php esc_html_e( 'Save Booking', 'woocommerce-bookings' ); ?>"
+                   data-tip="<?php esc_html_e( 'Save/update the booking', 'woocommerce-bookings' ); ?>"/>
+        </div>
+        <div class="clear"></div>
+        <div class="booking-changed-data">
+            <?php
+            if ( ! empty( $booking->get_date_created() ) ) :
+                ?>
+            <div class="booking-changed-column">
+                <p>
+                    <?php esc_html_e( 'Date created:', 'woocommerce-bookings-extensions' ); ?><br>
+                    <?php echo esc_html( date_i18n( wc_date_format() . ' ' . wc_time_format(), $booking->get_date_created() ) ); ?>
+                </p>
+            </div>
+                <?php
+            endif;
+            if ( ! empty( $booking->get_date_modified() ) ) :
+                ?>
+            <div class="booking-changed-column">
+                <p>
+                    <?php esc_html_e( 'Date modified:', 'woocommerce-bookings-extensions' ); ?><br>
+                    <?php echo esc_html( date_i18n( wc_date_format() . ' ' . wc_time_format(), $booking->get_date_modified() ) ); ?>
+                </p>
+            </div>
+                <?php
+            endif;
+            if ( ! empty( $booking->get_meta( '_booking_created_user_id' ) ) ) :
+                $created_by = get_userdata( $booking->get_meta( '_booking_created_user_id' ) );
+                if ( $created_by ) :
+	                ?>
+            <div class="booking-changed-column">
+                <p>
+	                <?php esc_html_e( 'User created:', 'woocommerce-bookings-extensions' ); ?><br>
+	                <?php echo esc_html( $created_by->first_name . ' ' . $created_by->last_name ); ?>
+                </p>
+            </div>
+                    <?php
+                endif;
+            endif;
+            if ( ! empty( $booking->get_meta( '_booking_modified_user_id' ) ) ) :
+                $modified_by = get_userdata( $booking->get_meta( '_booking_modified_user_id' ) );
+                if ( $modified_by ) :
+                    ?>
+            <div class="booking-changed-column">
+                <p>
+		            <?php esc_html_e( 'User modified:', 'woocommerce-bookings-extensions' ); ?><br>
+                    <?php echo esc_html( $modified_by->first_name . ' ' . $modified_by->last_name ); ?>
+                </p>
+            </div>
+                    <?php
+                endif;
+            endif;
+            ?>
+        </div>
     </div>
 </form>
 
@@ -338,14 +382,14 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
                     return m;
                 },
                 ajax: {
-                    url:         '<?php echo admin_url( 'admin-ajax.php' ); ?>',
+                    url:         '<?php echo admin_url( 'admin-ajax.php' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>',
                     dataType:    'json',
                     quietMillis: 250,
                     data: function( params ) {
                         return {
                             term:     params.term,
                             action:   'wc_bookings_json_search_order',
-                            security: '<?php echo wp_create_nonce( 'search-booking-order' ); ?>'
+                            security: '<?php echo wp_create_nonce( 'search-booking-order' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'
                         };
                     },
                     processResults: function( data ) {

@@ -249,7 +249,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			'calendar.php',
 			array(),
 			'woocommerce-bookings-extensions',
-			plugin_dir_path( __DIR__ ) . 'templates/'
+			plugin_dir_path( __DIR__ ) . 'templates' . DIRECTORY_SEPARATOR
 		);
 	}
 
@@ -260,8 +260,10 @@ class WC_Bookings_Extensions_New_Calendar {
 		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( wp_unslash( $_REQUEST['_wpnonce'] ), 'fullcalendar_options' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 
 			if ( isset( $_REQUEST['id'] ) ) {
-				$booking = new WC_Booking( $_REQUEST['id'] );
+				$booking = new WC_Booking( sanitize_key( wp_unslash( $_REQUEST['id'] ) ) );
 			} else {
+				// Create a new booking with passed values.
+
 				$booking  = new WC_Booking();
 				$timezone = new DateTimeZone( wc_timezone_string() );
 				$interval = DateInterval::createFromDateString( $timezone->getOffset( new DateTime() ) . ' seconds' );
@@ -401,7 +403,11 @@ class WC_Bookings_Extensions_New_Calendar {
 
 			do_action( 'woo_booking_extensions_before_save', $booking );
 
-			$booking_id = $booking->save();
+			if ( ! empty( $booking->get_changes() ) ) {
+				$booking_id = $booking->save();
+			} else {
+				$booking_id = $booking->get_id();
+			}
 
 			if ( ! empty( $_REQUEST['guest_name'] ) ) {
 				update_post_meta( $booking_id, 'booking_guest_name', sanitize_text_field( wp_unslash( $_REQUEST['guest_name'] ) ) );

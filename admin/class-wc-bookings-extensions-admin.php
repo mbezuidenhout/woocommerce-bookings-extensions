@@ -425,7 +425,7 @@ class WC_Bookings_Extensions_Admin {
 				'default'  => '',
 				'type'     => 'text',
 				'desc_tip' => true,
-				'desc'     => __( 'URI where a ICS file can be found with holidays', 'woocommerce-bookings-extensions' ),
+				'desc'     => __( 'URI where an ICS file can be found with holidays', 'woocommerce-bookings-extensions' ),
 			),
 		);
 

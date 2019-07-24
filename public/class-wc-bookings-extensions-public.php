@@ -644,7 +644,7 @@ class WC_Bookings_Extensions_Public {
 				'product'  => $product,
 			),
 			'woocommerce-bookings-extensions',
-			plugin_dir_path( __DIR__ ) . 'templates/'
+			plugin_dir_path( __DIR__ ) . 'templates' . DIRECTORY_SEPARATOR
 		);
 
 	}
@@ -752,7 +752,7 @@ class WC_Bookings_Extensions_Public {
 	 */
 	public function add_routes() {
 		if ( ! class_exists( 'WP_Route' ) ) {
-			require_once plugin_dir_path( __DIR__ ) . 'includes/class-wp-route.php';
+			require_once plugin_dir_path( __DIR__ ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wp-route.php';
 		}
 
 		WP_Route::get( 'wc-bookings/fetch', array( $this, 'get_bookings_page' ) );
