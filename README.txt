@@ -4,7 +4,7 @@ Tags: bookings, booking, woocommerce, woo-booking-extensions, accommodation, sea
 Requires PHP: 5.6
 Requires at least: 4.9
 Tested up to: 5.2.2
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,53 +25,61 @@ wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer valu
 
 == Changelog ==
 
-= 1.2.1 =
-* Fix: Linked products field in admin section has missing bookable products from options list
-
-= 1.4.0 =
-* New: Added global route to show a page for upcoming bookings
-
-= 1.4.1 =
-* Fix: Global search form would be blocked without ajax query being sent
-
-= 1.4.2 =
-* New: In the admin calendar view for the day show more details than just the order number.
-
-= 1.5.0 =
-* New: Added new admin option for overriding block costs for specific days
-
-= 1.6.0 =
-* New: Transfer options from global search to product page
-
-= 1.6.2 =
-* Fix: Passing data from global search broke calendar.
-
-= 1.6.3 =
-* Fix: Check that check in date does not fall before an unbookable date.
-
-= 1.6.5 =
-* Fix: Current and upcoming bookings not displaying correctly.
-
-= 1.6.6 =
-* Fix: Check for WooCommerce activation.
+= 1.7.1 =
+* New: Added support for external ical file. Useful for adding public holidays.
+* New: Added colors to booking states.
+* New: Administrators can create or modify their bookings from the calendar view.
 
 = 1.7.0 =
 * New: Added interactive calendar. Uses the fullcalendar.io JS libraries.
 
-== Upgrade Notice ==
+= 1.6.6 =
+* Fix: Check for WooCommerce activation.
 
 = 1.6.5 =
-Current and upcoming bookings did not display properly.
+* Fix: Current and upcoming bookings not displaying correctly.
+
+= 1.6.3 =
+* Fix: Check that check in date does not fall before an unbookable date.
+
+= 1.6.2 =
+* Fix: Passing data from global search broke calendar.
+
+= 1.6.0 =
+* New: Transfer options from global search to product page
+
+= 1.5.0 =
+* New: Added new admin option for overriding block costs for specific days
+
+= 1.4.2 =
+* New: In the admin calendar view for the day show more details than just the order number.
+
+= 1.4.1 =
+* Fix: Global search form would be blocked without ajax query being sent
+
+= 1.4.0 =
+* New: Added global route to show a page for upcoming bookings
+
+= 1.2.1 =
+* Fix: Linked products field in admin section has missing bookable products from options list
+
+== Upgrade Notice ==
+
+= 1.7.0 =
+The normal calendar will be replaced with the full calendar when selecting full calendar option.
+
+= 1.6.9 =
+Added field to calendar view for guest name
+
+= 1.6.8 =
+Added field to admin booking details for guest name
 
 = 1.6.6 =
 Fixes issue where pages will not load if WooCommerce is not activated.
 All users shoud upgrade to this version.
 
-= 1.6.8 =
-Added field to admin booking details for guest name
-
-= 1.6.9 =
-Added field to calendar view for guest name
+= 1.6.5 =
+Current and upcoming bookings did not display properly.
 
 == Frequently Asked Questions ==
 
