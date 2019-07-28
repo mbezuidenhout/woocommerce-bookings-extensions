@@ -28,6 +28,6 @@ foreach ( $product_ids as $product_id ) {
 }
 
 ?>
-		</select> <?php echo wc_help_tip( __( 'This lets you choose which products are dependent on this product.', 'woocommerce' ) );  // phpcs:ignore  ?>
+		</select> <?php echo wc_help_tip( __( 'This lets you choose which products are dependent on this product.', 'woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	</p>
 </div>

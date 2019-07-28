@@ -87,9 +87,9 @@ class WC_Bookings_Extensions {
 		$this->load_dependencies();
 		$this->set_locale();
 		if ( ! function_exists( 'is_plugin_active' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			require_once ABSPATH . 'wp-admin' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'plugin.php';
 		}
-		if ( ! is_plugin_active( 'woocommerce-bookings/woocommerce-bookings.php' ) || ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+		if ( ! is_plugin_active( 'woocommerce-bookings' . DIRECTORY_SEPARATOR . 'woocommerce-bookings.php' ) || ! is_plugin_active( 'woocommerce' . DIRECTORY_SEPARATOR . 'woocommerce.php' ) ) {
 			add_action( 'admin_notices', array( $this, 'woocommerce_bookings_extensions_woocommerce_bookings_admin_notice' ) );
 		} else {
 			$this->define_admin_hooks();
@@ -127,30 +127,55 @@ class WC_Bookings_Extensions {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-loader.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-i18n.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wc-bookings-extensions-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wc-bookings-extensions-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-public.php';
 
 		/**
 		 * The class responsible for display the global search form that occur by using the
 		 * shortcode
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-search.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-search.php';
+
+		/**
+		 * Class of static functions.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-lib.php';
+
+		/**
+		 * Plugin shortcode functions
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-shortcodes.php';
+
+		/**
+		 * Full calendar class
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-new-calendar.php';
+
+		/**
+		 * Audit system class
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-audits.php';
+
+		/**
+		 * Composer libraries
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 		$this->loader = new WC_Bookings_Extensions_Loader();
 
@@ -218,7 +243,10 @@ class WC_Bookings_Extensions {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
+		$plugin_public     = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
+		$plugin_shortcodes = new WC_Bookings_Extensions_Shortcodes();
+		$plugin_calendar   = WC_Bookings_Extensions_New_Calendar::get_instance();
+		$plugin_audits     = WC_Bookings_Extensions_Audits::get_instance();
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
@@ -232,12 +260,12 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'wc_ajax_wc_bookings_find_booked_day_blocks', $plugin_public, 'find_booked_day_blocks_ajax', 9 );
 
 		/** @see WC_Bookings_Extensions_Public::calculate_costs */
-		$this->loader->add_action( 'wp_ajax_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
-		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', $plugin_public, 'calculate_costs', 9 );
+		add_action( 'wp_ajax_wc_bookings_calculate_costs', 'WC_Bookings_Extensions_Lib::calculate_costs', 9 );
+		add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', 'WC_Bookings_Extensions_Lib::calculate_costs', 9 );
 
 		/** @see WC_Bookings_Extensions_Public::search_booking_products */
-		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search', $plugin_public, 'search_booking_products' );
-		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search', $plugin_public, 'search_booking_products' );
+		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search', $plugin_shortcodes, 'search_booking_products' );
+		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_extensions_search', $plugin_shortcodes, 'search_booking_products' );
 
 		/** @see WC_Bookings_Extensions_Public::search_result */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_search_result', $plugin_public, 'search_result' );
@@ -255,14 +283,20 @@ class WC_Bookings_Extensions {
 		$this->loader->add_filter( 'booking_form_calculated_booking_cost', $plugin_public, 'override_booking_cost', 8, 3 );
 
 		// Notice that the global search does not support multi level dependencies
-		// Short codes should not be active in the admin panel
+		// Short codes should not be active in the admin panel.
 		/** @see WC_Bookings_Extensions_Public::global_search_shortcode() */
-		$this->loader->add_shortcode( 'wcbooking_search', $plugin_public, 'global_search_shortcode' );
+		$this->loader->add_shortcode( 'wcbooking_search', $plugin_shortcodes, 'global_search_shortcode' );
+		$this->loader->add_shortcode( 'wcbooking_calendar', $plugin_shortcodes, 'calendar_shortcode' );
 
 		$this->loader->add_action( 'woocommerce_before_booking_form', $plugin_public, 'add_booking_form_scripts' );
 
-		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_get_bookings', $plugin_public, 'get_bookings_ajax' );
-		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_update_booking', $plugin_public, 'update_booking_ajax' );
+		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_get_bookings', $plugin_calendar, 'get_bookings_ajax' );
+		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_update_booking', $plugin_calendar, 'update_booking_ajax' );
+		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_update_booking', $plugin_calendar, 'update_booking_ajax' );
+		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_event_page', $plugin_calendar, 'booking_page' );
+
+		$this->loader->add_action( 'pre_post_update', $plugin_audits, 'log_booking_update', 10, 2 );
+		$this->loader->add_action( 'woocommerce_new_booking', $plugin_audits, 'log_booking_created' );
 	}
 
 	/**
@@ -335,17 +369,16 @@ class WC_Bookings_Extensions {
 	 * Replaces parts of the WooCommerce Bookings components
 	 */
 	public function load_extensions() {
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-custom.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-product-booking.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-cart-manager.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-bookings-extensions-form.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-custom.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-product-booking.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-cart-manager.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-form.php';
 
-		$plugin_public = new WC_Bookings_Extensions_Public( $this->get_plugin_name(), $this->get_version(), $this->uri );
 		$cart_manager  = new WC_Bookings_Extensions_Cart_Manager();
 
 		/** @see WC_Booking_Cart_Manager::validate_add_cart_item */
 		$this->remove_filter_by_class( 'woocommerce_add_to_cart_validation', 'WC_Booking_Cart_Manager', 'validate_add_cart_item', 10 );
-		add_filter( 'woocommerce_add_to_cart_validation', array( $plugin_public, 'validate_add_cart_item' ), 10, 3 );
+		add_filter( 'woocommerce_add_to_cart_validation', array( $cart_manager, 'validate_add_cart_item' ), 10, 3 );
 
 		/** @see WC_Booking_Cart_Manager::add_cart_item_data */
 		$this->remove_filter_by_class( 'woocommerce_add_cart_item_data', 'WC_Booking_Cart_Manager', 'add_cart_item_data', 10 );

@@ -30,7 +30,7 @@ $current_booking_end   = '';
 $current_status        = __( 'Available', 'woocommerce-bookings-extensions' );
 
 foreach ( $bookings as $booking ) {
-	$customer = WC_Bookings_Extensions_Public::map_customer( $booking->get_customer() );
+	$customer = WC_Bookings_Extensions_Lib::map_customer( $booking->get_customer() );
 	if ( $booking->get_start() < $unix_timestamp && $booking->get_end() > $unix_timestamp ) {
 		$current_status        = __( 'In-use', 'woocommerce-bookings-extensions' );
 		$product_title         = $booking->get_product()->get_name();

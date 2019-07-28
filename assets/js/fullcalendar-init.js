@@ -1,27 +1,33 @@
+var calendar;
+
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var xhr = [];
 
     function eventMove ( info ) {
-        if (!confirm(fullcalendarOptions.confirmMessage)) {
+        if (!confirm(fullcalendarOptions.confirmMoveMessage)) {
             info.revert();
         } else {
             var eventEnd = info.event.end;
             if (null === eventEnd && false === info.event.allDay) {
                 eventEnd = new Date(info.event.start.getTime() + 3600000);
             }
+            var params = {
+                '_ajax_nonce': fullcalendarOptions.events.nonce,
+                'id': info.event.id,
+                'start': info.event.start !== null ? info.event.start.toISOString() : null,
+                'end': eventEnd !== null ? eventEnd.toISOString() : null,
+                'allDay': info.event.allDay,
+            };
+            if ( info.hasOwnProperty("newResource") && info.newResource !== null ) {
+                params.resource = info.newResource.id;
+            }
             xhr['booking'] = $.ajax({
                 type: 'POST',
-                url: fullcalendarOptions.events.targetUrl,
-                data: {
-                    '_ajax_nonce': fullcalendarOptions.events.nonce,
-                    'id': info.event.id,
-                    'start': info.event.start !== null ? info.event.start.toISOString() : null,
-                    'end': eventEnd !== null ? eventEnd.toISOString() : null,
-                    'allDay': info.event.allDay,
-                    'resource': info.hasOwnProperty("newResource") && info.newResource !== null ? info.newResource.id : null,
-                },
+                url: fullcalendarOptions.events.wctargetUrl,
+                data: params,
                 success: function (data) {
+                    calendar.refetchEvents();
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     info.revert();
@@ -33,8 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        plugins: [ 'interaction', 'resourceDayGrid', 'resourceTimeGrid' ],
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        plugins: [ 'interaction', 'resourceDayGrid', 'resourceTimeGrid', 'list' ],
         defaultView: fullcalendarOptions.defaultView,
         defaultDate: fullcalendarOptions.defaultDate,
         schedulerLicenseKey: fullcalendarOptions.schedulerLicenseKey,
@@ -46,6 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
         //maxTime: '17:00:00', // End at 6pm
         nowIndicator: true,
         navLinks: true,
+        contentHeight: 'auto',
         businessHours: [ // specify an array instead
             {
                 daysOfWeek: [ 1, 2, 3, 4, 5 ], // Monday, Tuesday, Wednesday, Thursday, Friday
@@ -64,16 +71,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
         ],
+        customButtons: {
+            addButton: {
+                icon: 'fc-icon-plus-square',
+                click: function() {
+                    tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl  + "&" + $.param({_wpnonce: fullcalendarOptions.events.nonce}) );
+                },
+            }
+        },
         header: {
-            left: 'prev,next today',
+            left: 'addButton, prev,next today',
             center: 'title',
-            right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth'
+            right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth,listWeek'
         },
         views: {
             resourceTimeGridTwoDay: {
                 type: 'resourceTimeGrid',
                 duration: { days: 2 },
                 buttonText: '2 days',
+            },
+            listWeek: {
+                buttonText: 'list',
             }
         },
 
@@ -84,51 +102,69 @@ document.addEventListener('DOMContentLoaded', function() {
         eventSources: [
             {
                 url: fullcalendarOptions.events.sourceUrl,
-                method: 'POST',
+                method: "POST",
                 extraParams: {
                     _ajax_nonce: fullcalendarOptions.events.nonce
                 },
             }
         ],
         eventRender: function( info ) {
+            $(info.el).on(
+                "click",
+                function( event ) {
+                    if( $(this).attr("id").length && $(this).attr( "id" ).substring(0, 10) === "wbe-event-" ) {
+                        var params = {
+                            _wpnonce: fullcalendarOptions.events.nonce,
+                            "id": $(this).attr("id").substring(10),
+                        };
+                        tb_show( fullcalendarOptions.updateEventTitle, fullcalendarOptions.events.eventPageUrl + "&" + $.param(params) );
+                    }
+                    event.preventDefault();
+                }
+            );
+            if( info.event.id.length ) {
+                if( info.event.extendedProps.hasOwnProperty( "isExternal" ) && info.event.extendedProps.isExternal ) {
+                    $(info.el).attr("id", "ext-event-" + info.event.id);
+                } else {
+                    $(info.el).attr("id", "wbe-event-" + info.event.id);
+                }
+            }
+            var domElementType = "div";
             if(info.view.constructor.name === "DayGridView") {
-                $(info.el).find(".fc-title").first().before("<span class=\"wbe-booking-id\">#" + info.event.id + "</span>");
-                if (info.event.extendedProps.hasOwnProperty("bookedBy")) {
-                    $(info.el).find(".fc-content").first().append("<span class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</span>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("bookedFor")) {
-                    $(info.el).find(".fc-content").first().append("<span class=\"wbe-booked-for\">Booked for " + info.event.extendedProps.bookedFor + "</span>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("persons")) {
-                    $(info.el).find(".fc-content").first().append("<span class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</span>");
-                }
-
-            } else {
-                $(info.el).find(".fc-title").first().before("<div class=\"wbe-booking-id\">#" + info.event.id + "</div>");
-                if (info.event.extendedProps.hasOwnProperty("bookedBy")) {
-                    $(info.el).find(".fc-content").first().append("<div class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</div>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("bookedFor")) {
-                    $(info.el).find(".fc-content").first().append("<div class=\"wbe-booked-for\">Booked for " + info.event.extendedProps.bookedFor + "</div>");
-                }
-                if (info.event.extendedProps.hasOwnProperty("persons")) {
-                    $(info.el).find(".fc-content").first().append("<div class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</div>");
-                }
+                domElementType = "span";
+            } else if (info.view.constructor.name === "ResourceTimeGridView") {
                 // Remove title if in resource view.
-                if (info.view.constructor.name === "ResourceTimeGridView") {
-                    $(info.el).find(".fc-title").remove();
-                }
+                $(info.el).find(".fc-title").remove();
+            }
+            if ( ! info.event.extendedProps.hasOwnProperty("isExternal") || ! info.event.extendedProps.isExternal ) {
+                $(info.el).find(".fc-title").first().before("<" + domElementType + " class=\"wbe-booking-id\">#" + info.event.id + "</" + domElementType + ">");
+            }
+            if (info.event.extendedProps.hasOwnProperty("bookedBy")) {
+                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</" + domElementType + ">");
+            }
+            if (info.event.extendedProps.hasOwnProperty("bookedFor")) {
+                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-booked-for\">Booked for " + info.event.extendedProps.bookedFor + "</" + domElementType + ">");
+            }
+            if (info.event.extendedProps.hasOwnProperty("persons")) {
+                $(info.el).find(".fc-content").first().append("<" + domElementType + "n class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</" + domElementType + ">");
             }
         },
         eventResize: eventMove,
         eventDrop: eventMove,
-        select: function(arg) {
-            console.log(
-                'select',
-                arg.startStr,
-                arg.endStr,
-                arg.resource ? arg.resource.id : '(no resource)'
-            );
+        select: function( info ) {
+            // if( info.resource && confirm(fullcalendarOptions.confirmAddMessage) ) {
+            //     // Show add add event pop-over.
+            // } else {
+            //     calendar.unselect();
+            // }
+            var params = {
+                _wpnonce: fullcalendarOptions.events.nonce,
+                'start': info.start !== null ? info.start.toISOString() : null,
+                'end': info.end !== null ? info.end.toISOString() : null,
+                'allDay': info.allDay,
+                'resource': info.hasOwnProperty("resource") && info.resource !== null ? info.resource.id : null,
+            };
+            tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl + '&' + $.param( params ) );
         },
         dateClick: function(arg) {
             console.log(
@@ -140,4 +176,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     calendar.render();
+
 });

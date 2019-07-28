@@ -382,9 +382,8 @@ class WC_Bookings_Extensions_Admin {
 	 * Output for the new calendar page.
 	 */
 	public function full_calendar_page() {
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wc-bookings-extensions-new-calendar.php';
-		$page = new WC_Bookings_Extensions_New_Calendar();
-		$page->output();
+		$page = WC_Bookings_Extensions_New_Calendar::get_instance();
+		$page->admin_output();
 	}
 
 	/**
@@ -418,7 +417,15 @@ class WC_Bookings_Extensions_Admin {
 				'default'  => '',
 				'type'     => 'text',
 				'desc_tip' => true,
-				'desc'     => 'If using FullCalendar then enter license here. https://fullcalendar.io/license ',
+				'desc'     => __( 'If using FullCalendar then enter license here. https://fullcalendar.io/license ', 'woocommerce-bookings-extensions' ),
+			),
+			array(
+				'title'    => __( 'Holidays ICS URI', 'woocommerce-bookings-extensions' ),
+				'id'       => 'woocommerce_bookings_extensions_holidays',
+				'default'  => '',
+				'type'     => 'text',
+				'desc_tip' => true,
+				'desc'     => __( 'URI where an ICS file can be found with holidays', 'woocommerce-bookings-extensions' ),
 			),
 		);
 
