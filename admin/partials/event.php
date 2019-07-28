@@ -164,6 +164,7 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 			                    'type'          => 'number',
 			                    'placeholder'   => '0',
 			                    'value'         => '0',
+			                    'min'           => '0',
 			                    'wrapper_class' => 'booking-person',
 		                    )
                         );

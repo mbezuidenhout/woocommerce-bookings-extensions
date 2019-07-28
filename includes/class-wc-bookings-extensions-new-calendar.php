@@ -372,10 +372,10 @@ class WC_Bookings_Extensions_New_Calendar {
 			$timezone = new DateTimeZone( wc_timezone_string() );
 			$offset   = $timezone->getOffset( new DateTime() );
 			$booking  = new WC_Booking( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-			if ( isset( $_REQUEST['order_id'] ) ) {
+			if ( isset( $_REQUEST['order_id'] ) && $booking->get_order_id() !== $_REQUEST['order_id'] ) {
 				$booking->set_order_id( sanitize_text_field( wp_unslash( $_REQUEST['order_id'] ) ) );
 			}
-			if ( isset( $_REQUEST['customer_id'] ) ) {
+			if ( isset( $_REQUEST['customer_id'] ) && $booking->get_customer_id() !== $_REQUEST['customer_id'] ) {
 				$booking->set_customer_id( sanitize_text_field( wp_unslash( $_REQUEST['customer_id'] ) ) );
 			}
 			if ( 'true' === $_REQUEST['allDay'] ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
@@ -391,13 +391,13 @@ class WC_Bookings_Extensions_New_Calendar {
 				$end = new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ) );
 				$booking->set_end( (int) $end->format( 'U' ) + $offset );
 			}
-			if ( isset( $_REQUEST['resource'] ) ) {
+			if ( isset( $_REQUEST['resource'] ) && $booking->get_product_id() !== $_REQUEST['resource'] ) {
 				$booking->set_product_id( (int) $_REQUEST['resource'] );
 			}
 			if ( isset( $_REQUEST['persons'] ) ) {
 				$booking->set_person_counts( sanitize_text_field( wp_unslash( $_REQUEST['persons'] ) ) );
 			}
-			if ( isset( $_REQUEST['booking_status'] ) ) {
+			if ( isset( $_REQUEST['booking_status'] ) && $booking->get_status() !== $_REQUEST['booking_status'] ) {
 				$booking->set_status( sanitize_text_field( wp_unslash( $_REQUEST['booking_status'] ) ) );
 			}
 
@@ -486,17 +486,33 @@ class WC_Bookings_Extensions_New_Calendar {
 			}
 			try {
 				if ( wp_get_current_user()->has_cap( 'manage_bookings' ) ) {
-					$customer   = $booking->get_customer();
-					$guest_name = $booking->get_meta( 'booking_guest_name' );
-					$persons    = $booking->get_persons();
-					$event      = array(
-						'id'         => $booking->get_id(),
-						'resourceId' => $booking->get_product_id(),
-						'start'      => $start->format( 'c' ),
-						'end'        => $end->format( 'c' ),
-						'title'      => $booking->get_product()->get_name(),
-						'url'        => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
-						'allDay'     => $booking->is_all_day() ? true : false,
+					$customer         = $booking->get_customer();
+					$guest_name       = $booking->get_meta( 'booking_guest_name' );
+					$persons          = $booking->get_persons();
+					$background_color = '#3788d8';
+					$border_color     = '#3788d8';
+					switch ( $booking->get_status() ) {
+						case 'unpaid':
+						case 'pending-confirmation':
+							$background_color = 'orange';
+							$border_color     = 'darkorange';
+							break;
+						case 'paid':
+						case 'confirmed':
+							$background_color = 'red';
+							$border_color     = 'red';
+							break;
+					}
+					$event = array(
+						'id'              => $booking->get_id(),
+						'resourceId'      => $booking->get_product_id(),
+						'start'           => $start->format( 'c' ),
+						'end'             => $end->format( 'c' ),
+						'title'           => $booking->get_product()->get_name(),
+						'url'             => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
+						'allDay'          => $booking->is_all_day() ? true : false,
+						'backgroundColor' => $background_color,
+						'borderColor'     => $border_color,
 					);
 					if ( ! empty( $guest_name ) ) {
 						$event['bookedFor'] = $guest_name;
