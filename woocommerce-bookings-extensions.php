@@ -14,7 +14,7 @@
  * Plugin Name:       WooCommerce Bookings Extensions
  * Plugin URI:        https://github.com/mbezuidenhout/wocommerce-bookings-extensions
  * Description:       Adds or replaces functionality in the WooCommerce Bookings plugin.
- * Version:           1.7.0
+ * Version:           1.7.1
  * Author:            Marius Bezuidenhout
  * Author URI:        https://plus.google.com/+MariusBezuidenhout31337
  * License:           GNU General Public License v3.0
