@@ -4,7 +4,7 @@ Tags: bookings, booking, woocommerce, woo-booking-extensions, accommodation, sea
 Requires PHP: 5.6
 Requires at least: 4.9
 Tested up to: 5.2.2
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,9 @@ wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer valu
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 1.7.2 =
+* Fix: Check if ics file was downloaded successfully before saving.
 
 = 1.7.1 =
 * New: Added support for external ical file. Useful for adding public holidays.

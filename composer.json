@@ -1,5 +1,7 @@
 {
     "require": {
-        "johngrogg/ics-parser": "^2"
+        "johngrogg/ics-parser": "^2",
+        "nesbot/carbon": "^1",
+        "symfony/translation": "^3"
     }
 }

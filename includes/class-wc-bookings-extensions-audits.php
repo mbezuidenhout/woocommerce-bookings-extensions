@@ -28,8 +28,6 @@ class WC_Bookings_Extensions_Audits {
 	 */
 	private static $instance;
 
-	public const HOLIDAYS_CACHE_TIME = 604800;
-
 	/**
 	 * Get Instance creates a singleton class that's cached to stop duplicate instances
 	 *
