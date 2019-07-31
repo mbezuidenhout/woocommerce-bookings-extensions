@@ -1,5 +1,48 @@
 var calendar;
 
+function isProductCategoryShown( categories ) {
+    var shownCategories = $('.manage-column[id]:not(.hidden)').map(function() {
+        if ( this.id === "wbe-uncategorized" ) {
+            return this.id;
+        }
+        return Number(this.id.substring(13)); // Remove wbe-category- from string
+    }).get();
+
+    if ( 0 === categories.length && -1 < shownCategories.indexOf( 'wbe-uncategorized' ) ) {
+        return true;
+    }
+
+    for ( var i = 0; i < categories.length; i++ ) {
+        if ( -1 !== shownCategories.indexOf( categories[ i ] ) ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function calendarRemoveHiddenResources() {
+    calendar.refetchResources();
+
+    var calendarResources = calendar.getResources();
+
+    for ( var i = 0; i < calendarResources.length; i++ ) {
+        var categories = [];
+        if ( calendarResources[i].extendedProps.hasOwnProperty( 'categories' ) ) {
+            categories = calendarResources[i].extendedProps.categories;
+        }
+        if ( ! isProductCategoryShown( categories ) ) {
+            calendarResources[i].remove();
+        }
+    }
+}
+
+var oldSaveManageColumnsState = window.columns.saveManageColumnsState;
+window.columns.saveManageColumnsState = function( ) {
+    calendarRemoveHiddenResources();
+    oldSaveManageColumnsState.call(window.columns);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var xhr = [];
@@ -129,6 +172,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     $(info.el).attr("id", "wbe-event-" + info.event.id);
                 }
             }
+            if( info.event.extendedProps.hasOwnProperty( "resourceCategories" ) && ! isProductCategoryShown( info.event.extendedProps.resourceCategories ) ) {
+                $(info.el).addClass( "hidden" );
+            } else {
+                $(info.el).removeClass( "hidden" );
+            }
             var domElementType = "div";
             if(info.view.constructor.name === "DayGridView") {
                 domElementType = "span";
@@ -172,8 +220,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 arg.date,
                 arg.resource ? arg.resource.id : '(no resource)'
             );
-        }
+        },
     });
+
+    calendarRemoveHiddenResources();
 
     calendar.render();
 

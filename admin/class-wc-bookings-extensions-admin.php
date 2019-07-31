@@ -332,7 +332,7 @@ class WC_Bookings_Extensions_Admin {
 		$enable_calendar = get_option( 'woocommerce_bookings_extensions_fullcalendar', false );
 		if ( 'yes' === $enable_calendar ) {
 			// This will replace the calendar above.
-			$new_calendar_page = add_submenu_page(
+			$calendar_page_screen = add_submenu_page(
 				'edit.php?post_type=wc_booking',
 				__( 'Full Calendar', 'woocommerce-booking-extensions' ),
 				__( 'Full Calendar', 'woocommerce-booking-extensions' ),
@@ -343,6 +343,9 @@ class WC_Bookings_Extensions_Admin {
 					'full_calendar_page',
 				)
 			);
+
+			// Add screen options.
+			add_filter( 'manage_' . $calendar_page_screen . '_columns', array( $this, 'add_product_categories' ) );
 		} else {
 			// Replace Calendar page.
 			$calendar_page = add_submenu_page(
@@ -360,6 +363,36 @@ class WC_Bookings_Extensions_Admin {
 			// Add action for screen options on this new page.
 			add_action( 'admin_print_scripts-' . $calendar_page, array( $this, 'admin_calendar_page_scripts' ) );
 		}
+	}
+
+	/**
+	 * Add list of product categories to be displayed in the screen options drop-down.
+	 *
+	 * @param array $categories List of product cateogories.
+	 *
+	 * @return array
+	 */
+	public function add_product_categories( $categories ) {
+		/**
+		 * Get list of product categories in WooCommerce
+		 *
+		 * @var WP_Term[] $product_categories
+		 */
+		$product_categories = get_terms( array( 'taxonomy' => 'product_cat' ) );
+
+		if ( ! isset( $categories['_title'] ) ) {
+			$categories['_title'] = __( 'Show product categories', 'woo-bookings-extensions' );
+		}
+
+		$categories['wbe-uncategorized'] = __( 'Uncategorized' );
+
+		foreach ( $product_categories as $category ) {
+			if ( ! isset( $categories[ $category->name ] ) ) {
+				$categories[ 'wbe-category-' . $category->term_id ] = $category->name;
+			}
+		}
+
+		return $categories;
 	}
 
 	/**

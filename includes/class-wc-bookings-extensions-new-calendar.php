@@ -30,7 +30,7 @@ class WC_Bookings_Extensions_New_Calendar {
 	 */
 	private static $instance;
 
-	public const HOLIDAYS_CACHE_TIME = 604800;
+	const HOLIDAYS_CACHE_TIME = 604800;
 
 	/**
 	 * Get Instance creates a singleton class that's cached to stop duplicate instances
@@ -187,10 +187,24 @@ class WC_Bookings_Extensions_New_Calendar {
 					'limit'  => 30,
 				)
 			);
+
+			$product_categories = array_map(
+				function ( $a ) {
+					return $a->term_id;
+				},
+				get_terms( array( 'taxonomy' => 'product_cat' ) )
+			);
 			foreach ( $products as $product ) {
+				$categories = array();
+				foreach ( $product->get_category_ids() as $category ) {
+					if ( in_array( $category, $product_categories, true ) ) {
+						$categories[] = $category;
+					}
+				}
 				$resources[] = array(
-					'id'    => $product->get_id(),
-					'title' => $product->get_name(),
+					'id'         => $product->get_id(),
+					'title'      => $product->get_name(),
+					'categories' => $categories,
 				);
 			}
 		} catch ( Exception $e ) {
@@ -503,16 +517,25 @@ class WC_Bookings_Extensions_New_Calendar {
 							$border_color     = 'red';
 							break;
 					}
-					$event = array(
-						'id'              => $booking->get_id(),
-						'resourceId'      => $booking->get_product_id(),
-						'start'           => $start->format( 'c' ),
-						'end'             => $end->format( 'c' ),
-						'title'           => $booking->get_product()->get_name(),
-						'url'             => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
-						'allDay'          => $booking->is_all_day() ? true : false,
-						'backgroundColor' => $background_color,
-						'borderColor'     => $border_color,
+					$categories         = $booking->get_product()->get_category_ids();
+					$product_categories = array_map(
+						function ( $a ) {
+							return $a->term_id;
+						},
+						get_terms( array( 'taxonomy' => 'product_cat' ) )
+					);
+					$categories         = array_intersect( $categories, $product_categories );
+					$event              = array(
+						'id'                 => $booking->get_id(),
+						'resourceId'         => $booking->get_product_id(),
+						'resourceCategories' => $categories,
+						'start'              => $start->format( 'c' ),
+						'end'                => $end->format( 'c' ),
+						'title'              => $booking->get_product()->get_name(),
+						'url'                => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
+						'allDay'             => $booking->is_all_day() ? true : false,
+						'backgroundColor'    => $background_color,
+						'borderColor'        => $border_color,
 					);
 					if ( ! empty( $guest_name ) ) {
 						$event['bookedFor'] = $guest_name;
@@ -651,23 +674,29 @@ class WC_Bookings_Extensions_New_Calendar {
 		if ( ! empty( $holidays_ics ) ) {
 			if ( ! file_exists( $cache_file ) || self::cache_file_expired( $cache_file, true ) ) {
 				$response = wp_remote_get( $holidays_ics, array( 'sslverify' => false ) );
-				wp_upload_bits( 'holidays.ics', null, wp_remote_retrieve_body( $response ), '2019/07' );
+				if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
+					wp_upload_bits( 'holidays.ics', null, wp_remote_retrieve_body( $response ), '2019/07' );
+				}
 			}
 		}
 
-		try {
-			$ical   = new ICal(
-				$cache_file,
-				array(
-					'defaultTimeZone' => get_option( 'timezone_string' ),
-				)
-			);
-			$events = $ical->eventsFromRange( $from->format( 'Y-m-d H:i:s' ), $to->format( 'Y-m-d H:i:s' ) );
-		} catch ( \Exception $e ) {
+		if ( file_exists( $cache_file ) ) {
+			try {
+				$ical   = new ICal(
+					$cache_file,
+					array(
+						'defaultTimeZone' => get_option( 'timezone_string' ),
+					)
+				);
+				$events = $ical->eventsFromRange( $from->format( 'Y-m-d H:i:s' ), $to->format( 'Y-m-d H:i:s' ) );
+			} catch ( \Exception $e ) {
+				return array();
+			}
+			return $events;
+		} else {
 			return array();
 		}
 
-		return $events;
 	}
 
 }
