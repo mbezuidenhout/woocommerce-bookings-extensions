@@ -187,10 +187,24 @@ class WC_Bookings_Extensions_New_Calendar {
 					'limit'  => 30,
 				)
 			);
+
+			$product_categories = array_map(
+				function ( $a ) {
+					return $a->term_id;
+				},
+				get_terms( array( 'taxonomy' => 'product_cat' ) )
+			);
 			foreach ( $products as $product ) {
+				$categories = array();
+				foreach ( $product->get_category_ids() as $category ) {
+					if ( in_array( $category, $product_categories, true ) ) {
+						$categories[] = $category;
+					}
+				}
 				$resources[] = array(
-					'id'    => $product->get_id(),
-					'title' => $product->get_name(),
+					'id'         => $product->get_id(),
+					'title'      => $product->get_name(),
+					'categories' => $categories,
 				);
 			}
 		} catch ( Exception $e ) {
@@ -503,16 +517,25 @@ class WC_Bookings_Extensions_New_Calendar {
 							$border_color     = 'red';
 							break;
 					}
-					$event = array(
-						'id'              => $booking->get_id(),
-						'resourceId'      => $booking->get_product_id(),
-						'start'           => $start->format( 'c' ),
-						'end'             => $end->format( 'c' ),
-						'title'           => $booking->get_product()->get_name(),
-						'url'             => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
-						'allDay'          => $booking->is_all_day() ? true : false,
-						'backgroundColor' => $background_color,
-						'borderColor'     => $border_color,
+					$categories         = $booking->get_product()->get_category_ids();
+					$product_categories = array_map(
+						function ( $a ) {
+							return $a->term_id;
+						},
+						get_terms( array( 'taxonomy' => 'product_cat' ) )
+					);
+					$categories         = array_intersect( $categories, $product_categories );
+					$event              = array(
+						'id'                 => $booking->get_id(),
+						'resourceId'         => $booking->get_product_id(),
+						'resourceCategories' => $categories,
+						'start'              => $start->format( 'c' ),
+						'end'                => $end->format( 'c' ),
+						'title'              => $booking->get_product()->get_name(),
+						'url'                => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
+						'allDay'             => $booking->is_all_day() ? true : false,
+						'backgroundColor'    => $background_color,
+						'borderColor'        => $border_color,
 					);
 					if ( ! empty( $guest_name ) ) {
 						$event['bookedFor'] = $guest_name;
