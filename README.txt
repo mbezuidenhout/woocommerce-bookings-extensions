@@ -27,6 +27,10 @@ You can link bookable products together. If you are booking out rooms in a house
 
 == Changelog ==
 
+= 1.7.4 =
+* Update: Moved js files out of assets directory.
+* Update: Improved layouts for new bookings.
+
 = 1.7.3 =
 * New: You can now hide bookings in the calendar view by category.
 
