@@ -137,7 +137,7 @@ class WC_Bookings_Extensions_New_Calendar {
 
 		wp_register_script(
 			'fullcalendar-admin-init',
-			plugin_dir_url( __DIR__ ) . 'assets/js/fullcalendar-init.js',
+			plugin_dir_url( __DIR__ ) . 'admin/js/fullcalendar-init.js',
 			array(
 				'fullcalendar-daygrid',
 				'fullcalendar-timegrid',
@@ -152,7 +152,7 @@ class WC_Bookings_Extensions_New_Calendar {
 
 		wp_register_script(
 			'fullcalendar-user-init',
-			plugin_dir_url( __DIR__ ) . 'assets/js/fullcalendar-user-init.js',
+			plugin_dir_url( __DIR__ ) . 'public/js/fullcalendar-user-init.js',
 			array(
 				'fullcalendar-daygrid',
 				'fullcalendar-timegrid',
@@ -190,9 +190,18 @@ class WC_Bookings_Extensions_New_Calendar {
 
 			$product_categories = array_map(
 				function ( $a ) {
-					return $a->term_id;
+					if ( 'Uncategorized' === $a->name ) { // Removed the WordPress built-in category Uncategorized.
+						return null;
+					} else {
+						return $a->term_id;
+					}
 				},
-				get_terms( array( 'taxonomy' => 'product_cat' ) )
+				get_terms(
+					array(
+						'taxonomy'   => 'product_cat',
+						'hide_empty' => false,
+					)
+				)
 			);
 			foreach ( $products as $product ) {
 				$categories = array();
@@ -219,6 +228,8 @@ class WC_Bookings_Extensions_New_Calendar {
 	 */
 	public function admin_output() {
 		global $woocommerce;
+
+		$suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		add_thickbox(); // Add the WordPress admin thickbox js and css.
 		wp_enqueue_script( 'fullcalendar-admin-init' );
@@ -250,7 +261,7 @@ class WC_Bookings_Extensions_New_Calendar {
 
 		// WC Admin Style.
 		if ( ! isset( $wp_styles->registered['woocommerce_admin'] ) ) {
-			wp_register_style( 'woocommerce_admin', $woocommerce->plugin_url() . '/assets/css/admin.css' );
+			wp_register_style( 'woocommerce_admin', $woocommerce->plugin_url() . '/assets/css/admin' . $suffix . '.css' );
 		}
 
 		wp_enqueue_style( 'woocommerce_admin' );
@@ -319,6 +330,7 @@ class WC_Bookings_Extensions_New_Calendar {
 					return $post_args;
 				}
 			);
+
 			include plugin_dir_path( __DIR__ ) . 'admin/partials/event.php';
 		}
 		wp_die(); // this is required to terminate immediately and return a proper response.
@@ -486,6 +498,10 @@ class WC_Bookings_Extensions_New_Calendar {
 			$start = DateTime::createFromFormat( 'U', $booking->get_start() - $offset, $timezone );
 			$end   = DateTime::createFromFormat( 'U', $booking->get_end() - $offset, $timezone );
 
+			if ( $booking->is_all_day() ) {
+				$end->add( new DateInterval( 'PT1M' ) );
+			}
+
 			if ( empty( $product_id ) ) {
 				// Add background events to each dependent product.
 				$dependent_product_ids = $booking->get_product()->get_meta( 'booking_dependencies' );
@@ -522,7 +538,12 @@ class WC_Bookings_Extensions_New_Calendar {
 						function ( $a ) {
 							return $a->term_id;
 						},
-						get_terms( array( 'taxonomy' => 'product_cat' ) )
+						get_terms(
+							array(
+								'taxonomy'   => 'product_cat',
+								'hide_empty' => false,
+							)
+						)
 					);
 					$categories         = array_intersect( $categories, $product_categories );
 					$event              = array(

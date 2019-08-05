@@ -9,7 +9,7 @@
 	 *
 	 * @var WP_Term[] $product_categories
 	 */
-	$product_categories = get_terms( array( 'taxonomy' => 'product_cat' ) );
+	$product_categories = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false ) );
 
 	$data_store = WC_Data_Store::load( 'product-booking' );
 	/**
