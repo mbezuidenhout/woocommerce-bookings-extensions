@@ -229,8 +229,6 @@ class WC_Bookings_Extensions_New_Calendar {
 	public function admin_output() {
 		global $woocommerce;
 
-		$suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
-
 		add_thickbox(); // Add the WordPress admin thickbox js and css.
 		wp_enqueue_script( 'fullcalendar-admin-init' );
 
@@ -261,7 +259,8 @@ class WC_Bookings_Extensions_New_Calendar {
 
 		// WC Admin Style.
 		if ( ! isset( $wp_styles->registered['woocommerce_admin'] ) ) {
-			wp_register_style( 'woocommerce_admin', $woocommerce->plugin_url() . '/assets/css/admin' . $suffix . '.css' );
+			$wc = WooCommerce::instance();
+			wp_register_style( 'woocommerce_admin', $woocommerce->plugin_url() . '/assets/css/admin.css', array(), $wc->version );
 		}
 
 		wp_enqueue_style( 'woocommerce_admin' );
