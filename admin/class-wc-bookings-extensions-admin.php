@@ -388,7 +388,7 @@ class WC_Bookings_Extensions_Admin {
 
 		foreach ( $product_categories as $category ) {
 			$cat_term_id = 'wbe-category-' . $category->term_id;
-			if ( ! isset( $categories[ $cat_term_id ] ) && 'Uncategorized' !== $category->name ) { // Ignore WordPress built-in category "Uncategorized".
+			if ( ! isset( $categories[ $cat_term_id ] ) && ! in_array( $category->name, array( 'Uncategorized', __( 'Uncategorized' ) ), true ) ) { // Ignore WordPress built-in category "Uncategorized".
 				$categories[ $cat_term_id ] = $category->name;
 			}
 		}

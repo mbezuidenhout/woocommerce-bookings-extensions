@@ -16,7 +16,7 @@ Adds or replaces functionality in the WooCommerce Bookings plugin.
 
 This plugin adds the short code *wcbooking_search* which generates a form with a duration and possibly persons selection field
 
-wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer value of unit size>" [method="{include|exclude}" ids="<Comma seperated Llst of product ids>"]
+wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer value of unit size>" [method="{include|exclude}" ids="<Comma seperated list of product ids>"]
 
 You can link bookable products together. If you are booking out rooms in a house separately or the whole house.
 

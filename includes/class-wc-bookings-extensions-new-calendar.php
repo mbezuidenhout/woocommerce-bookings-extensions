@@ -190,7 +190,7 @@ class WC_Bookings_Extensions_New_Calendar {
 
 			$product_categories = array_map(
 				function ( $a ) {
-					if ( 'Uncategorized' === $a->name ) { // Removed the WordPress built-in category Uncategorized.
+					if ( in_array( $a->name, array( 'Uncategorized', __( 'Uncategorized' ) ), true ) ) { // Removed the WordPress built-in category Uncategorized.
 						return null;
 					} else {
 						return $a->term_id;
