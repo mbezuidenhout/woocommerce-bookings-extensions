@@ -378,7 +378,7 @@ class WC_Bookings_Extensions_Admin {
 		 *
 		 * @var WP_Term[] $product_categories
 		 */
-		$product_categories = get_terms( array( 'taxonomy' => 'product_cat' ) );
+		$product_categories = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false ) );
 
 		if ( ! isset( $categories['_title'] ) ) {
 			$categories['_title'] = __( 'Show product categories', 'woo-bookings-extensions' );
@@ -387,8 +387,9 @@ class WC_Bookings_Extensions_Admin {
 		$categories['wbe-uncategorized'] = __( 'Uncategorized' );
 
 		foreach ( $product_categories as $category ) {
-			if ( ! isset( $categories[ $category->name ] ) ) {
-				$categories[ 'wbe-category-' . $category->term_id ] = $category->name;
+			$cat_term_id = 'wbe-category-' . $category->term_id;
+			if ( ! isset( $categories[ $cat_term_id ] ) && 'Uncategorized' !== $category->name ) { // Ignore WordPress built-in category "Uncategorized".
+				$categories[ $cat_term_id ] = $category->name;
 			}
 		}
 

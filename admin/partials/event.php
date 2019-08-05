@@ -30,7 +30,7 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 	    <?php
 	    do_action( 'woo_booking_extensions_event_page_before', $booking );
 	    ?>
-        <div id="booking_data" class="panel wbe-booking-data-thickbox">
+        <div class="panel panel-33 wbe-booking-data-thickbox wbe-booking-data-row">
             <div class="booking_data_column">
                 <h4><?php esc_html_e( 'General details', 'woocommerce-bookings' ); ?></h4>
 
@@ -92,7 +92,7 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 		        <?php endif; ?>
             </p>
             <p class="form-field form-field-wide">
-                <label for="booking_guest_name"><?php esc_html_e( 'Guest name:', 'woocommerce-booking-extensions' ); ?></label>
+                <label for="booking_guest_name"><?php esc_html_e( 'Guest / event name:', 'woocommerce-booking-extensions' ); ?></label>
                 <input type="text" style="" name="booking_guest_name" id="booking_guest_name" value="<?php echo esc_attr( $booking->get_meta( 'booking_guest_name' ) ); ?>"
                        placeholder="N/A">
             </p>
@@ -241,17 +241,15 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 				?>
             </div>
         </div>
-        <div class="clear"></div>
         <?php
         do_action( 'woo_booking_extensions_event_page_after', $booking );
         ?>
-        <div>
+        <div class="wbe-booking-actions wbe-booking-data-row">
             <input type="hidden" name="_booking_id" id="_booking_id" value="<?php echo esc_attr( $booking->get_id() ); ?>"/>
             <input type="submit" class="button save_order button-primary tips" name="save"
                    value="<?php esc_html_e( 'Save Booking', 'woocommerce-bookings' ); ?>"
                    data-tip="<?php esc_html_e( 'Save/update the booking', 'woocommerce-bookings' ); ?>"/>
         </div>
-        <div class="clear"></div>
         <div class="booking-changed-data">
             <?php
             if ( ! empty( $booking->get_date_created() ) ) :
@@ -277,11 +275,15 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
             if ( ! empty( $booking->get_meta( '_booking_created_user_id' ) ) ) :
                 $created_by = get_userdata( $booking->get_meta( '_booking_created_user_id' ) );
                 if ( $created_by ) :
+	                $user_created_name = $created_by->first_name . ' ' . $created_by->last_name;
+                    if ( ' ' === $user_created_name ) :
+	                    $user_created_name = $created_by->data->user_login;
+                    endif;
 	                ?>
             <div class="booking-changed-column">
                 <p>
 	                <?php esc_html_e( 'User created:', 'woocommerce-bookings-extensions' ); ?><br>
-	                <?php echo esc_html( $created_by->first_name . ' ' . $created_by->last_name ); ?>
+	                <?php echo esc_html( $user_created_name ); ?>
                 </p>
             </div>
                     <?php
@@ -305,7 +307,7 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
     </div>
 </form>
 
-<script type='text/javascript'>
+<script type="text/javascript">
 /* <![CDATA[ */
 (function( $ ) {
     'use strict';
