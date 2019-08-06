@@ -96,7 +96,7 @@ class WC_Bookings_Extensions_Shortcodes {
 	 */
 	public function calendar_shortcode( $atts ) {
 		$page = WC_Bookings_Extensions_New_Calendar::get_instance();
-		return $page->get_shortcode_output();
+		return $page->get_shortcode_output( $atts );
 	}
 
 }

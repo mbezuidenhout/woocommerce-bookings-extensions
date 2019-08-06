@@ -16,9 +16,26 @@ Adds or replaces functionality in the WooCommerce Bookings plugin.
 
 This plugin adds the short code *wcbooking_search* which generates a form with a duration and possibly persons selection field
 
-wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer value of unit size>" [method="{include|exclude}" ids="<Comma seperated Llst of product ids>"]
+wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer value of unit size>" [method="{include|exclude}" ids="<Comma seperated list of product ids>"]
 
 You can link bookable products together. If you are booking out rooms in a house separately or the whole house.
+
+Use the shortcode [wcbooking_calendar] to add a calendar to the page. If used on a product page the product id is automatically added.
+Options:
+product_id=[product_id]
+class="<space seperated list of css classes to add>"
+default_view="[view]"
+header_left="<comma seperated list of views>"
+header_center="<comma seperated list of views>"
+header_right="<comma seperated list of views>"
+
+List of possible views:
+* dayGridMonth         - Month view
+* timeGridWeek         - Time grid of the week
+* timeGridDay          - Time grid of the day
+* resourceTimeGridDay  - Day time grid separated by resource
+* listWeek             - List of events for the week
+* title                - Day/Month or Week title
 
 == Installation ==
 
@@ -26,6 +43,9 @@ You can link bookable products together. If you are booking out rooms in a house
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 1.7.6 =
+* Update: Added new options to wcbooking_calendar shortcode.
 
 = 1.7.4 =
 * Update: Moved js files out of assets directory.

@@ -138,9 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         },
 
-        //// uncomment this line to hide the all-day slot
-        //allDaySlot: false,
-
         resources: fullcalendarOptions.resources,
         eventSources: [
             {

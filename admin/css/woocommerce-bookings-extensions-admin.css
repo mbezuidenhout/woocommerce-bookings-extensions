@@ -99,3 +99,41 @@
 .form-field input[type="text"], .form-field textarea {
     width: 100%;
 }
+
+.wbe-booking-data-thickbox p {
+    color: #777;
+}
+
+.wbe-booking-data-thickbox .booking_data_column:last-child {
+    padding-right: 0;
+}
+
+.wbe-booking-data-thickbox h4 {
+    color: #333;
+    margin: 1.33em 0 0;
+}
+
+.wbe-booking-data-thickbox .booking_data_column .form-field {
+    float: left;
+    width: 48%;
+    padding: 0 !important;
+    margin: 9px 0 0 0;
+}
+
+.wbe-booking-data-thickbox .booking_data_column .form-field-wide {
+    width: 100%;
+    clear: both;
+}
+
+.wbe-booking-data-thickbox .booking_data_column .form-field label {
+    display: block;
+    padding: 0 0 3px;
+}
+
+.wbe-booking-data-thickbox .booking_data_column .form-field-wide select {
+    width: 100%;
+}
+
+.wbe-booking-data-thickbox .form-field {
+    width: 100%;
+}

@@ -97,7 +97,9 @@ class WC_Bookings_Extensions_Admin {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-admin.js', array( 'jquery' ), $this->version, false );
+		$suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
+
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-admin' . $suffix . '.js', array( 'jquery' ), $this->version, false );
 
 	}
 
@@ -289,8 +291,8 @@ class WC_Bookings_Extensions_Admin {
 	/**
 	 * Save handler.
 	 *
-	 * @param int $post_id Post ID.
-	 * @param WP_Post $post Post object.
+	 * @param int     $post_id  Post ID.
+	 * @param WP_Post $post     Post object.
 	 *
 	 * @return int
 	 * @version 1.10.2
@@ -388,7 +390,7 @@ class WC_Bookings_Extensions_Admin {
 
 		foreach ( $product_categories as $category ) {
 			$cat_term_id = 'wbe-category-' . $category->term_id;
-			if ( ! isset( $categories[ $cat_term_id ] ) && 'Uncategorized' !== $category->name ) { // Ignore WordPress built-in category "Uncategorized".
+			if ( ! isset( $categories[ $cat_term_id ] ) && ! in_array( $category->name, array( 'Uncategorized', __( 'Uncategorized' ) ), true ) ) { // Ignore WordPress built-in category "Uncategorized".
 				$categories[ $cat_term_id ] = $category->name;
 			}
 		}
