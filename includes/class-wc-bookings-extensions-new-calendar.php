@@ -30,6 +30,13 @@ class WC_Bookings_Extensions_New_Calendar {
 	 */
 	private static $instance;
 
+	/**
+	 * An array of element ids for the shortcode.
+	 *
+	 * @var array
+	 */
+	protected $calendars;
+
 	const HOLIDAYS_CACHE_TIME = 604800;
 
 	/**
@@ -156,6 +163,9 @@ class WC_Bookings_Extensions_New_Calendar {
 			array(
 				'fullcalendar-daygrid',
 				'fullcalendar-timegrid',
+				'fullcalendar-list',
+				'fullcalendar-resource-daygrid',
+				'fullcalendar-resource-timegrid',
 			),
 			WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION,
 			true
@@ -181,12 +191,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			 *
 			 * @var WC_Product_Booking[] $products Array of WC_Product_Booking.
 			 */
-			$products = $data_store->get_products(
-				array(
-					'status' => array( 'publish', 'private' ),
-					'limit'  => 30,
-				)
-			);
+			$product_ids = $data_store->get_bookable_product_ids();
 
 			$product_categories = array_map(
 				function ( $a ) {
@@ -203,8 +208,9 @@ class WC_Bookings_Extensions_New_Calendar {
 					)
 				)
 			);
-			foreach ( $products as $product ) {
+			foreach ( $product_ids as $product_id ) {
 				$categories = array();
+				$product    = wc_get_product( $product_id );
 				foreach ( $product->get_category_ids() as $category ) {
 					if ( in_array( $category, $product_categories, true ) ) {
 						$categories[] = $category;
@@ -345,15 +351,45 @@ class WC_Bookings_Extensions_New_Calendar {
 	public function get_shortcode_output( $atts = array() ) {
 		$atts = shortcode_atts(
 			array(
-				'product_id' => false,
+				'product_id'    => false,
+				'default_view'  => 'dayGridMonth',
+				'class'         => '',
+				'header_left'   => 'prev,next today',
+				'header_center' => 'title',
+				'header_right'  => 'dayGridMonth,timeGridWeek',
 			),
 			$atts,
 			'wcbooking_calendar'
 		);
 
+		$user = wp_get_current_user();
+
+		if ( $user->has_cap( 'manage_options' ) ) {
+			$resources = $this->get_resources();
+		} else {
+			$atts['header_left']   = str_replace( 'resourceTimeGridDay', 'timeGridDay', $atts['header_left'] );
+			$atts['header_center'] = str_replace( 'resourceTimeGridDay', 'timeGridDay', $atts['header_center'] );
+			$atts['header_right']  = str_replace( 'resourceTimeGridDay', 'timeGridDay', $atts['header_right'] );
+			$resources             = '';
+		}
+
 		$product = wc_get_product( $atts['product_id'] ? intval( $atts['product_id'] ) : false );
 
-		$element_id = 'wbe-calendar-' . $product->get_id() . '-' . wp_rand( 1000, 9999 );
+		$product_id = '';
+		if ( ! empty( $product ) ) {
+			$product_id = $product->get_id();
+		}
+
+		$element_id        = 'wbe-calendar-' . wp_rand( 1000, 9999 );
+		$this->calendars[] = array(
+			'elementId'    => $element_id,
+			'productId'    => $product_id,
+			'headerLeft'   => $atts['header_left'],
+			'headerCenter' => $atts['header_center'],
+			'headerRight'  => $atts['header_right'],
+			'defaultView'  => $atts['default_view'],
+			'resources'    => $resources,
+		);
 
 		wp_enqueue_script( 'fullcalendar-user-init' );
 
@@ -363,18 +399,31 @@ class WC_Bookings_Extensions_New_Calendar {
 			array(
 				'schedulerLicenseKey' => get_option( 'woocommerce_bookings_extensions_fullcalendar_license', '' ),
 				'defaultDate'         => date( 'Y-m-d' ),
-				'elementId'           => $element_id,
+				'calendars'           => $this->calendars,
 				'events'              => array(
 					'sourceUrl' => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
 					'nonce'     => wp_create_nonce( 'fullcalendar_options' ),
-					'productId' => $product->get_id(),
 				),
 			)
 		);
 
+		if ( empty( $atts['class'] ) ) {
+			$atts['class'] = 'wbe-calendar';
+		} else {
+			$atts['class'] = 'wbe-calendar ' . $atts['class'];
+		}
+
 		ob_start();
 
-		wc_get_template( 'fullcalendar.php', array( 'element_id' => $element_id ), 'woocommerce-bookings-extensions', plugin_dir_path( __DIR__ ) . 'templates/' );
+		wc_get_template(
+			'fullcalendar.php',
+			array(
+				'element_id' => $element_id,
+				'class'      => $atts['class'],
+			),
+			'woocommerce-bookings-extensions',
+			plugin_dir_path( __DIR__ ) . 'templates/'
+		);
 
 		return ob_get_clean();
 	}
@@ -465,7 +514,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			return false;
 		}
 		$product_id = null;
-		if ( isset( $_REQUEST['product_id'] ) ) {
+		if ( isset( $_REQUEST['product_id'] ) && ! empty( $_REQUEST['product_id'] ) ) {
 			$product_id = intval( $_REQUEST['product_id'] );
 		} elseif ( ! wp_get_current_user()->has_cap( 'manage_bookings' ) ) {
 			http_response_code( 401 );

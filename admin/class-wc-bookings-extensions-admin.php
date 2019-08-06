@@ -291,8 +291,8 @@ class WC_Bookings_Extensions_Admin {
 	/**
 	 * Save handler.
 	 *
-	 * @param int $post_id Post ID.
-	 * @param WP_Post $post Post object.
+	 * @param int     $post_id  Post ID.
+	 * @param WP_Post $post     Post object.
 	 *
 	 * @return int
 	 * @version 1.10.2

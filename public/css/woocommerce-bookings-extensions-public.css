@@ -10,3 +10,8 @@
 #ui-datepicker-div {
     display: none;
 }
+
+.wbe-calendar {
+    max-width: 900px;
+    margin: 50px auto;
+}

@@ -20,6 +20,23 @@ wcbooking_search duration_unit="{month|day|hour|minute}" duration="<Integer valu
 
 You can link bookable products together. If you are booking out rooms in a house separately or the whole house.
 
+Use the shortcode [wcbooking_calendar] to add a calendar to the page. If used on a product page the product id is automatically added.
+Options:
+product_id=[product_id]
+class="<space seperated list of css classes to add>"
+default_view="[view]"
+header_left="<comma seperated list of views>"
+header_center="<comma seperated list of views>"
+header_right="<comma seperated list of views>"
+
+List of possible views:
+* dayGridMonth         - Month view
+* timeGridWeek         - Time grid of the week
+* timeGridDay          - Time grid of the day
+* resourceTimeGridDay  - Day time grid separated by resource
+* listWeek             - List of events for the week
+* title                - Day/Month or Week title
+
 == Installation ==
 
 1. Upload contents of `woocommerce-bookings-extensions.zip` to the `/wp-content/plugins/` directory
