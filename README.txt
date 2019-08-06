@@ -44,6 +44,9 @@ List of possible views:
 
 == Changelog ==
 
+= 1.7.6 =
+* Update: Added new options to wcbooking_calendar shortcode.
+
 = 1.7.4 =
 * Update: Moved js files out of assets directory.
 * Update: Improved layouts for new bookings.
