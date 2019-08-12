@@ -321,7 +321,9 @@ class WC_Bookings_Extensions_New_Calendar {
 					$booking->set_product_id( $product );
 				}
 				$booking->set_all_day( $all_day );
-
+				if ( $all_day ) {
+					$booking->set_end( $end->getTimestamp() - 1 ); // Shift the time back with 1 second for full day events.
+				}
 			}
 
 			$booking = apply_filters( 'woo_booking_extensions_calendar_booking', $booking );

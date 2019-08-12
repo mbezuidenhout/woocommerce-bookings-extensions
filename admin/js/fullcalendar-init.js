@@ -1,14 +1,14 @@
 var calendar;
 
 function isProductCategoryShown( categories ) {
-    var shownCategories = $('.manage-column[id]:not(.hidden)').map(function() {
+    var shownCategories = $(".manage-column[id]:not(.hidden)").map(function() {
         if ( this.id === "wbe-uncategorized" ) {
             return this.id;
         }
         return Number(this.id.substring(13)); // Remove wbe-category- from string
     }).get();
 
-    if ( 0 === categories.length && -1 < shownCategories.indexOf( 'wbe-uncategorized' ) ) {
+    if ( 0 === categories.length && -1 < shownCategories.indexOf( "wbe-uncategorized" ) ) {
         return true;
     }
 
@@ -28,7 +28,7 @@ function calendarRemoveHiddenResources() {
 
     for ( var i = 0; i < calendarResources.length; i++ ) {
         var categories = [];
-        if ( calendarResources[i].extendedProps.hasOwnProperty( 'categories' ) ) {
+        if ( calendarResources[i].extendedProps.hasOwnProperty( "categories" ) ) {
             categories = calendarResources[i].extendedProps.categories;
         }
         if ( ! isProductCategoryShown( categories ) ) {
@@ -43,8 +43,8 @@ window.columns.saveManageColumnsState = function( ) {
     oldSaveManageColumnsState.call(window.columns);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
+document.addEventListener("DOMContentLoaded", function() {
+    var calendarEl = document.getElementById("calendar");
     var xhr = [];
 
     function eventMove ( info ) {
@@ -56,17 +56,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 eventEnd = new Date(info.event.start.getTime() + 3600000);
             }
             var params = {
-                '_ajax_nonce': fullcalendarOptions.events.nonce,
-                'id': info.event.id,
-                'start': info.event.start !== null ? info.event.start.toISOString() : null,
-                'end': eventEnd !== null ? eventEnd.toISOString() : null,
-                'allDay': info.event.allDay,
+                "_ajax_nonce": fullcalendarOptions.events.nonce,
+                "id": info.event.id,
+                "start": info.event.start !== null ? info.event.start.toISOString() : null,
+                "end": eventEnd !== null ? eventEnd.toISOString() : null,
+                "allDay": info.event.allDay,
             };
             if ( info.hasOwnProperty("newResource") && info.newResource !== null ) {
                 params.resource = info.newResource.id;
             }
-            xhr['booking'] = $.ajax({
-                type: 'POST',
+            xhr["booking"] = $.ajax({
+                type: "POST",
                 url: fullcalendarOptions.events.wctargetUrl,
                 data: params,
                 success: function (data) {
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     calendar = new FullCalendar.Calendar(calendarEl, {
-        plugins: [ 'interaction', 'resourceDayGrid', 'resourceTimeGrid', 'list' ],
+        plugins: [ "interaction", "resourceDayGrid", "resourceTimeGrid", "list" ],
         defaultView: fullcalendarOptions.defaultView,
         defaultDate: fullcalendarOptions.defaultDate,
         schedulerLicenseKey: fullcalendarOptions.schedulerLicenseKey,
@@ -91,50 +91,50 @@ document.addEventListener('DOMContentLoaded', function() {
         editable: true,
         selectable: true,
         eventLimit: true, // allow "more" link when too many events
-        //minTime: '08:00:00', // Start at 8am
-        //maxTime: '17:00:00', // End at 6pm
+        //minTime: "08:00:00", // Start at 8am
+        //maxTime: "17:00:00", // End at 6pm
         nowIndicator: true,
         navLinks: true,
-        contentHeight: 'auto',
+        contentHeight: "auto",
         businessHours: [ // specify an array instead
             {
                 daysOfWeek: [ 1, 2, 3, 4, 5 ], // Monday, Tuesday, Wednesday, Thursday, Friday
-                startTime: '08:00', // 8am
-                endTime: '18:00' // 6pm
+                startTime: "08:00", // 8am
+                endTime: "18:00" // 6pm
             },
             {
                 daysOfWeek: [ 6 ], // Saturday
-                startTime: '10:00', // 10am
-                endTime: '16:00' // 4pm
+                startTime: "10:00", // 10am
+                endTime: "16:00" // 4pm
             },
             {
                 daysOfWeek: [ 0 ], // Sunday
-                startTime: '13:00', // 1pm
-                endTime: '20:00', // 10pm
+                startTime: "13:00", // 1pm
+                endTime: "20:00", // 10pm
             }
 
         ],
         customButtons: {
             addButton: {
-                icon: 'fc-icon-plus-square',
+                icon: "fc-icon-plus-square",
                 click: function() {
                     tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl  + "&" + $.param({_wpnonce: fullcalendarOptions.events.nonce}) );
                 },
             }
         },
         header: {
-            left: 'addButton, prev,next today',
-            center: 'title',
-            right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth,listWeek'
+            left: "addButton, prev,next today",
+            center: "title",
+            right: "resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth,listWeek"
         },
         views: {
             resourceTimeGridTwoDay: {
-                type: 'resourceTimeGrid',
+                type: "resourceTimeGrid",
                 duration: { days: 2 },
-                buttonText: '2 days',
+                buttonText: "2 days",
             },
             listWeek: {
-                buttonText: 'list',
+                buttonText: "list",
             }
         },
 
@@ -204,18 +204,18 @@ document.addEventListener('DOMContentLoaded', function() {
             // }
             var params = {
                 _wpnonce: fullcalendarOptions.events.nonce,
-                'start': info.start !== null ? info.start.toISOString() : null,
-                'end': info.end !== null ? info.end.toISOString() : null,
-                'allDay': info.allDay,
-                'resource': info.hasOwnProperty("resource") && info.resource !== null ? info.resource.id : null,
+                "start": info.start !== null ? info.start.toISOString() : null,
+                "end": info.end !== null ? info.end.toISOString() : null,
+                "allDay": info.allDay,
+                "resource": info.hasOwnProperty("resource") && info.resource !== null ? info.resource.id : null,
             };
-            tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl + '&' + $.param( params ) );
+            tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl + "&" + $.param( params ) );
         },
         dateClick: function(arg) {
             console.log(
-                'dateClick',
+                "dateClick",
                 arg.date,
-                arg.resource ? arg.resource.id : '(no resource)'
+                arg.resource ? arg.resource.id : "(no resource)"
             );
         },
     });
