@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
             allDaySlot: true,
             eventLimit: true, // allow "more" link when too many events
             nowIndicator: true,
-            navLinks: true,
+            navLinks: false,
             defaultView: attrs.defaultView,
             businessHours: [ // specify an array instead
                 {
@@ -45,6 +45,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                 }
             ],
+            eventRender: function( info ) {
+                //info.el.getElementById('fc-time').remove();
+                jQuery(info.el).find('.fc-time').remove();
+            },
         });
 
         calendar.render();

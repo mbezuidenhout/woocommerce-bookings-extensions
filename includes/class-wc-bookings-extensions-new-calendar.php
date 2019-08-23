@@ -382,7 +382,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			$product_id = $product->get_id();
 		}
 
-		$element_id        = 'wbe-calendar-' . wp_rand( 1000, 9999 );
+		$element_id        = 'wbe-calendar-' . $product_id;
 		$this->calendars[] = array(
 			'elementId'    => $element_id,
 			'productId'    => $product_id,
@@ -619,18 +619,22 @@ class WC_Bookings_Extensions_New_Calendar {
 					}
 				} else {
 					$event = array(
-						'id'         => hash( 'md4', $booking->get_id() ),
-						'resourceId' => hash( 'md4', $booking->get_product_id() ),
-						'start'      => $start->format( 'c' ),
-						'end'        => $end->format( 'c' ),
-						'title'      => 'Booked on: ' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $booking->get_date_created() ),
+						'id'              => hash( 'md4', $booking->get_id() ),
+						'resourceId'      => hash( 'md4', $booking->get_product_id() ),
+						'start'           => $start->format( 'c' ),
+						'end'             => $end->format( 'c' ),
+						//'title'           => 'Booked on: ' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $booking->get_date_created() ),
+						'title'           => '',
+						'backgroundColor' => '#e60016',
+						'borderColor'     => '#e60016',
+						'description'     => __( 'Time not available.', 'woo-booking-extensions' ),
 					);
-					$user  = wp_get_current_user();
-					if ( $user->ID !== $booking->get_customer_id() ) {
-						$event['backgroundColor'] = 'lightgray';
-						$event['borderColor']     = 'silver';
-						$event['title']           = '';
-					}
+					//$user  = wp_get_current_user();
+					//if ( $user->ID !== $booking->get_customer_id() ) {
+					//	$event['backgroundColor'] = 'lightgray';
+					//	$event['borderColor']     = 'silver';
+					//	$event['title']           = '';
+					//}
 				}
 
 				$events[] = $event;
