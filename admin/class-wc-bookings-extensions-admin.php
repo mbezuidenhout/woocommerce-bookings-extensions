@@ -470,4 +470,93 @@ class WC_Bookings_Extensions_Admin {
 		return $settings;
 	}
 
+	/**
+	 * Add the estimate terms meta boxes.
+	 *
+	 * @param WP_Post $post The post object.
+	 *
+	 * @link https://codex.wordpress.org/Plugin_API/Action_Reference/add_meta_boxes
+	 */
+	public function add_meta_boxes( $post ) {
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		wp_register_style( 'media-upload-css', plugin_dir_url( __FILE__ ) . 'css/booking-edit' . $suffix . '.css', array(), $this->version, 'all' );
+		wp_enqueue_style( 'media-upload-css' );
+		wp_register_script( 'booking-files-meta-box', plugin_dir_url( __FILE__ ) . 'js/files-meta-box' . $suffix . '.js', array( 'jquery' ), $this->version, true );
+		wp_enqueue_script( 'booking-files-meta-box' );
+		$args = array(
+			'nonce'        => wp_create_nonce( 'files_meta' ),
+			'title'        => __( 'Files', 'woo-bookings-extensions' ),
+			'url'          => admin_url( "media-upload.php?inline=true&type=file&tab=type&post_id={$post->ID}" ),
+			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+			'deleteAction' => 'delete_booking_file',
+		);
+		wp_localize_script( 'booking-files-meta-box', 'filesOptions', $args );
+		wp_enqueue_script( 'media-upload' );
+		add_thickbox(); // Add the WordPress admin thickbox js and css.
+		add_meta_box( 'filesdiv', __( 'Files', 'woo-bookings-extensions' ), array(
+			$this,
+			'meta_box_file'
+		), 'wc_booking', 'side' );
+	}
+
+	/**
+	 * Display the content of the terms meta box.
+	 *
+	 * @param WP_Post $post The post object.
+	 */
+	public function meta_box_file( $post ) {
+		echo '<p><button type="button" class="button media-button" id="booking_add_file">' . esc_html__( 'Add file', 'woo-bookings-extensions' ) . '</button></p>';
+		/** @var WP_Post[] $files */
+		$files = get_attached_media( null, $post->ID );
+		echo '<ul id="booking_files">';
+		foreach ( $files as $file ) :
+			?>
+            <li>
+                <a href="<?php esc_url_raw( $file->guid ); ?>"><?php echo esc_attr( $file->post_title ); ?></a>
+                <a data-id="<?php echo esc_attr( $file->ID ); ?>" class="remove-file del-button">X</a>
+            </li>
+		<?php
+		endforeach;
+		echo '</ul>';
+	}
+
+	/**
+	 * Display the file upload iframe page.
+	 */
+	public function upload_booking_file_page() {
+		include plugin_dir_path( __FILE__ ) . 'partials/file.php';
+		wp_die(); // this is required to terminate immediately and return a proper response.
+	}
+
+	/**
+	 * Delete the file from this booking.
+	 */
+	public function delete_booking_file() {
+		check_ajax_referer( 'files_meta', '_wpnonce' );
+
+		$id     = isset( $_REQUEST['id'] ) ? sanitize_key( wp_unslash( $_REQUEST['id'] ) ) : null;
+		$errors = array();
+		if ( ! empty( $id ) ) {
+			$post = get_post( $id );
+			if ( 'attachment' === $post->post_type ) {
+				$file = get_attached_file( $id );
+				if ( file_exists( $file ) && ! is_writable( dirname( $file ) ) ) {
+					$errors[] = __( 'File cannot be deleted', 'woo-bookings-extensions' );
+				}
+				if ( empty( $errors ) && file_exists( $file ) && is_writable( dirname( $file ) ) ) {
+					if ( ! unlink( $file ) ) {
+						$errors[] = __( 'File cannot be deleted', 'woo-bookings-extensions' );
+					}
+				}
+				wp_delete_post( $id );
+				if ( empty( $errors ) ) {
+					wp_send_json_success();
+				} else {
+					wp_send_json_error( array( 'errors' => $errors ) );
+				}
+			}
+		}
+		wp_send_json_error();
+	}
+
 }
