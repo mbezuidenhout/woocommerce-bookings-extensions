@@ -97,6 +97,9 @@ class WC_Bookings_Extensions {
 		}
 	}
 
+	/**
+	 * Display an admin notice about required plugins.
+	 */
 	public function woocommerce_bookings_extensions_woocommerce_bookings_admin_notice() {
 		?>
 		<div class="error">
@@ -232,6 +235,11 @@ class WC_Bookings_Extensions {
 
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'change_calendar', 50 );
 		$this->loader->add_filter( 'woocommerce_general_settings', $plugin_admin, 'add_admin_settings', 12 );
+
+		$post_type = 'wc_booking';
+		$this->loader->add_action( "add_meta_boxes_{$post_type}", $plugin_admin, 'add_meta_boxes' );
+		$this->loader->add_action( 'wp_ajax_upload_booking_file', $plugin_admin, 'upload_booking_file_page' );
+		$this->loader->add_action( 'wp_ajax_delete_booking_file', $plugin_admin, 'delete_booking_file' );
 	}
 
 	/**
@@ -374,7 +382,7 @@ class WC_Bookings_Extensions {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-cart-manager.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes' . DIRECTORY_SEPARATOR . 'class-wc-bookings-extensions-form.php';
 
-		$cart_manager  = new WC_Bookings_Extensions_Cart_Manager();
+		$cart_manager = new WC_Bookings_Extensions_Cart_Manager();
 
 		/** @see WC_Booking_Cart_Manager::validate_add_cart_item */
 		$this->remove_filter_by_class( 'woocommerce_add_to_cart_validation', 'WC_Booking_Cart_Manager', 'validate_add_cart_item', 10 );
