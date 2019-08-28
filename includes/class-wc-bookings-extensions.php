@@ -295,6 +295,7 @@ class WC_Bookings_Extensions {
 		/** @see WC_Bookings_Extensions_Public::global_search_shortcode() */
 		$this->loader->add_shortcode( 'wcbooking_search', $plugin_shortcodes, 'global_search_shortcode' );
 		$this->loader->add_shortcode( 'wcbooking_calendar', $plugin_shortcodes, 'calendar_shortcode' );
+		$this->loader->add_shortcode( 'wcbooking_overview', $plugin_shortcodes, 'overview_shortcode' );
 
 		$this->loader->add_action( 'woocommerce_before_booking_form', $plugin_public, 'add_booking_form_scripts' );
 

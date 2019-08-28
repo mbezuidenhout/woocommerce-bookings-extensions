@@ -774,4 +774,66 @@ class WC_Bookings_Extensions_New_Calendar {
 
 	}
 
+	/**
+	 * Output for the calendar shortcode.
+	 *
+	 * @param array $atts List of shortcode attributes.
+	 *
+	 * @return false|string
+	 */
+	public function get_overview_output( $atts ) {
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		$cal_id = wp_rand( 0, 1000 );
+
+		$products    = array();
+		$bookings    = array();
+		$product_ids = explode( ',', $atts['product_ids'] );
+		foreach ( $product_ids as $pos => $product_id ) {
+			$product = wc_get_product( $product_id );
+			if ( $product instanceof WC_Product_Booking ) {
+				$products[] = $product;
+			} else {
+				unset( $product_ids[ $pos ] );
+			}
+		}
+
+		wp_register_script(
+			'calendar-overview',
+			plugin_dir_url( __DIR__ ) . 'public/js/booking-overview' . $suffix . '.js',
+			array(
+				'jquery',
+				'wc-bookings-moment',
+			),
+			WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION,
+			true
+		);
+		wp_enqueue_script( 'calendar-overview' );
+		wp_localize_script(
+			'calendar-overview',
+			'calendarOverview',
+			array(
+				'products'   => $product_ids,
+				'calendarId' => $cal_id,
+				'nonce'      => wp_create_nonce( 'fullcalendar_options' ),
+				'url'        => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
+			)
+		);
+
+		ob_start();
+
+		wc_get_template(
+			'calendaroverview.php',
+			array(
+				'products'    => $products,
+				'bookings'    => $bookings,
+				'calendar_id' => $cal_id,
+				'class'       => $atts['class'],
+			),
+			'woocommerce-bookings-extensions',
+			plugin_dir_path( __DIR__ ) . 'templates/'
+		);
+
+		return ob_get_clean();
+	}
+
 }
