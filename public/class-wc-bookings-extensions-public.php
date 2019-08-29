@@ -109,7 +109,7 @@ class WC_Bookings_Extensions_Public {
 		$suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-public' . $suffix . '.js', array( 'jquery' ), $this->version, false );
-
+		wp_register_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WC_BOOKINGS_VERSION, true );
 	}
 
 	/**
@@ -635,7 +635,6 @@ class WC_Bookings_Extensions_Public {
 			),
 		);
 
-		wp_register_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WC_BOOKINGS_VERSION, true );
 		wp_register_script( 'booking-view', plugin_dir_url( __DIR__ ) . 'public/js/booking-view' . $suffix . '.js', array( 'jquery', 'wc-bookings-moment' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
 		wp_localize_script( 'booking-view', 'booking_view_params', $script_params );
 

@@ -321,7 +321,9 @@ class WC_Bookings_Extensions_New_Calendar {
 					$booking->set_product_id( $product );
 				}
 				$booking->set_all_day( $all_day );
-
+				if ( $all_day ) {
+					$booking->set_end( $end->getTimestamp() - 1 ); // Shift the time back with 1 second for full day events.
+				}
 			}
 
 			$booking = apply_filters( 'woo_booking_extensions_calendar_booking', $booking );
@@ -380,7 +382,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			$product_id = $product->get_id();
 		}
 
-		$element_id        = 'wbe-calendar-' . wp_rand( 1000, 9999 );
+		$element_id        = 'wbe-calendar-' . $product_id;
 		$this->calendars[] = array(
 			'elementId'    => $element_id,
 			'productId'    => $product_id,
@@ -617,18 +619,22 @@ class WC_Bookings_Extensions_New_Calendar {
 					}
 				} else {
 					$event = array(
-						'id'         => hash( 'md4', $booking->get_id() ),
-						'resourceId' => hash( 'md4', $booking->get_product_id() ),
-						'start'      => $start->format( 'c' ),
-						'end'        => $end->format( 'c' ),
-						'title'      => 'Booked on: ' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $booking->get_date_created() ),
+						'id'              => hash( 'md4', $booking->get_id() ),
+						'resourceId'      => hash( 'md4', $booking->get_product_id() ),
+						'start'           => $start->format( 'c' ),
+						'end'             => $end->format( 'c' ),
+						//'title'           => 'Booked on: ' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $booking->get_date_created() ),
+						'title'           => '',
+						'backgroundColor' => '#e60016',
+						'borderColor'     => '#e60016',
+						'description'     => __( 'Time not available.', 'woo-booking-extensions' ),
 					);
-					$user  = wp_get_current_user();
-					if ( $user->ID !== $booking->get_customer_id() ) {
-						$event['backgroundColor'] = 'lightgray';
-						$event['borderColor']     = 'silver';
-						$event['title']           = '';
-					}
+					//$user  = wp_get_current_user();
+					//if ( $user->ID !== $booking->get_customer_id() ) {
+					//	$event['backgroundColor'] = 'lightgray';
+					//	$event['borderColor']     = 'silver';
+					//	$event['title']           = '';
+					//}
 				}
 
 				$events[] = $event;
@@ -766,6 +772,68 @@ class WC_Bookings_Extensions_New_Calendar {
 			return array();
 		}
 
+	}
+
+	/**
+	 * Output for the calendar shortcode.
+	 *
+	 * @param array $atts List of shortcode attributes.
+	 *
+	 * @return false|string
+	 */
+	public function get_overview_output( $atts ) {
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		$cal_id = wp_rand( 0, 1000 );
+
+		$products    = array();
+		$bookings    = array();
+		$product_ids = explode( ',', $atts['product_ids'] );
+		foreach ( $product_ids as $pos => $product_id ) {
+			$product = wc_get_product( $product_id );
+			if ( $product instanceof WC_Product_Booking ) {
+				$products[] = $product;
+			} else {
+				unset( $product_ids[ $pos ] );
+			}
+		}
+
+		wp_register_script(
+			'calendar-overview',
+			plugin_dir_url( __DIR__ ) . 'public/js/booking-overview' . $suffix . '.js',
+			array(
+				'jquery',
+				'wc-bookings-moment',
+			),
+			WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION,
+			true
+		);
+		wp_enqueue_script( 'calendar-overview' );
+		wp_localize_script(
+			'calendar-overview',
+			'calendarOverview',
+			array(
+				'products'   => $product_ids,
+				'calendarId' => $cal_id,
+				'nonce'      => wp_create_nonce( 'fullcalendar_options' ),
+				'url'        => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
+			)
+		);
+
+		ob_start();
+
+		wc_get_template(
+			'calendaroverview.php',
+			array(
+				'products'    => $products,
+				'bookings'    => $bookings,
+				'calendar_id' => $cal_id,
+				'class'       => $atts['class'],
+			),
+			'woocommerce-bookings-extensions',
+			plugin_dir_path( __DIR__ ) . 'templates/'
+		);
+
+		return ob_get_clean();
 	}
 
 }

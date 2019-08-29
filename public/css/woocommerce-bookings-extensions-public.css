@@ -15,3 +15,15 @@
     max-width: 900px;
     margin: 50px auto;
 }
+
+td.wbe-date-booked {
+    background: red;
+}
+
+.wbe-calendar-overview th, .wbe-calendar-overview td {
+    border-right: 1px solid #ececec;
+}
+
+.wbe-calendar-overview th:last-child, .wbe-calendar-overview td:last-child {
+    border-right: none;
+}

@@ -99,4 +99,17 @@ class WC_Bookings_Extensions_Shortcodes {
 		return $page->get_shortcode_output( $atts );
 	}
 
+	/**
+	 * Output the calendar overview.
+	 *
+	 * @param array $atts An array of attributes.
+	 *
+	 * @return string
+	 */
+	public function overview_shortcode( $atts ) {
+		$page = WC_Bookings_Extensions_New_Calendar::get_instance();
+
+		return $page->get_overview_output( $atts );
+	}
+
 }
