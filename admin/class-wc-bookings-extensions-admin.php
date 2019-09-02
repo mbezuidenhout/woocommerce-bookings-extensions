@@ -559,4 +559,71 @@ class WC_Bookings_Extensions_Admin {
 		wp_send_json_error();
 	}
 
+	/**
+	 * Change the All Bookings table columns.
+	 *
+	 * @param array $existing_columns Current columns that will be displayed.
+	 *
+	 * @return array
+	 */
+	public function edit_columns( $existing_columns ) {
+		if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
+			$existing_columns = array();
+		}
+		$columns = array(
+			'customer'      => __( 'Customer', 'woocommerce-bookings-extensions' ),
+			'user_created'  => __( 'User Created', 'woocommerce-bookings-extensions' ),
+			'user_modified' => __( 'User Modified', 'woocommerce-bookings-extensions' ),
+		);
+
+		$customer_column_pos = array_search( 'customer', array_keys( $existing_columns ), true );
+
+		return array_slice( $existing_columns, 0, $customer_column_pos, true ) + $columns + array_slice( $existing_columns, $customer_column_pos + 1, null, true );
+	}
+
+	/**
+	 * Define our custom columns shown in admin.
+	 *
+	 * @param string $column The column name.
+	 *
+	 * @global WC_Booking $booking , WC_Post $post
+	 */
+	public function custom_columns( $column ) {
+		global $post, $booking;
+		if ( ! is_a( $booking, 'WC_Booking' ) || $booking->get_id() !== $post->ID ) {
+			$booking = new WC_Booking( $post->ID );
+		}
+
+		switch ( $column ) {
+			case 'user_created':
+				$created_user_id = $booking->get_meta( '_booking_created_user_id' );
+				if ( ! empty( $created_user_id ) ) {
+					$user_created      = get_userdata( $created_user_id );
+					$user_created_name = esc_html( $user_created->display_name );
+					if ( $user_created->user_email ) {
+						$user_created_name = '<a href="mailto:' . esc_attr( $user_created->user_email ) . '">' . $user_created_name . '</a>';
+					}
+				} else {
+					$user_created_name = '-';
+				}
+
+				echo $user_created_name; // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
+				break;
+			case 'user_modified':
+				$modified_user_id = $booking->get_meta( '_booking_modified_user_id' );
+				if ( ! empty( $modified_user_id ) ) {
+					$user_modified      = get_userdata( $modified_user_id );
+					$user_modified_name = esc_html( $user_modified->display_name );
+					if ( $user_modified->user_email ) {
+						$user_modified_name = '<a href="mailto:' . esc_attr( $user_modified->user_email ) . '">' . $user_modified_name . '</a>';
+					}
+				} else {
+					$user_modified_name = '-';
+				}
+
+				echo $user_modified_name; // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
+				break;
+		}
+	}
+
 }

@@ -240,6 +240,8 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( "add_meta_boxes_{$post_type}", $plugin_admin, 'add_meta_boxes' );
 		$this->loader->add_action( 'wp_ajax_upload_booking_file', $plugin_admin, 'upload_booking_file_page' );
 		$this->loader->add_action( 'wp_ajax_delete_booking_file', $plugin_admin, 'delete_booking_file' );
+		$this->loader->add_filter( 'manage_edit-wc_booking_columns', $plugin_admin, 'edit_columns', 20 );
+		$this->loader->add_action( 'manage_wc_booking_posts_custom_column', $plugin_admin, 'custom_columns', 20 );
 	}
 
 	/**
