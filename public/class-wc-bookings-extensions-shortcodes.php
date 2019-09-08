@@ -90,6 +90,7 @@ class WC_Bookings_Extensions_Shortcodes {
 
 	/**
 	 * Output a calendar for the currently displaying product.
+	 * Output for the shortcode wcbooking_calendar.
 	 *
 	 * @param array $atts Shortcode attributes array.
 	 * @return string
@@ -100,7 +101,7 @@ class WC_Bookings_Extensions_Shortcodes {
 	}
 
 	/**
-	 * Output the calendar overview.
+	 * Output for the shortcode wcbooking_overview
 	 *
 	 * @param array $atts An array of attributes.
 	 *
