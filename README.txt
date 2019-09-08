@@ -44,6 +44,9 @@ List of possible views:
 
 == Changelog ==
 
+= 1.7.9 =
+* Bugfix: wcbooking_overview would hang while filling the booked dates.
+
 = 1.7.6 =
 * Update: Added new options to wcbooking_calendar shortcode.
 
@@ -94,24 +97,6 @@ List of possible views:
 
 = 1.2.1 =
 * Fix: Linked products field in admin section has missing bookable products from options list
-
-== Upgrade Notice ==
-
-= 1.7.0 =
-The normal calendar will be replaced with the full calendar when selecting full calendar option.
-
-= 1.6.9 =
-Added field to calendar view for guest name
-
-= 1.6.8 =
-Added field to admin booking details for guest name
-
-= 1.6.6 =
-Fixes issue where pages will not load if WooCommerce is not activated.
-All users shoud upgrade to this version.
-
-= 1.6.5 =
-Current and upcoming bookings did not display properly.
 
 == Frequently Asked Questions ==
 
