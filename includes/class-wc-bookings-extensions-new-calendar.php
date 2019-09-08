@@ -565,7 +565,9 @@ class WC_Bookings_Extensions_New_Calendar {
 				}
 			}
 			try {
+				$admin = false;
 				if ( wp_get_current_user()->has_cap( 'manage_bookings' ) ) {
+					$admin            = true;
 					$customer         = $booking->get_customer();
 					$guest_name       = $booking->get_meta( 'booking_guest_name' );
 					$persons          = $booking->get_persons();
@@ -618,26 +620,22 @@ class WC_Bookings_Extensions_New_Calendar {
 						$event['persons'] = $persons;
 					}
 				} else {
+					$admin = false;
 					$event = array(
-						'id'              => hash( 'md4', $booking->get_id() ),
+						'id'              => $booking->get_id(),
 						'resourceId'      => hash( 'md4', $booking->get_product_id() ),
 						'start'           => $start->format( 'c' ),
 						'end'             => $end->format( 'c' ),
 						//'title'           => 'Booked on: ' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $booking->get_date_created() ),
 						'title'           => '',
+						'allDay'          => $booking->is_all_day() ? true : false,
 						'backgroundColor' => '#e60016',
 						'borderColor'     => '#e60016',
 						'description'     => __( 'Time not available.', 'woo-booking-extensions' ),
 					);
-					//$user  = wp_get_current_user();
-					//if ( $user->ID !== $booking->get_customer_id() ) {
-					//	$event['backgroundColor'] = 'lightgray';
-					//	$event['borderColor']     = 'silver';
-					//	$event['title']           = '';
-					//}
 				}
 
-				$events[] = $event;
+				$events[] = apply_filters( 'wbe_event_data', $event, false );
 			} catch ( Exception $e ) {
 				$logger = new WC_Logger();
 				$logger->add( 'getbookings', $e->getMessage() );

@@ -14,7 +14,7 @@ function OverviewCalendar( calendarId, product_ids ) {
         }
 
         var cur = this.moment.startOf('month').clone();
-        while( cur.month() == this.moment.month() ) {
+        while( cur.month() === this.moment.month() ) {
             $(this.calendarId).find("tbody").append('<tr id="wbe-day-row-' + cur.date() + '"><td>' + cur.date() + ', ' + cur.format('ddd') + '</td>' + cells + '</tr>');
             cur.add(1, 'd');
         }
@@ -33,10 +33,13 @@ function OverviewCalendar( calendarId, product_ids ) {
                 success: $.proxy(function ( product, data) {
                     for( var k = 0; k < data.length; k++ ) {
                         var start = moment(data[k].start);
-                        var end = moment(data[k].end);
+                        var end   = moment(data[k].end);
+                        if(data[k].allDay) {
+                            end.subtract(1, 'h');
+                        }
                         if( ! data[k].hasOwnProperty( 'isExternal' ) || false === data[k].isExternal ) {
                             var dateCrawl = start.clone();
-                            while( dateCrawl.date() <= end.date() ) {
+                            while( dateCrawl.date() <= end.date() && dataCrawl.month() === this.moment.month() ) {
                                 var dom = $(this.calendarId).find('#wbe-day-row-' + dateCrawl.date()).find('.wbe-product-cell-' + product.product_id);
                                 //dom.text( start.date() + ' - ' + end.date() );
                                 dom.addClass( 'wbe-date-booked' );

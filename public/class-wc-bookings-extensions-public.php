@@ -81,7 +81,7 @@ class WC_Bookings_Extensions_Public {
 		 * class.
 		 */
 
-		$suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/woocommerce-bookings-extensions-public' . $suffix . '.css', array(), $this->version, 'all' );
 
@@ -106,7 +106,7 @@ class WC_Bookings_Extensions_Public {
 		 * class.
 		 */
 
-		$suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-public' . $suffix . '.js', array( 'jquery' ), $this->version, false );
 		wp_register_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WC_BOOKINGS_VERSION, true );
