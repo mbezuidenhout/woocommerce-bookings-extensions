@@ -284,7 +284,9 @@ class WC_Bookings_Extensions_New_Calendar {
 	}
 
 	/**
-	 * Booking page
+	 * Show pop-up windows with fill in form to create an event.
+	 * Start and end time gets pre-populated from POST.
+	 * Resource is pre-populated from POST.
 	 */
 	public function booking_page() {
 		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( wp_unslash( $_REQUEST['_wpnonce'] ), 'fullcalendar_options' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
@@ -294,16 +296,18 @@ class WC_Bookings_Extensions_New_Calendar {
 			} else {
 				// Create a new booking with passed values.
 
-				$booking  = new WC_Booking();
 				$timezone = new DateTimeZone( wc_timezone_string() );
 				$interval = DateInterval::createFromDateString( $timezone->getOffset( new DateTime() ) . ' seconds' );
 
 				$start = isset( $_REQUEST['start'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['start'] ) ), $timezone ) : null;
 				$end   = isset( $_REQUEST['end'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ), $timezone ) : null;
 
-
-				$product = isset( $_REQUEST['resource'] ) ? sanitize_key( wp_unslash( $_REQUEST['resource'] ) ) : null;
+				$product = isset( $_REQUEST['resource'] ) && ! empty( $_REQUEST['resource'] ) ? sanitize_key( wp_unslash( $_REQUEST['resource'] ) ) : null;
 				$all_day = isset( $_REQUEST['allDay'] ) && 'true' === $_REQUEST['allDay'] ? true : false;
+				if ( $all_day ) {
+					$end->sub( new DateInterval( 'PT1S' ) ); // Shift the time back with 1 second for full day events.
+				}
+
 				if ( ! empty( $start ) ) {
 					$start->add( $interval );
 				}
@@ -311,6 +315,16 @@ class WC_Bookings_Extensions_New_Calendar {
 					$end->add( $interval );
 				}
 
+				if ( ! is_null( $product ) ) {
+					$existing_booking = $this->get_bookings( $product, $start->getTimestamp(), $end->getTimestamp() );
+				}
+				if ( ! empty( $existing_booking ) ) {
+					// Bookings exist in selected time.
+					include plugin_dir_path( __DIR__ ) . 'admin/partials/event-time-notavailable.php';
+					wp_die();
+				}
+
+				$booking = new WC_Booking();
 				if ( ! empty( $start ) ) {
 					$booking->set_start( $start->getTimestamp() );
 				}
@@ -321,9 +335,6 @@ class WC_Bookings_Extensions_New_Calendar {
 					$booking->set_product_id( $product );
 				}
 				$booking->set_all_day( $all_day );
-				if ( $all_day ) {
-					$booking->set_end( $end->getTimestamp() - 1 ); // Shift the time back with 1 second for full day events.
-				}
 			}
 
 			$booking = apply_filters( 'woo_booking_extensions_calendar_booking', $booking );
@@ -626,7 +637,6 @@ class WC_Bookings_Extensions_New_Calendar {
 						'resourceId'      => hash( 'md4', $booking->get_product_id() ),
 						'start'           => $start->format( 'c' ),
 						'end'             => $end->format( 'c' ),
-						//'title'           => 'Booked on: ' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $booking->get_date_created() ),
 						'title'           => '',
 						'allDay'          => $booking->is_all_day() ? true : false,
 						'backgroundColor' => '#e60016',
@@ -687,17 +697,18 @@ class WC_Bookings_Extensions_New_Calendar {
 	}
 
 	/**
-	 * Get an array of bookings ordered by booking start date
+	 * Get an array of bookings ordered by booking start date.
+	 * Also returns bookings from linked bookable products like combined rooms.
 	 *
-	 * @param int $product_id WooCommerce product ID.
-	 * @param int $from       Unix from time.
-	 * @param int $to         Unix to time.
+	 * @param int|WC_Product $product WooCommerce product ID.
+	 * @param int            $from    Unix from time.
+	 * @param int            $to      Unix to time.
 	 * @return \WC_Booking[]
 	 * @throws Exception
 	 */
-	public function get_bookings( $product_id, $from, $to ) {
-		$products = array();
-		if ( is_null( $product_id ) ) {
+	public function get_bookings( $product, $from, $to ) {
+		$products = [];
+		if ( is_null( $product ) ) {
 			/** @var \WC_Product_Data_Store_CPT $data_store */
 			$data_store = WC_Data_Store::load( 'product' );
 			$ids        = $data_store->search_products( null, 'booking', false, false, null );
@@ -708,7 +719,9 @@ class WC_Bookings_Extensions_New_Calendar {
 				}
 			}
 		} else {
-			$product = wc_get_product( $product_id );
+			if ( ! $product instanceof WC_Product ) {
+				$product = wc_get_product( $product );
+			}
 			if ( $product && 'booking' === $product->get_type() ) {
 				$products[] = $product;
 			}
@@ -720,7 +733,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			}
 		}
 
-		$bookings = array();
+		$bookings = [];
 
 		foreach ( $products as $product ) {
 			$bookings = array_merge( $bookings, $product->get_bookings_in_date_range( $from, $to ) );
