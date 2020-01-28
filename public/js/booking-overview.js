@@ -39,7 +39,7 @@ function OverviewCalendar( calendarId, product_ids ) {
                         }
                         if( ! data[k].hasOwnProperty( 'isExternal' ) || false === data[k].isExternal ) {
                             var dateCrawl = start.clone();
-                            while( dateCrawl.date() <= end.date() && dataCrawl.month() === this.moment.month() ) {
+                            while( dateCrawl.date() <= end.date() && dateCrawl.month() === this.moment.month() ) {
                                 var dom = $(this.calendarId).find('#wbe-day-row-' + dateCrawl.date()).find('.wbe-product-cell-' + product.product_id);
                                 //dom.text( start.date() + ' - ' + end.date() );
                                 dom.addClass( 'wbe-date-booked' );
