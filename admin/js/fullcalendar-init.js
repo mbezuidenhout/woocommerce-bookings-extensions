@@ -211,12 +211,26 @@ document.addEventListener("DOMContentLoaded", function() {
             };
             tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl + "&" + $.param( params ) );
         },
-        dateClick: function(arg) {
+        dateClick: function( arg ) {
             console.log(
                 "dateClick",
                 arg.date,
                 arg.resource ? arg.resource.id : "(no resource)"
             );
+        },
+        viewSkeletonRender: function( info ) {
+            // Add overlay for loading.
+            var overlay = document.createElement("div");
+            overlay.setAttribute( "id", "loading-overlay" );
+            overlay.setAttribute( "class", "loading" );
+            info.el.appendChild(overlay);
+        },
+        loading: function( isLoading, view ) {
+            if( isLoading ) {
+                $("#loading-overlay").addClass("loading");
+            } else {
+                $("#loading-overlay").removeClass("loading");
+            }
         },
     });
 

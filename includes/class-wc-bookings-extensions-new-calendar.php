@@ -472,11 +472,11 @@ class WC_Bookings_Extensions_New_Calendar {
 			}
 			if ( ! empty( $_REQUEST['start'] ) ) {
 				$start = new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['start'] ) ) );
-				$booking->set_start( (int) $start->format( 'U' ) + $offset );
+				$booking->set_start( (int) $start->getTimestamp() + $offset );
 			}
 			if ( ! empty( $_REQUEST['end'] ) ) {
 				$end = new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ) );
-				$booking->set_end( (int) $end->format( 'U' ) + $offset );
+				$booking->set_end( (int) $end->getTimestamp() + $offset );
 			}
 			if ( isset( $_REQUEST['resource'] ) && $booking->get_product_id() !== $_REQUEST['resource'] ) {
 				$booking->set_product_id( (int) $_REQUEST['resource'] );
@@ -488,23 +488,38 @@ class WC_Bookings_Extensions_New_Calendar {
 				$booking->set_status( sanitize_text_field( wp_unslash( $_REQUEST['booking_status'] ) ) );
 			}
 
-			do_action( 'woo_booking_extensions_before_save', $booking );
+			// If time or resource has changed then check proposed changes first.
+			// Get existing bookings on new proposed date.
+			$existing_bookings = $this->get_bookings( $booking->get_product(), $booking->get_start(), $booking->get_end() );
 
-			if ( ! empty( $booking->get_changes() ) ) {
-				$booking_id = $booking->save();
+			// If a booking exists and the id is not ours then fail.
+			if ( is_array( $existing_bookings ) && ( count( $existing_bookings ) > 1 || ( $existing_bookings[0] instanceof WC_Booking && $existing_bookings[0]->get_id() !== $booking->get_id() ) ) ) {
+				http_response_code( 409 );
+				echo wp_json_encode(
+					array(
+						'status' => 409,
+						'error'  => 'Conflict',
+					)
+				);
 			} else {
-				$booking_id = $booking->get_id();
+				do_action( 'woo_booking_extensions_before_save', $booking );
+
+				if ( ! empty( $booking->get_changes() ) ) {
+					$booking_id = $booking->save();
+				} else {
+					$booking_id = $booking->get_id();
+				}
+
+				if ( isset( $_REQUEST['guest_name'] ) ) {
+					update_post_meta( $booking_id, 'booking_guest_name', sanitize_text_field( wp_unslash( $_REQUEST['guest_name'] ) ) );
+
+					do_action( 'woo_booking_extensions_before_save_meta', $booking_id );
+
+					$booking->save_meta_data();
+				}
+
+				echo wp_json_encode( array( 'status' => 200 ) );
 			}
-
-			if ( isset( $_REQUEST['guest_name'] ) ) {
-				update_post_meta( $booking_id, 'booking_guest_name', sanitize_text_field( wp_unslash( $_REQUEST['guest_name'] ) ) );
-
-				do_action( 'woo_booking_extensions_before_save_meta', $booking_id );
-
-				$booking->save_meta_data();
-			}
-
-			echo wp_json_encode( array( 'status' => 200 ) );
 		} catch ( Exception $e ) {
 			http_response_code( 400 );
 			echo wp_json_encode(
