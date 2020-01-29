@@ -191,21 +191,23 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
 				<?php
 				woocommerce_wp_text_input(
 					array(
-						'id'          => 'booking_start_date',
-						'label'       => __( 'Start date:', 'woocommerce-bookings' ),
-						'placeholder' => 'yyyy-mm-dd',
-						'value'       => date( 'Y-m-d', $booking->get_start( 'edit' ) ),
-						'class'       => 'date-picker-field',
+						'id'                => 'booking_start_date',
+						'label'             => __( 'Start date:', 'woocommerce-bookings' ),
+						'placeholder'       => 'yyyy-mm-dd',
+						'value'             => date( 'Y-m-d', $booking->get_start( 'edit' ) ),
+						'class'             => 'date-picker-field',
+						'custom_attributes' => [ 'autocomplete' => 'off' ],
 					)
 				);
 
 				woocommerce_wp_text_input(
 					array(
-						'id'          => 'booking_end_date',
-						'label'       => __( 'End date:', 'woocommerce-bookings' ),
-						'placeholder' => 'yyyy-mm-dd',
-						'value'       => date( 'Y-m-d', $booking->get_end( 'edit' ) ),
-						'class'       => 'date-picker-field',
+						'id'                => 'booking_end_date',
+						'label'             => __( 'End date:', 'woocommerce-bookings' ),
+						'placeholder'       => 'yyyy-mm-dd',
+						'value'             => date( 'Y-m-d', $booking->get_end( 'edit' ) ),
+						'class'             => 'date-picker-field',
+						'custom_attributes' => [ 'autocomplete' => 'off' ],
 					)
 				);
 
@@ -347,10 +349,15 @@ foreach ( WC_Bookings_Admin::get_booking_products() as $bookable_product ) {
             $.ajax({
                 type: 'POST',
                 url: fullcalendarOptions.events.wptargetUrl,
+                dataType: 'json',
                 data: data,
                 success: function (data) {
-                    calendar.refetchEvents();
-                    tb_remove();
+                    if( data.hasOwnProperty('error') ) {
+                        window.alert( data.error );
+                    } else {
+                        calendar.refetchEvents();
+                        tb_remove();
+                    }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
 

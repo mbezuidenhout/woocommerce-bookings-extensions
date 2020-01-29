@@ -529,6 +529,10 @@ class WC_Bookings_Extensions_New_Calendar {
 				)
 			);
 		}
+		if ( ! isset( $_REQUEST['wc-ajax'] ) ) {
+			// Die here to give proper json return.
+			wp_die();
+		}
 	}
 
 	/**
