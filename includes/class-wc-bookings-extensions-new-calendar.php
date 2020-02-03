@@ -161,6 +161,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			'fullcalendar-user-init',
 			plugin_dir_url( __DIR__ ) . 'public/js/fullcalendar-user-init.js',
 			array(
+				'jquery',
 				'fullcalendar-daygrid',
 				'fullcalendar-timegrid',
 				'fullcalendar-list',
