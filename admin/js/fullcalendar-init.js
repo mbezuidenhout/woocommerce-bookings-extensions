@@ -2,7 +2,7 @@ var calendar;
 var isCalendarInit = true;
 
 function isProductCategoryShown( categories ) {
-    var shownCategories = $(".manage-column[id]:not(.hidden)").map(function() {
+    var shownCategories = jQuery(".manage-column[id]:not(.hidden)").map(function() {
         if ( this.id === "wbe-uncategorized" ) {
             return this.id;
         }
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if ( info.hasOwnProperty("newResource") && info.newResource !== null ) {
                 params.resource = info.newResource.id;
             }
-            xhr["booking"] = $.ajax({
+            xhr["booking"] = jQuery.ajax({
                 type: "POST",
                 url: fullcalendarOptions.events.wctargetUrl,
                 data: params,
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function() {
             addButton: {
                 icon: "fc-icon-plus-square",
                 click: function() {
-                    tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl  + "&" + $.param({_wpnonce: fullcalendarOptions.events.nonce}) );
+                    tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl  + "&" + jQuery.param({_wpnonce: fullcalendarOptions.events.nonce}) );
                 },
             }
         },
@@ -150,26 +150,26 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         ],
         eventRender: function( info ) {
-            $(info.el).on(
+            jQuery(info.el).on(
                 "click",
                 function( event ) {
-                    if( $(this).attr("id").length && $(this).attr( "id" ).substring(0, 10) === "wbe-event-" ) {
+                    if( jQuery(this).attr("id").length && jQuery(this).attr( "id" ).substring(0, 10) === "wbe-event-" ) {
                         var params = {
                             _wpnonce: fullcalendarOptions.events.nonce,
-                            "id": $(this).attr("id").substring(10),
+                            "id": jQuery(this).attr("id").substring(10),
                         };
-                        tb_show( fullcalendarOptions.updateEventTitle, fullcalendarOptions.events.eventPageUrl + "&" + $.param(params) );
+                        tb_show( fullcalendarOptions.updateEventTitle, fullcalendarOptions.events.eventPageUrl + "&" + jQuery.param(params) );
                     }
                     event.preventDefault();
                 }
             );
 
             if( !info.event.hasOwnProperty("rendering") && info.event.rendering !== "background" ) {
-                var legend = $("#wbe-calendar-legend ul");
+                var legend = jQuery("#wbe-calendar-legend ul");
 
                 // If " (You)" are in the list then this will fix the list count.
                 var legendItemClass = 'wbe-legend-item-' + (legend.find('li').length);
-                if (legend.find('li').length === 0 || $("#wbe-calendar-legend ." + legendItemClass).length !== 0) {
+                if (legend.find('li').length === 0 || jQuery("#wbe-calendar-legend ." + legendItemClass).length !== 0) {
                     legendItemClass = 'wbe-legend-item-' + (legend.find('li').length + 1);
                 }
 
@@ -182,8 +182,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
 
                 // With ES6 this can be changed to a string literal like:
-                // `<li id="wbe-legend-admin-${info.event.extendedProps.createdById">${info.event.extendedPropts.createdBy}</li>`
-                if ($("#wbe-legend-admin-" + info.event.extendedProps.createdById).length === 0) {
+                // `<li id="wbe-legend-admin-jQuery{info.event.extendedProps.createdById">jQuery{info.event.extendedPropts.createdBy}</li>`
+                if (jQuery("#wbe-legend-admin-" + info.event.extendedProps.createdById).length === 0) {
                     legend.append('<li id="wbe-legend-admin-' + info.event.extendedProps.createdById + '" class="' + legendItemClass + '">' + createdBy + "</li>");
                 } else {
                     var classList = legend.find("#wbe-legend-admin-" + info.event.extendedProps.createdById)[0].classList;
@@ -195,46 +195,46 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 }
 
-                $(info.el).addClass(legendItemClass);
+                jQuery(info.el).addClass(legendItemClass);
 
                 // Remove background-color and border-color. These will now be handled with a class attribute.
-                $(info.el).css({"background-color": "", "border-color": ""});
+                jQuery(info.el).css({"background-color": "", "border-color": ""});
 
             }
 
             if( info.event.id.length ) {
                 if( info.event.extendedProps.hasOwnProperty( "isExternal" ) && info.event.extendedProps.isExternal ) {
-                    $(info.el).attr("id", "ext-event-" + info.event.id);
+                    jQuery(info.el).attr("id", "ext-event-" + info.event.id);
                 } else {
-                    $(info.el).attr("id", "wbe-event-" + info.event.id);
+                    jQuery(info.el).attr("id", "wbe-event-" + info.event.id);
                 }
             }
             if( info.event.extendedProps.hasOwnProperty( "resourceCategories" ) && ! isProductCategoryShown( info.event.extendedProps.resourceCategories ) ) {
-                $(info.el).addClass( "hidden" );
+                jQuery(info.el).addClass( "hidden" );
             } else {
-                $(info.el).removeClass( "hidden" );
+                jQuery(info.el).removeClass( "hidden" );
             }
             var domElementType = "div";
             if(info.view.constructor.name === "DayGridView") {
                 domElementType = "span";
             } else if (info.view.constructor.name === "ResourceTimeGridView") {
                 // Remove title if in resource view.
-                $(info.el).find(".fc-title").remove();
+                jQuery(info.el).find(".fc-title").remove();
             }
             if ( ! info.event.extendedProps.hasOwnProperty("isExternal") || ! info.event.extendedProps.isExternal ) {
-                $(info.el).find(".fc-title").first().before("<" + domElementType + " class=\"wbe-booking-id\">#" + info.event.id + "</" + domElementType + ">");
+                jQuery(info.el).find(".fc-title").first().before("<" + domElementType + " class=\"wbe-booking-id\">#" + info.event.id + "</" + domElementType + ">");
             }
             if (info.event.extendedProps.hasOwnProperty("bookedBy")) {
-                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</" + domElementType + ">");
+                jQuery(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-booked-by\">Booked by " + info.event.extendedProps.bookedBy + "</" + domElementType + ">");
             }
             if (info.event.extendedProps.hasOwnProperty("bookedFor")) {
-                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-booked-for\">Booked for " + info.event.extendedProps.bookedFor + "</" + domElementType + ">");
+                jQuery(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-booked-for\">Booked for " + info.event.extendedProps.bookedFor + "</" + domElementType + ">");
             }
             if (info.event.extendedProps.hasOwnProperty("persons") && info.event.extendedProps.persons.length > 0) {
-                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</" + domElementType + ">");
+                jQuery(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</" + domElementType + ">");
             }
             if (info.event.extendedProps.hasOwnProperty("status") && info.event.extendedProps.status.length > 0) {
-                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-status\">" + info.event.extendedProps.status + "</" + domElementType + ">");
+                jQuery(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-status\">" + info.event.extendedProps.status + "</" + domElementType + ">");
             }
         },
         eventResize: eventMove,
@@ -252,7 +252,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 "allDay": info.allDay,
                 "resource": info.hasOwnProperty("resource") && info.resource !== null ? info.resource.id : null,
             };
-            tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl + "&" + $.param( params ) );
+            tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl + "&" + jQuery.param( params ) );
         },
         dateClick: function( arg ) {
             console.log(
@@ -275,9 +275,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // This function gets called each time the calender is loading or completed loading data.
         loading: function( isLoading, view ) {
             if( isLoading ) {
-                $("#loading-overlay").addClass("loading");
+                jQuery("#loading-overlay").addClass("loading");
             } else {
-                $("#loading-overlay").removeClass("loading");
+                jQuery("#loading-overlay").removeClass("loading");
             }
         },
     });

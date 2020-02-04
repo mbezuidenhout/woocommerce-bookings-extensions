@@ -146,6 +146,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			'fullcalendar-admin-init',
 			plugin_dir_url( __DIR__ ) . 'admin/js/fullcalendar-init.js',
 			array(
+				'jquery',
 				'fullcalendar-daygrid',
 				'fullcalendar-timegrid',
 				'fullcalendar-list',
@@ -251,6 +252,7 @@ class WC_Bookings_Extensions_New_Calendar {
 				'confirmAddMessage'   => __( 'Do you want to add an event here?', 'woo-booking-extensions' ),
 				'createEventTitle'    => __( 'Create event', 'woo-booking-extensions' ),
 				'updateEventTitle'    => __( 'Update event', 'woo-booking-extensions' ),
+				'loggedInUserId'      => wp_get_current_user()->ID,
 				'events'              => array(
 					'sourceUrl'    => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
 					'wctargetUrl'  => WC_Ajax::get_endpoint( 'wc_bookings_extensions_update_booking' ),
@@ -596,9 +598,7 @@ class WC_Bookings_Extensions_New_Calendar {
 				}
 			}
 			try {
-				$admin = false;
 				if ( wp_get_current_user()->has_cap( 'manage_bookings' ) ) {
-					$admin            = true;
 					$customer         = $booking->get_customer();
 					$guest_name       = $booking->get_meta( 'booking_guest_name' );
 					$persons          = $booking->get_persons();
@@ -640,6 +640,8 @@ class WC_Bookings_Extensions_New_Calendar {
 						'allDay'             => $booking->is_all_day() ? true : false,
 						'backgroundColor'    => $background_color,
 						'borderColor'        => $border_color,
+						'createdById'        => $booking->get_meta( '_booking_created_user_id' ),
+						'createdBy'          => get_userdata( $booking->get_meta( '_booking_created_user_id' ) )->display_name,
 					);
 					if ( ! empty( $guest_name ) ) {
 						$event['bookedFor'] = $guest_name;
@@ -651,7 +653,6 @@ class WC_Bookings_Extensions_New_Calendar {
 						$event['persons'] = $persons;
 					}
 				} else {
-					$admin = false;
 					$event = array(
 						'id'              => $booking->get_id(),
 						'resourceId'      => hash( 'md4', $booking->get_product_id() ),
