@@ -3,7 +3,7 @@ Contributors: mbezuidenhout
 Tags: bookings, booking, woocommerce, woo-booking-extensions, accommodation, search, calendar
 Requires PHP: 5.6
 Requires at least: 4.9
-Tested up to: 5.2.2
+Tested up to: 5.3.2
 Stable tag: trunk
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -43,6 +43,11 @@ List of possible views:
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 1.7.10 =
+* Add: Loading indicator for full calendar.
+* Add: Color keys shown at top of full calendar to show who make the booking.
+* Add: User is now blocked from making double bookings.
 
 = 1.7.9 =
 * Bugfix: wcbooking_overview would hang while filling the booked dates.
