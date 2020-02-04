@@ -1,4 +1,5 @@
 var calendar;
+var isCalendarInit = true;
 
 function isProductCategoryShown( categories ) {
     var shownCategories = $(".manage-column[id]:not(.hidden)").map(function() {
@@ -162,6 +163,45 @@ document.addEventListener("DOMContentLoaded", function() {
                     event.preventDefault();
                 }
             );
+
+            if( !info.event.hasOwnProperty("rendering") && info.event.rendering !== "background" ) {
+                var legend = $("#wbe-calendar-legend ul");
+
+                // If " (You)" are in the list then this will fix the list count.
+                var legendItemClass = 'wbe-legend-item-' + (legend.find('li').length);
+                if (legend.find('li').length === 0 || $("#wbe-calendar-legend ." + legendItemClass).length !== 0) {
+                    legendItemClass = 'wbe-legend-item-' + (legend.find('li').length + 1);
+                }
+
+                var createdBy = info.event.extendedProps.createdBy;
+
+                //if( legend.find('#wbe-legend-admin-' + info.event.extendedProps.createdById) == 'undefined' )
+                if (info.event.extendedProps.createdById == fullcalendarOptions.loggedInUserId) {
+                    legendItemClass = 'wbe-legend-item-0';
+                    createdBy += " (You)";
+                }
+
+                // With ES6 this can be changed to a string literal like:
+                // `<li id="wbe-legend-admin-${info.event.extendedProps.createdById">${info.event.extendedPropts.createdBy}</li>`
+                if ($("#wbe-legend-admin-" + info.event.extendedProps.createdById).length === 0) {
+                    legend.append('<li id="wbe-legend-admin-' + info.event.extendedProps.createdById + '" class="' + legendItemClass + '">' + createdBy + "</li>");
+                } else {
+                    var classList = legend.find("#wbe-legend-admin-" + info.event.extendedProps.createdById)[0].classList;
+                    for( var i=0; i < classList.length; i++ ) {
+                        if( classList[i].startsWith("wbe-legend-item-") ) {
+                            legendItemClass = classList[i];
+                            break;
+                        }
+                    }
+                }
+
+                $(info.el).addClass(legendItemClass);
+
+                // Remove background-color and border-color. These will now be handled with a class attribute.
+                $(info.el).css({"background-color": "", "border-color": ""});
+
+            }
+
             if( info.event.id.length ) {
                 if( info.event.extendedProps.hasOwnProperty( "isExternal" ) && info.event.extendedProps.isExternal ) {
                     $(info.el).attr("id", "ext-event-" + info.event.id);
@@ -190,8 +230,11 @@ document.addEventListener("DOMContentLoaded", function() {
             if (info.event.extendedProps.hasOwnProperty("bookedFor")) {
                 $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-booked-for\">Booked for " + info.event.extendedProps.bookedFor + "</" + domElementType + ">");
             }
-            if (info.event.extendedProps.hasOwnProperty("persons")) {
-                $(info.el).find(".fc-content").first().append("<" + domElementType + "n class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</" + domElementType + ">");
+            if (info.event.extendedProps.hasOwnProperty("persons") && info.event.extendedProps.persons.length > 0) {
+                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-pax\">(" + info.event.extendedProps.persons + " pax)</" + domElementType + ">");
+            }
+            if (info.event.extendedProps.hasOwnProperty("status") && info.event.extendedProps.status.length > 0) {
+                $(info.el).find(".fc-content").first().append("<" + domElementType + " class=\"wbe-status\">" + info.event.extendedProps.status + "</" + domElementType + ">");
             }
         },
         eventResize: eventMove,
@@ -211,12 +254,31 @@ document.addEventListener("DOMContentLoaded", function() {
             };
             tb_show( fullcalendarOptions.createEventTitle, fullcalendarOptions.events.eventPageUrl + "&" + $.param( params ) );
         },
-        dateClick: function(arg) {
+        dateClick: function( arg ) {
             console.log(
                 "dateClick",
                 arg.date,
                 arg.resource ? arg.resource.id : "(no resource)"
             );
+        },
+        // This function gets called before the calendar dom element is put on the page.
+        viewSkeletonRender: function( info ) {
+            // Add overlay for loading.
+            var overlay = document.createElement("div");
+            overlay.setAttribute( "id", "loading-overlay" );
+            if( isCalendarInit ) {
+                overlay.setAttribute("class", "loading");
+                isCalendarInit = false;
+            }
+            info.el.appendChild(overlay);
+        },
+        // This function gets called each time the calender is loading or completed loading data.
+        loading: function( isLoading, view ) {
+            if( isLoading ) {
+                $("#loading-overlay").addClass("loading");
+            } else {
+                $("#loading-overlay").removeClass("loading");
+            }
         },
     });
 

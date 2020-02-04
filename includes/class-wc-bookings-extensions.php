@@ -302,6 +302,7 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'woocommerce_before_booking_form', $plugin_public, 'add_booking_form_scripts' );
 
 		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_get_bookings', $plugin_calendar, 'get_bookings_ajax' );
+		// wc_ajax skips the loading of some module to speed up processing.
 		$this->loader->add_action( 'wc_ajax_wc_bookings_extensions_update_booking', $plugin_calendar, 'update_booking_ajax' );
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_update_booking', $plugin_calendar, 'update_booking_ajax' );
 		$this->loader->add_action( 'wp_ajax_wc_bookings_extensions_event_page', $plugin_calendar, 'booking_page' );

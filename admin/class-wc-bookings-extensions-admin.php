@@ -493,10 +493,17 @@ class WC_Bookings_Extensions_Admin {
 		wp_localize_script( 'booking-files-meta-box', 'filesOptions', $args );
 		wp_enqueue_script( 'media-upload' );
 		add_thickbox(); // Add the WordPress admin thickbox js and css.
-		add_meta_box( 'filesdiv', __( 'Files', 'woo-bookings-extensions' ), array(
-			$this,
-			'meta_box_file'
-		), 'wc_booking', 'side' );
+		add_meta_box(
+			'filesdiv',
+			__( 'Files', 'woo-bookings-extensions' ),
+			array(
+				$this,
+				'meta_box_file',
+			),
+			'wc_booking',
+			'side'
+		);
+
 	}
 
 	/**

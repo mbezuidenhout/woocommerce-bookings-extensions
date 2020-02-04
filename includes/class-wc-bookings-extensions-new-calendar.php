@@ -161,6 +161,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			'fullcalendar-user-init',
 			plugin_dir_url( __DIR__ ) . 'public/js/fullcalendar-user-init.js',
 			array(
+				'jquery',
 				'fullcalendar-daygrid',
 				'fullcalendar-timegrid',
 				'fullcalendar-list',
@@ -284,7 +285,9 @@ class WC_Bookings_Extensions_New_Calendar {
 	}
 
 	/**
-	 * Booking page
+	 * Show pop-up windows with fill in form to create an event.
+	 * Start and end time gets pre-populated from POST.
+	 * Resource is pre-populated from POST.
 	 */
 	public function booking_page() {
 		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( wp_unslash( $_REQUEST['_wpnonce'] ), 'fullcalendar_options' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
@@ -294,16 +297,18 @@ class WC_Bookings_Extensions_New_Calendar {
 			} else {
 				// Create a new booking with passed values.
 
-				$booking  = new WC_Booking();
 				$timezone = new DateTimeZone( wc_timezone_string() );
 				$interval = DateInterval::createFromDateString( $timezone->getOffset( new DateTime() ) . ' seconds' );
 
 				$start = isset( $_REQUEST['start'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['start'] ) ), $timezone ) : null;
 				$end   = isset( $_REQUEST['end'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ), $timezone ) : null;
 
-
-				$product = isset( $_REQUEST['resource'] ) ? sanitize_key( wp_unslash( $_REQUEST['resource'] ) ) : null;
+				$product = isset( $_REQUEST['resource'] ) && ! empty( $_REQUEST['resource'] ) ? sanitize_key( wp_unslash( $_REQUEST['resource'] ) ) : null;
 				$all_day = isset( $_REQUEST['allDay'] ) && 'true' === $_REQUEST['allDay'] ? true : false;
+				if ( $all_day ) {
+					$end->sub( new DateInterval( 'PT1S' ) ); // Shift the time back with 1 second for full day events.
+				}
+
 				if ( ! empty( $start ) ) {
 					$start->add( $interval );
 				}
@@ -311,6 +316,16 @@ class WC_Bookings_Extensions_New_Calendar {
 					$end->add( $interval );
 				}
 
+				if ( ! is_null( $product ) ) {
+					$existing_booking = $this->get_bookings( $product, $start->getTimestamp(), $end->getTimestamp() );
+				}
+				if ( ! empty( $existing_booking ) ) {
+					// Bookings exist in selected time.
+					include plugin_dir_path( __DIR__ ) . 'admin/partials/event-time-notavailable.php';
+					wp_die();
+				}
+
+				$booking = new WC_Booking();
 				if ( ! empty( $start ) ) {
 					$booking->set_start( $start->getTimestamp() );
 				}
@@ -321,9 +336,6 @@ class WC_Bookings_Extensions_New_Calendar {
 					$booking->set_product_id( $product );
 				}
 				$booking->set_all_day( $all_day );
-				if ( $all_day ) {
-					$booking->set_end( $end->getTimestamp() - 1 ); // Shift the time back with 1 second for full day events.
-				}
 			}
 
 			$booking = apply_filters( 'woo_booking_extensions_calendar_booking', $booking );
@@ -461,11 +473,11 @@ class WC_Bookings_Extensions_New_Calendar {
 			}
 			if ( ! empty( $_REQUEST['start'] ) ) {
 				$start = new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['start'] ) ) );
-				$booking->set_start( (int) $start->format( 'U' ) + $offset );
+				$booking->set_start( (int) $start->getTimestamp() + $offset );
 			}
 			if ( ! empty( $_REQUEST['end'] ) ) {
 				$end = new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ) );
-				$booking->set_end( (int) $end->format( 'U' ) + $offset );
+				$booking->set_end( (int) $end->getTimestamp() + $offset );
 			}
 			if ( isset( $_REQUEST['resource'] ) && $booking->get_product_id() !== $_REQUEST['resource'] ) {
 				$booking->set_product_id( (int) $_REQUEST['resource'] );
@@ -477,23 +489,38 @@ class WC_Bookings_Extensions_New_Calendar {
 				$booking->set_status( sanitize_text_field( wp_unslash( $_REQUEST['booking_status'] ) ) );
 			}
 
-			do_action( 'woo_booking_extensions_before_save', $booking );
+			// If time or resource has changed then check proposed changes first.
+			// Get existing bookings on new proposed date.
+			$existing_bookings = $this->get_bookings( $booking->get_product(), $booking->get_start(), $booking->get_end() );
 
-			if ( ! empty( $booking->get_changes() ) ) {
-				$booking_id = $booking->save();
+			// If a booking exists and the id is not ours then fail.
+			if ( is_array( $existing_bookings ) && ( count( $existing_bookings ) > 1 || ( $existing_bookings[0] instanceof WC_Booking && $existing_bookings[0]->get_id() !== $booking->get_id() ) ) ) {
+				http_response_code( 409 );
+				echo wp_json_encode(
+					array(
+						'status' => 409,
+						'error'  => 'Conflict',
+					)
+				);
 			} else {
-				$booking_id = $booking->get_id();
+				do_action( 'woo_booking_extensions_before_save', $booking );
+
+				if ( ! empty( $booking->get_changes() ) ) {
+					$booking_id = $booking->save();
+				} else {
+					$booking_id = $booking->get_id();
+				}
+
+				if ( isset( $_REQUEST['guest_name'] ) ) {
+					update_post_meta( $booking_id, 'booking_guest_name', sanitize_text_field( wp_unslash( $_REQUEST['guest_name'] ) ) );
+
+					do_action( 'woo_booking_extensions_before_save_meta', $booking_id );
+
+					$booking->save_meta_data();
+				}
+
+				echo wp_json_encode( array( 'status' => 200 ) );
 			}
-
-			if ( isset( $_REQUEST['guest_name'] ) ) {
-				update_post_meta( $booking_id, 'booking_guest_name', sanitize_text_field( wp_unslash( $_REQUEST['guest_name'] ) ) );
-
-				do_action( 'woo_booking_extensions_before_save_meta', $booking_id );
-
-				$booking->save_meta_data();
-			}
-
-			echo wp_json_encode( array( 'status' => 200 ) );
 		} catch ( Exception $e ) {
 			http_response_code( 400 );
 			echo wp_json_encode(
@@ -502,6 +529,10 @@ class WC_Bookings_Extensions_New_Calendar {
 					'error'  => 'Bad Request',
 				)
 			);
+		}
+		if ( ! isset( $_REQUEST['wc-ajax'] ) ) {
+			// Die here to give proper json return.
+			wp_die();
 		}
 	}
 
@@ -626,7 +657,6 @@ class WC_Bookings_Extensions_New_Calendar {
 						'resourceId'      => hash( 'md4', $booking->get_product_id() ),
 						'start'           => $start->format( 'c' ),
 						'end'             => $end->format( 'c' ),
-						//'title'           => 'Booked on: ' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $booking->get_date_created() ),
 						'title'           => '',
 						'allDay'          => $booking->is_all_day() ? true : false,
 						'backgroundColor' => '#e60016',
@@ -687,17 +717,18 @@ class WC_Bookings_Extensions_New_Calendar {
 	}
 
 	/**
-	 * Get an array of bookings ordered by booking start date
+	 * Get an array of bookings ordered by booking start date.
+	 * Also returns bookings from linked bookable products like combined rooms.
 	 *
-	 * @param int $product_id WooCommerce product ID.
-	 * @param int $from       Unix from time.
-	 * @param int $to         Unix to time.
+	 * @param int|WC_Product $product WooCommerce product ID.
+	 * @param int            $from    Unix from time.
+	 * @param int            $to      Unix to time.
 	 * @return \WC_Booking[]
 	 * @throws Exception
 	 */
-	public function get_bookings( $product_id, $from, $to ) {
-		$products = array();
-		if ( is_null( $product_id ) ) {
+	public function get_bookings( $product, $from, $to ) {
+		$products = [];
+		if ( is_null( $product ) ) {
 			/** @var \WC_Product_Data_Store_CPT $data_store */
 			$data_store = WC_Data_Store::load( 'product' );
 			$ids        = $data_store->search_products( null, 'booking', false, false, null );
@@ -708,7 +739,9 @@ class WC_Bookings_Extensions_New_Calendar {
 				}
 			}
 		} else {
-			$product = wc_get_product( $product_id );
+			if ( ! $product instanceof WC_Product ) {
+				$product = wc_get_product( $product );
+			}
 			if ( $product && 'booking' === $product->get_type() ) {
 				$products[] = $product;
 			}
@@ -720,7 +753,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			}
 		}
 
-		$bookings = array();
+		$bookings = [];
 
 		foreach ( $products as $product ) {
 			$bookings = array_merge( $bookings, $product->get_bookings_in_date_range( $from, $to ) );

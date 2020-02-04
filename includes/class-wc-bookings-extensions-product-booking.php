@@ -51,15 +51,15 @@ class WC_Bookings_Extensions_Product_Booking extends WC_Product_Booking {
 				break;
 		}
 
-		// blocks as in an array of slots. $slot_start_times
+		// blocks as in an array of slots. $slot_start_times.
 		$blocks = array();
 
-		// boring interval stuff
+		// boring interval stuff.
 		$interval      = $intervals[0];
 		$base_interval = $intervals[1];
 
 		// get a time stamp to check from
-		// and get a time stamp to check to
+		// and get a time stamp to check to.
 		$product_min_date = $this->get_min_date();
 		$product_max_date = $this->get_max_date();
 		if ( 'hour' === $product_min_date['unit'] ) {
@@ -75,7 +75,7 @@ class WC_Bookings_Extensions_Product_Booking extends WC_Product_Booking {
 		$current_time_stamp = current_time( 'timestamp' );
 		$availability       = $this->get_default_availability();
 
-		// Loop ranges looking for slots within
+		// Loop ranges looking for slots within.
 		foreach ( $bookable_ranges as $minutes ) {
 			$range_start = $minutes[0];
 			$range_end   = $minutes[1];
@@ -89,7 +89,7 @@ class WC_Bookings_Extensions_Product_Booking extends WC_Product_Booking {
 			$minutes_for_range       = $range_end - $range_start;
 			$base_intervals_in_block = floor( $minutes_for_range / $base_interval );
 
-			// Only start blocks on $base_interval (on the hour, on the half hour or on the quarter)
+			// Only start blocks on $base_interval (on the hour, on the half hour or on the quarter).
 			$block_start      = intval( gmdate( 'i', $range_start_time ) );
 			$adj              = $block_start % $base_interval;
 			$range_start_time = $range_start_time + ( $adj ? $adj : 0 );
@@ -105,13 +105,13 @@ class WC_Bookings_Extensions_Product_Booking extends WC_Product_Booking {
 					break 2;
 				}
 
-				// Must be in the future
+				// Must be in the future.
 				if ( $start_time < $min_date || $start_time <= $current_time_stamp ) {
 					continue;
 				}
 
 				// check that start time falls within minutes
-				// and that the correct quantity
+				// and that the correct quantity.
 				if ( isset( $minutes_not_available[ $start_time ] ) &&
 					$minutes_not_available[ $start_time ] >= $available_qty ) {
 					continue;
