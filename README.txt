@@ -44,6 +44,11 @@ List of possible views:
 
 == Changelog ==
 
+= 1.7.12 =
+* Add: Show status of booking in full calendar view.
+* Fix: Don't add color key item if event is external.
+* Fix: Show external events as black text of beige background.
+
 = 1.7.11 =
 * Fixed: Loads jquery before full calendar view.
 

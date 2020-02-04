@@ -164,7 +164,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             );
 
-            if( !info.event.hasOwnProperty("rendering") && info.event.rendering !== "background" ) {
+            if( info.event.rendering === "" &&
+                !( info.event.extendedProps.hasOwnProperty("isExternal") && info.event.extendedProps.isExternal === true ) ) {
                 var legend = jQuery("#wbe-calendar-legend ul");
 
                 // If " (You)" are in the list then this will fix the list count.

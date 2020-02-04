@@ -642,6 +642,7 @@ class WC_Bookings_Extensions_New_Calendar {
 						'borderColor'        => $border_color,
 						'createdById'        => $booking->get_meta( '_booking_created_user_id' ),
 						'createdBy'          => get_userdata( $booking->get_meta( '_booking_created_user_id' ) )->display_name,
+						'status'             => $booking->get_status(),
 					);
 					if ( ! empty( $guest_name ) ) {
 						$event['bookedFor'] = $guest_name;
