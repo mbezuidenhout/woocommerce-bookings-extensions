@@ -44,6 +44,9 @@ List of possible views:
 
 == Changelog ==
 
+= 1.7.11 =
+* Fixed: Loads jquery before full calendar view.
+
 = 1.7.10 =
 * Add: Loading indicator for full calendar.
 * Add: Color keys shown at top of full calendar to show who make the booking.
