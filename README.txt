@@ -44,6 +44,9 @@ List of possible views:
 
 == Changelog ==
 
+= 1.7.13 =
+* Add: Show payment method in bookings list.
+
 = 1.7.12 =
 * Add: Show status of booking in full calendar view.
 * Fix: Don't add color key item if event is external.
