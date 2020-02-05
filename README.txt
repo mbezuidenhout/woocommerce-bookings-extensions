@@ -44,6 +44,11 @@ List of possible views:
 
 == Changelog ==
 
+= 1.7.14 =
+* Add: Show payment method in All Bookings table.
+* Fix: Rendering of background events.
+* Fix: Color keys for events list in Full Calendar.
+
 = 1.7.13 =
 * Add: Show payment method in bookings list.
 

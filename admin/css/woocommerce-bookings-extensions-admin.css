@@ -171,49 +171,49 @@ div.loading {
     content: " ";
 }
 
-.fc-event-container .wbe-legend-item-0, #wbe-calendar-legend .wbe-legend-item-0:before {
+.fc-event-container .wbe-legend-item-0, #wbe-calendar-legend .wbe-legend-item-0:before, .fc-list-item .wbe-legend-item-0 {
     background-color: rgb(55, 136, 216);
     border-color: rgb(54, 101, 180);
 }
 
-.fc-event-container .wbe-legend-item-1, #wbe-calendar-legend .wbe-legend-item-1:before {
+.fc-event-container .wbe-legend-item-1, #wbe-calendar-legend .wbe-legend-item-1:before, .fc-list-item .wbe-legend-item-1 {
     background-color: rgb(140, 81, 10);
     border-color: rgb(84, 48, 5);
 }
 
-.fc-event-container .wbe-legend-item-2, #wbe-calendar-legend .wbe-legend-item-2:before {
+.fc-event-container .wbe-legend-item-2, #wbe-calendar-legend .wbe-legend-item-2:before, .fc-list-item .wbe-legend-item-2 {
     background-color: rgb(233, 194, 125);
     border-color: rgb(191, 129, 45);
     color: rgb(68, 68, 68);
 }
 
-.fc-event-container .wbe-legend-item-3, #wbe-calendar-legend .wbe-legend-item-3:before {
+.fc-event-container .wbe-legend-item-3, #wbe-calendar-legend .wbe-legend-item-3:before, .fc-list-item .wbe-legend-item-3 {
     background-color: rgb(128, 205, 193);
     border-color: rgb(53, 151, 143);
     color: rgb(68, 68, 68);
 }
 
-.fc-event-container .wbe-legend-item-4, #wbe-calendar-legend .wbe-legend-item-4:before {
+.fc-event-container .wbe-legend-item-4, #wbe-calendar-legend .wbe-legend-item-4:before, .fc-list-item .wbe-legend-item-4 {
     background-color: rgb(1, 102, 94);
     border-color: rgb(0, 60, 48);
 }
 
-.fc-event-container .wbe-legend-item-5, #wbe-calendar-legend .wbe-legend-item-5:before {
+.fc-event-container .wbe-legend-item-5, #wbe-calendar-legend .wbe-legend-item-5:before, .fc-list-item .wbe-legend-item-5 {
     background-color: rgb(144, 94, 184);
     border-color: rgb(107, 73, 145);
 }
 
-.fc-event-container .wbe-legend-item-6, #wbe-calendar-legend .wbe-legend-item-6:before {
+.fc-event-container .wbe-legend-item-6, #wbe-calendar-legend .wbe-legend-item-6:before, .fc-list-item .wbe-legend-item-6 {
     background-color: rgb(184, 87, 136);
     border-color: rgb(134, 67, 96);
 }
 
-.fc-event-container .wbe-legend-item-7, #wbe-calendar-legend .wbe-legend-item-7:before {
+.fc-event-container .wbe-legend-item-7, #wbe-calendar-legend .wbe-legend-item-7:before, .fc-list-item .wbe-legend-item-7 {
     background-color: rgb(184, 59, 56);
     border-color: rgb(128, 45, 42);
 }
 
-.fc-event-container .wbe-legend-item-8, #wbe-calendar-legend .wbe-legend-item-8:before {
+.fc-event-container .wbe-legend-item-8, #wbe-calendar-legend .wbe-legend-item-8:before, .fc-list-item .wbe-legend-item-8 {
     background-color: rgb(197, 192, 64);
     border-color: rgb(141, 137, 46);
 }

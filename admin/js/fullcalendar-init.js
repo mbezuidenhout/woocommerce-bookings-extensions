@@ -101,18 +101,18 @@ document.addEventListener("DOMContentLoaded", function() {
             {
                 daysOfWeek: [ 1, 2, 3, 4, 5 ], // Monday, Tuesday, Wednesday, Thursday, Friday
                 startTime: "08:00", // 8am
-                endTime: "18:00" // 6pm
+                endTime: "17:00" // 5pm
             },
             {
                 daysOfWeek: [ 6 ], // Saturday
-                startTime: "10:00", // 10am
-                endTime: "16:00" // 4pm
-            },
-            {
-                daysOfWeek: [ 0 ], // Sunday
                 startTime: "13:00", // 1pm
-                endTime: "20:00", // 10pm
-            }
+                endTime: "17:00" // 5pm
+            },
+//            {
+//                daysOfWeek: [ 0 ], // Sunday
+//                startTime: "13:00", // 1pm
+//                endTime: "20:00", // 10pm
+//            }
 
         ],
         customButtons: {
@@ -201,6 +201,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Remove background-color and border-color. These will now be handled with a class attribute.
                 jQuery(info.el).css({"background-color": "", "border-color": ""});
 
+                // Replace dot marker colours
+                jQuery(info.el).find(".fc-event-dot").first().css({"background-color": "", "border-color": ""});
+                jQuery(info.el).find(".fc-event-dot").first().addClass(legendItemClass);
             }
 
             if( info.event.id.length ) {

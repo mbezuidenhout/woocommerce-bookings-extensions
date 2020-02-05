@@ -628,6 +628,7 @@ class WC_Bookings_Extensions_New_Calendar {
 							)
 						)
 					);
+					$created_user       = get_userdata( $booking->get_meta( '_booking_created_user_id' ) );
 					$categories         = array_intersect( $categories, $product_categories );
 					$event              = array(
 						'id'                 => $booking->get_id(),
@@ -640,8 +641,8 @@ class WC_Bookings_Extensions_New_Calendar {
 						'allDay'             => $booking->is_all_day() ? true : false,
 						'backgroundColor'    => $background_color,
 						'borderColor'        => $border_color,
-						'createdById'        => $booking->get_meta( '_booking_created_user_id' ),
-						'createdBy'          => get_userdata( $booking->get_meta( '_booking_created_user_id' ) )->display_name,
+						'createdById'        => false === $created_user ? 0 : $created_user->ID,
+						'createdBy'          => false === $created_user ? 'Guest' : ( empty( $created_user->display_name ) ? $created_user->user_email : $created_user->display_name ),
 						'status'             => $booking->get_status(),
 					);
 					if ( ! empty( $guest_name ) ) {
