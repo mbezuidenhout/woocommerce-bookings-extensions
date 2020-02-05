@@ -19,7 +19,6 @@
  * @author     Marius Bezuidenhout <marius.bezuidenhout@gmail.com>
  */
 class WC_Bookings_Extensions_Admin {
-
 	/**
 	 * The ID of this plugin.
 	 *
@@ -575,13 +574,14 @@ class WC_Bookings_Extensions_Admin {
 	 */
 	public function edit_columns( $existing_columns ) {
 		if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
-			$existing_columns = array();
+			$existing_columns = [];
 		}
-		$columns = array(
-			'customer'      => __( 'Customer', 'woocommerce-bookings-extensions' ),
-			'user_created'  => __( 'User Created', 'woocommerce-bookings-extensions' ),
-			'user_modified' => __( 'User Modified', 'woocommerce-bookings-extensions' ),
-		);
+		$columns = [
+			'customer'       => __( 'Customer', 'woocommerce-bookings-extensions' ),
+			'user_created'   => __( 'User Created', 'woocommerce-bookings-extensions' ),
+			'user_modified'  => __( 'User Modified', 'woocommerce-bookings-extensions' ),
+			'payment_method' => __( 'Payment', 'woocommerce-bookings-extensions' ),
+		];
 
 		$customer_column_pos = array_search( 'customer', array_keys( $existing_columns ), true );
 
@@ -629,6 +629,15 @@ class WC_Bookings_Extensions_Admin {
 				}
 
 				echo $user_modified_name; // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
+				break;
+			case 'payment_method':
+				$the_order = $booking->get_order();
+				if ( $the_order instanceof \WC_Order ) {
+					$payment_method = wc_get_payment_gateway_by_order( $the_order );
+					echo esc_html( $payment_method->method_title );
+				} else {
+					echo esc_html( '-' );
+				}
 				break;
 		}
 	}
