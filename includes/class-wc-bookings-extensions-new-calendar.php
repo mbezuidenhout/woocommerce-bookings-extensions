@@ -429,19 +429,15 @@ class WC_Bookings_Extensions_New_Calendar {
 			$atts['class'] = 'wbe-calendar ' . $atts['class'];
 		}
 
-		ob_start();
-
-		wc_get_template(
+		return wc_get_template_html(
 			'fullcalendar.php',
-			array(
+			[
 				'element_id' => $element_id,
 				'class'      => $atts['class'],
-			),
+			],
 			'woocommerce-bookings-extensions',
 			plugin_dir_path( __DIR__ ) . 'templates/'
 		);
-
-		return ob_get_clean();
 	}
 
 
