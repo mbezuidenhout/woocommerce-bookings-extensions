@@ -27,3 +27,7 @@ td.wbe-date-booked {
 .wbe-calendar-overview th:last-child, .wbe-calendar-overview td:last-child {
     border-right: none;
 }
+
+.fc-day-grid-event .fc-content span+span:before {
+    content: "|";
+}
