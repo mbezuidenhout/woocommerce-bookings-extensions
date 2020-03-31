@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The file that defines the core plugin class
  *
@@ -214,6 +213,7 @@ class WC_Bookings_Extensions {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+
 		/** @see WC_Bookings_Extensions_Admin::booking_extensions_data */
 		$this->loader->add_action( 'woocommerce_product_options_general_product_data', $plugin_admin, 'booking_extensions_data' );
 
@@ -242,6 +242,8 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'wp_ajax_delete_booking_file', $plugin_admin, 'delete_booking_file' );
 		$this->loader->add_filter( 'manage_edit-wc_booking_columns', $plugin_admin, 'edit_columns', 20 );
 		$this->loader->add_action( 'manage_wc_booking_posts_custom_column', $plugin_admin, 'custom_columns', 20 );
+
+		$this->loader->add_action( 'personal_options', $plugin_admin, 'calendar_colour' );
 	}
 
 	/**

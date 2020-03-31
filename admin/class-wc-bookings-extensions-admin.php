@@ -71,10 +71,9 @@ class WC_Bookings_Extensions_Admin {
 		 * class.
 		 */
 
-		$suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/woocommerce-bookings-extensions-admin' . $suffix . '.css', array(), $this->version, 'all' );
-
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/woocommerce-bookings-extensions-admin' . $suffix . '.css', [], $this->version, 'all' );
 	}
 
 	/**
@@ -96,9 +95,11 @@ class WC_Bookings_Extensions_Admin {
 		 * class.
 		 */
 
-		$suffix = defined( 'SCRIPT_CSS' ) && SCRIPT_DEBUG ? '' : '.min';
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-admin' . $suffix . '.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_style( 'wp-color-picker' );
+		wp_register_script( $this->plugin_name . '-js', plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-admin' . $suffix . '.js', [ 'jquery', 'wp-color-picker' ], $this->version, true );
+		wp_enqueue_script( $this->plugin_name . '-js' );
 
 	}
 
@@ -108,10 +109,10 @@ class WC_Bookings_Extensions_Admin {
 	 * @param int $product_id WooCommerce product id.
 	 */
 	public function enqueue_product_data_scripts( $product_id ) {
-		$js_data = array(
+		$js_data = [
 			'data_tip'     => __( 'Rules with the override flag set will override any other rule if matched.' ),
-			'ext_override' => array(),
-		);
+			'ext_override' => [],
+		];
 
 		/**
 		 * Bookable product
@@ -128,7 +129,7 @@ class WC_Bookings_Extensions_Admin {
 			}
 		}
 
-		wp_enqueue_script( $this->plugin_name . '-product-data-js', plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-products.min.js', array( 'jquery' ), $this->version, true );
+		wp_enqueue_script( $this->plugin_name . '-product-data-js', plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-products.min.js', [ 'jquery' ], $this->version, true );
 		wp_localize_script(
 			$this->plugin_name . '-product-data-js',
 			'wc_bookings_extensions_product_data',
@@ -186,7 +187,7 @@ class WC_Bookings_Extensions_Admin {
 		$product = wc_get_product( $post_id );
 		if ( 'booking' === $product->get_type() ) {
 			$block_start  = isset( $_POST['_wc_booking_extensions_block_start'] ) ? $_POST['_wc_booking_extensions_block_start'] : '';
-			$dependencies = isset( $_POST['_wc_booking_extensions_dependent_products'] ) ? $_POST['_wc_booking_extensions_dependent_products'] : array();
+			$dependencies = isset( $_POST['_wc_booking_extensions_dependent_products'] ) ? $_POST['_wc_booking_extensions_dependent_products'] : [];
 
 			// Remove vice-versa dependencies.
 			$old_dependencies    = $product->get_meta( 'booking_dependencies' );
@@ -213,7 +214,7 @@ class WC_Bookings_Extensions_Admin {
 				} else {
 					$dependent_product_dependencies = $dependent_product->get_meta( 'booking_dependencies' );
 					if ( ! is_array( $dependent_product_dependencies ) ) {
-						$dependent_product_dependencies = array();
+						$dependent_product_dependencies = [];
 					}
 					$dependent_product_dependencies[] = $product->get_id();
 					$dependent_product_dependencies   = array_unique( $dependent_product_dependencies );
@@ -268,7 +269,7 @@ class WC_Bookings_Extensions_Admin {
 	public function calendar_page_scripts() {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		wp_enqueue_script( 'calendar-view', plugin_dir_url( __FILE__ ) . 'js/calendar-view' . $suffix . '.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'calendar-view', plugin_dir_url( __FILE__ ) . 'js/calendar-view' . $suffix . '.js', [ 'jquery' ], $this->version, false );
 	}
 
 	/** Add custom admin input fields for new bookings
@@ -310,7 +311,7 @@ class WC_Bookings_Extensions_Admin {
 			return $post_id;
 		}
 
-		if ( ! in_array( $post->post_type, array( 'wc_booking' ), true ) ) {
+		if ( ! in_array( $post->post_type, [ 'wc_booking' ], true ) ) {
 			return $post_id;
 		}
 
@@ -339,14 +340,14 @@ class WC_Bookings_Extensions_Admin {
 				__( 'Full Calendar', 'woocommerce-booking-extensions' ),
 				'manage_bookings',
 				'full_calendar',
-				array(
+				[
 					$this,
 					'full_calendar_page',
-				)
+				]
 			);
 
 			// Add screen options.
-			add_filter( 'manage_' . $calendar_page_screen . '_columns', array( $this, 'add_product_categories' ) );
+			add_filter( 'manage_' . $calendar_page_screen . '_columns', [ $this, 'add_product_categories' ] );
 		} else {
 			// Replace Calendar page.
 			$calendar_page = add_submenu_page(
@@ -355,14 +356,14 @@ class WC_Bookings_Extensions_Admin {
 				__( 'Calendar', 'woocommerce-bookings' ),
 				'manage_bookings',
 				'new_booking_calendar',
-				array(
+				[
 					$this,
 					'calendar_page',
-				)
+				]
 			);
 
 			// Add action for screen options on this new page.
-			add_action( 'admin_print_scripts-' . $calendar_page, array( $this, 'admin_calendar_page_scripts' ) );
+			add_action( 'admin_print_scripts-' . $calendar_page, [ $this, 'admin_calendar_page_scripts' ] );
 		}
 	}
 
@@ -379,7 +380,7 @@ class WC_Bookings_Extensions_Admin {
 		 *
 		 * @var WP_Term[] $product_categories
 		 */
-		$product_categories = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false ) );
+		$product_categories = get_terms( [ 'taxonomy' => 'product_cat', 'hide_empty' => false ] );
 
 		if ( ! isset( $categories['_title'] ) ) {
 			$categories['_title'] = __( 'Show product categories', 'woo-bookings-extensions' );
@@ -389,7 +390,7 @@ class WC_Bookings_Extensions_Admin {
 
 		foreach ( $product_categories as $category ) {
 			$cat_term_id = 'wbe-category-' . $category->term_id;
-			if ( ! isset( $categories[ $cat_term_id ] ) && ! in_array( $category->name, array( 'Uncategorized', __( 'Uncategorized' ) ), true ) ) { // Ignore WordPress built-in category "Uncategorized".
+			if ( ! isset( $categories[ $cat_term_id ] ) && ! in_array( $category->name, [ 'Uncategorized', __( 'Uncategorized' ) ], true ) ) { // Ignore WordPress built-in category "Uncategorized".
 				$categories[ $cat_term_id ] = $category->name;
 			}
 		}
@@ -430,39 +431,39 @@ class WC_Bookings_Extensions_Admin {
 	 */
 	public function add_admin_settings( $settings ) {
 		$insert_pos = array_search(
-			array(
+			[
 				'type' => 'sectionend',
 				'id'   => 'woocommerce_bookings_calendar_settings',
-			),
+			],
 			$settings,
 			true
 		);
 
-		$bookings_settings = array(
-			array(
+		$bookings_settings = [
+			[
 				'title'   => __( 'Enable Full Calendar', 'woocommerce-bookings-extensions' ),
 				'id'      => 'woocommerce_bookings_extensions_fullcalendar',
 				'default' => false,
 				'type'    => 'checkbox',
 				'desc'    => __( 'Enable the interactive calendar feature.', 'woocommerce-bookings-extensions' ),
-			),
-			array(
+			],
+			[
 				'title'    => __( 'Full Calendar License', 'woocommerce-bookings-extensions' ),
 				'id'       => 'woocommerce_bookings_extensions_fullcalendar_license',
 				'default'  => '',
 				'type'     => 'text',
 				'desc_tip' => true,
 				'desc'     => __( 'If using FullCalendar then enter license here. https://fullcalendar.io/license ', 'woocommerce-bookings-extensions' ),
-			),
-			array(
+			],
+			[
 				'title'    => __( 'Holidays ICS URI', 'woocommerce-bookings-extensions' ),
 				'id'       => 'woocommerce_bookings_extensions_holidays',
 				'default'  => '',
 				'type'     => 'text',
 				'desc_tip' => true,
 				'desc'     => __( 'URI where an ICS file can be found with holidays', 'woocommerce-bookings-extensions' ),
-			),
-		);
+			],
+		];
 
 		array_splice( $settings, $insert_pos, 0, $bookings_settings );
 
@@ -478,27 +479,27 @@ class WC_Bookings_Extensions_Admin {
 	 */
 	public function add_meta_boxes( $post ) {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-		wp_register_style( 'media-upload-css', plugin_dir_url( __FILE__ ) . 'css/booking-edit' . $suffix . '.css', array(), $this->version, 'all' );
+		wp_register_style( 'media-upload-css', plugin_dir_url( __FILE__ ) . 'css/booking-edit' . $suffix . '.css', [], $this->version, 'all' );
 		wp_enqueue_style( 'media-upload-css' );
-		wp_register_script( 'booking-files-meta-box', plugin_dir_url( __FILE__ ) . 'js/files-meta-box' . $suffix . '.js', array( 'jquery' ), $this->version, true );
+		wp_register_script( 'booking-files-meta-box', plugin_dir_url( __FILE__ ) . 'js/files-meta-box' . $suffix . '.js', [ 'jquery' ], $this->version, true );
 		wp_enqueue_script( 'booking-files-meta-box' );
-		$args = array(
+		$args = [
 			'nonce'        => wp_create_nonce( 'files_meta' ),
 			'title'        => __( 'Files', 'woo-bookings-extensions' ),
 			'url'          => admin_url( "media-upload.php?inline=true&type=file&tab=type&post_id={$post->ID}" ),
 			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 			'deleteAction' => 'delete_booking_file',
-		);
+		];
 		wp_localize_script( 'booking-files-meta-box', 'filesOptions', $args );
 		wp_enqueue_script( 'media-upload' );
 		add_thickbox(); // Add the WordPress admin thickbox js and css.
 		add_meta_box(
 			'filesdiv',
 			__( 'Files', 'woo-bookings-extensions' ),
-			array(
+			[
 				$this,
 				'meta_box_file',
-			),
+			],
 			'wc_booking',
 			'side'
 		);
@@ -541,7 +542,7 @@ class WC_Bookings_Extensions_Admin {
 		check_ajax_referer( 'files_meta', '_wpnonce' );
 
 		$id     = isset( $_REQUEST['id'] ) ? sanitize_key( wp_unslash( $_REQUEST['id'] ) ) : null;
-		$errors = array();
+		$errors = [];
 		if ( ! empty( $id ) ) {
 			$post = get_post( $id );
 			if ( 'attachment' === $post->post_type ) {
@@ -558,7 +559,7 @@ class WC_Bookings_Extensions_Admin {
 				if ( empty( $errors ) ) {
 					wp_send_json_success();
 				} else {
-					wp_send_json_error( array( 'errors' => $errors ) );
+					wp_send_json_error( [ 'errors' => $errors ] );
 				}
 			}
 		}
@@ -640,6 +641,13 @@ class WC_Bookings_Extensions_Admin {
 				}
 				break;
 		}
+	}
+
+	/**
+	 * @param WP_User $profileuser The user profile currently being edited.
+	 */
+	public function calendar_colour( $profileuser ) {
+		include plugin_dir_path( __FILE__ ) . 'partials/user-personal-options.php';
 	}
 
 }
