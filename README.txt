@@ -44,6 +44,9 @@ List of possible views:
 
 == Changelog ==
 
+= 1.7.16 =
+* Add: User can now select their own calendar color in the user profile section.
+
 = 1.7.14 =
 * Add: Show payment method in All Bookings table.
 * Fix: Rendering of background events.

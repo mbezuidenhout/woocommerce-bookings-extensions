@@ -98,8 +98,8 @@ class WC_Bookings_Extensions_Admin {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_style( 'wp-color-picker' );
-		wp_register_script( $this->plugin_name . '-js', plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-admin' . $suffix . '.js', [ 'jquery', 'wp-color-picker' ], $this->version, true );
-		wp_enqueue_script( $this->plugin_name . '-js' );
+		wp_register_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-admin' . $suffix . '.js', [ 'jquery', 'wp-color-picker' ], $this->version, true );
+		wp_enqueue_script( $this->plugin_name );
 
 	}
 
@@ -644,10 +644,28 @@ class WC_Bookings_Extensions_Admin {
 	}
 
 	/**
+	 * Output the calendar color user options.
+	 *
 	 * @param WP_User $profileuser The user profile currently being edited.
 	 */
 	public function calendar_colour( $profileuser ) {
 		include plugin_dir_path( __FILE__ ) . 'partials/user-personal-options.php';
+	}
+
+	/**
+	 * Add the color to the user's meta data.
+	 *
+	 * @param int $user_id The user ID.
+	 */
+	public function profile_update( $user_id ) {
+
+		$key = 'wbe_calendar_color';
+
+		/* phpcs:disable WordPress.Security.NonceVerification */
+		if ( isset( $_POST[ $key ] ) ) {
+			update_user_meta( $user_id, $key, sanitize_hex_color( wp_unslash( $_POST[ $key ] ) ) );
+		}
+		/* phpcs:enable */
 	}
 
 }

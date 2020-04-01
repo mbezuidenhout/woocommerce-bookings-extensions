@@ -538,7 +538,7 @@ class WC_Bookings_Extensions_New_Calendar {
 	 * Get a list of bookings for FullCalendar.
 	 *
 	 * @return bool|false|string
-	 * @throws Exception
+	 * @throws Exception Throws exception on incorrect date format.
 	 */
 	public function get_bookings_ajax() {
 		if ( false === check_ajax_referer( 'fullcalendar_options' ) ) {
@@ -552,8 +552,8 @@ class WC_Bookings_Extensions_New_Calendar {
 			return wp_json_encode( array( array() ) );
 		}
 		try {
-			$from = new DateTime( $_REQUEST['start'] );
-			$to   = new DateTime( $_REQUEST['end'] );
+			$from = new DateTime( wp_unslash( $_REQUEST['start'] ) );
+			$to   = new DateTime( wp_unslash( $_REQUEST['end'] ) );
 		} catch ( Exception $e ) {
 			$from = new DateTime();
 			$to   = new DateTime();
@@ -595,23 +595,11 @@ class WC_Bookings_Extensions_New_Calendar {
 			}
 			try {
 				if ( wp_get_current_user()->has_cap( 'manage_bookings' ) ) {
-					$customer         = $booking->get_customer();
-					$guest_name       = $booking->get_meta( 'booking_guest_name' );
-					$persons          = $booking->get_persons();
-					$background_color = '#3788d8';
-					$border_color     = '#3788d8';
-					switch ( $booking->get_status() ) {
-						case 'unpaid':
-						case 'pending-confirmation':
-							$background_color = 'orange';
-							$border_color     = 'darkorange';
-							break;
-						case 'paid':
-						case 'confirmed':
-							$background_color = 'red';
-							$border_color     = 'red';
-							break;
-					}
+					$customer           = $booking->get_customer();
+					$guest_name         = $booking->get_meta( 'booking_guest_name' );
+					$persons            = $booking->get_persons();
+					$background_color   = '#3788d8';
+					$border_color       = '#3788d8';
 					$categories         = $booking->get_product()->get_category_ids();
 					$product_categories = array_map(
 						function ( $a ) {
@@ -625,6 +613,7 @@ class WC_Bookings_Extensions_New_Calendar {
 						)
 					);
 					$created_user       = get_userdata( $booking->get_meta( '_booking_created_user_id' ) );
+					$color              = get_user_meta( $created_user->ID, 'wbe_calendar_color', true );
 					$categories         = array_intersect( $categories, $product_categories );
 					$event              = array(
 						'id'                 => $booking->get_id(),
@@ -635,8 +624,8 @@ class WC_Bookings_Extensions_New_Calendar {
 						'title'              => $booking->get_product()->get_name(),
 						'url'                => admin_url( 'post.php?post=' . $booking->get_id() . '&action=edit' ),
 						'allDay'             => $booking->is_all_day() ? true : false,
-						'backgroundColor'    => $background_color,
-						'borderColor'        => $border_color,
+						'backgroundColor'    => empty( $color ) ? $background_color : $color,
+						'borderColor'        => empty( $color ) ? $border_color : $color,
 						'createdById'        => false === $created_user ? 0 : $created_user->ID,
 						'createdBy'          => false === $created_user ? 'Guest' : ( empty( $created_user->display_name ) ? $created_user->user_email : $created_user->display_name ),
 						'status'             => $booking->get_status(),

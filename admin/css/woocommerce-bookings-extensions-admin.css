@@ -13,252 +13,207 @@
 }
 
 .booking-changed-data .booking-changed-column p {
-    color: #777;
-    padding: 0!important;
-    font-size: 0.9em;
-    margin-bottom: 0;
+	color: #777;
+	padding: 0!important;
+	font-size: 0.9em;
+	margin-bottom: 0;
 }
 
 .booking-changed-data .booking-changed-column .form-field {
-    float: left;
-    margin: 9px 0 0;
+	float: left;
+	margin: 9px 0 0;
 }
 
 .booking-changed-data .booking-changed-column .form-field-wide {
-    width: 100%;
-    clear: both;
+	width: 100%;
+	clear: both;
 }
 
 .booking-changed-data .booking-changed-column {
-    width: 23%;
-    padding: 0 2% 0 0;
-    float: left;
+	width: 23%;
+	padding: 0 2% 0 0;
+	float: left;
 }
 
 .booking-changed-data .booking-changed-column:last-child {
-    padding-right: 0;
-    width: 25%;
+	padding-right: 0;
+	width: 25%;
 }
 
 .hidden {
-    display: none;
+	display: none;
 }
 
 .wbe-booking-data-row {
-    border-bottom: 1px solid #dfdfdf;
-    padding: 1.5em 0em !important;
+	border-bottom: 1px solid #dfdfdf;
+	padding: 1.5em 0em !important;
 }
 
 .wbe-booking-actions {
-    text-align: right;
+	text-align: right;
 }
 
 .panel:first-child {
-    padding-top: 0 !important;
+	padding-top: 0 !important;
 }
 
 .panel.wbe-booking-data-thickbox:before, .panel.wbe-booking-data-thickbox:after, .booking-changed-data:before, .booking-changed-data:after {
-    content: " ";
-    display: table;
+	content: " ";
+	display: table;
 }
 
 .panel.wbe-booking-data-thickbox:after, .booking-changed-data:after {
-    clear: both;
+	clear: both;
 }
 
 .panel.wbe-booking-data-thickbox .booking_data_column {
-    padding: 0 2% 0 0;
-    float: left;
+	padding: 0 2% 0 0;
+	float: left;
 }
 
 .panel.wbe-booking-data-thickbox.panel-33 .booking_data_column {
-    width: 32%;
+	width: 32%;
 }
 
 .panel.wbe-booking-data-thickbox.panel-50 .booking_data_column {
-    width: 48%;
+	width: 48%;
 }
 
 .panel.wbe-booking-data-thickbox.panel-50 .booking_data_column:last-child {
-    float: right;
+	float: right;
 }
 
 .panel.wbe-booking-data-thickbox.panel-100 .booking_data_column {
-    width: 100%;
-    padding: 0;
+	width: 100%;
+	padding: 0;
 }
 
 .panel.wbe-booking-data-thickbox .booking_data_column:last-child {
-    padding: 0;
+	padding: 0;
 }
 
 .booking_data_column p.form-field._booking_all_day_field {
-    width: 100%;
+	width: 100%;
 }
 
 .form-field input[type="text"], .form-field textarea {
-    width: 100%;
+	width: 100%;
 }
 
 .wbe-booking-data-thickbox p {
-    color: #777;
+	color: #777;
 }
 
 .wbe-booking-data-thickbox .booking_data_column:last-child {
-    padding-right: 0;
+	padding-right: 0;
 }
 
 .wbe-booking-data-thickbox h4 {
-    color: #333;
-    margin: 1.33em 0 0;
+	color: #333;
+	margin: 1.33em 0 0;
 }
 
 .wbe-booking-data-thickbox .booking_data_column .form-field {
-    float: left;
-    width: 48%;
-    padding: 0 !important;
-    margin: 9px 0 0 0;
+	float: left;
+	width: 48%;
+	padding: 0 !important;
+	margin: 9px 0 0 0;
 }
 
 .wbe-booking-data-thickbox .booking_data_column .form-field-wide {
-    width: 100%;
-    clear: both;
+	width: 100%;
+	clear: both;
 }
 
 .wbe-booking-data-thickbox .booking_data_column .form-field label {
-    display: block;
-    padding: 0 0 3px;
+	display: block;
+	padding: 0 0 3px;
 }
 
 .wbe-booking-data-thickbox .booking_data_column .form-field-wide select {
-    width: 100%;
+	width: 100%;
 }
 
 .wbe-booking-data-thickbox .form-field {
-    width: 100%;
+	width: 100%;
 }
 
 .fc-bgevent {
-    background: #8f8f8f;
+	background: #8f8f8f;
 }
 
 .fc-nonbusiness {
-    background: #d7d7d7;
+	background: #d7d7d7;
 }
 
 div.loading {
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background: rgba(255, 255, 255, 0.5);
-    z-index: 2;
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	background: rgba(255, 255, 255, 0.5);
+	z-index: 2;
 }
 
 .loading::after {
-    position:absolute;
-    margin: 0 auto;
-    height: 64px;
-    width: 64px;
-    animation: rotate 0.8s infinite linear;
-    -webkit-animation: rotate 0.8s linear infinite;
-    border: 5px solid firebrick;
-    border-right-color: transparent;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    content: " ";
-}
-
-.fc-event-container .wbe-legend-item-0, #wbe-calendar-legend .wbe-legend-item-0:before, .fc-list-item .wbe-legend-item-0 {
-    background-color: rgb(55, 136, 216);
-    border-color: rgb(54, 101, 180);
-}
-
-.fc-event-container .wbe-legend-item-1, #wbe-calendar-legend .wbe-legend-item-1:before, .fc-list-item .wbe-legend-item-1 {
-    background-color: rgb(140, 81, 10);
-    border-color: rgb(84, 48, 5);
-}
-
-.fc-event-container .wbe-legend-item-2, #wbe-calendar-legend .wbe-legend-item-2:before, .fc-list-item .wbe-legend-item-2 {
-    background-color: rgb(233, 194, 125);
-    border-color: rgb(191, 129, 45);
-    color: rgb(68, 68, 68);
-}
-
-.fc-event-container .wbe-legend-item-3, #wbe-calendar-legend .wbe-legend-item-3:before, .fc-list-item .wbe-legend-item-3 {
-    background-color: rgb(128, 205, 193);
-    border-color: rgb(53, 151, 143);
-    color: rgb(68, 68, 68);
-}
-
-.fc-event-container .wbe-legend-item-4, #wbe-calendar-legend .wbe-legend-item-4:before, .fc-list-item .wbe-legend-item-4 {
-    background-color: rgb(1, 102, 94);
-    border-color: rgb(0, 60, 48);
-}
-
-.fc-event-container .wbe-legend-item-5, #wbe-calendar-legend .wbe-legend-item-5:before, .fc-list-item .wbe-legend-item-5 {
-    background-color: rgb(144, 94, 184);
-    border-color: rgb(107, 73, 145);
-}
-
-.fc-event-container .wbe-legend-item-6, #wbe-calendar-legend .wbe-legend-item-6:before, .fc-list-item .wbe-legend-item-6 {
-    background-color: rgb(184, 87, 136);
-    border-color: rgb(134, 67, 96);
-}
-
-.fc-event-container .wbe-legend-item-7, #wbe-calendar-legend .wbe-legend-item-7:before, .fc-list-item .wbe-legend-item-7 {
-    background-color: rgb(184, 59, 56);
-    border-color: rgb(128, 45, 42);
-}
-
-.fc-event-container .wbe-legend-item-8, #wbe-calendar-legend .wbe-legend-item-8:before, .fc-list-item .wbe-legend-item-8 {
-    background-color: rgb(197, 192, 64);
-    border-color: rgb(141, 137, 46);
+	position:absolute;
+	margin: 0 auto;
+	height: 64px;
+	width: 64px;
+	animation: rotate 0.8s infinite linear;
+	-webkit-animation: rotate 0.8s linear infinite;
+	border: 5px solid firebrick;
+	border-right-color: transparent;
+	border-radius: 50%;
+	top: 50%;
+	left: 50%;
+	content: " ";
 }
 
 #wbe-calendar-legend {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    margin: 5px 0 15px;
-    font-weight: bold;
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+	margin: 5px 0 15px;
+	font-weight: bold;
 }
 
 #wbe-calendar-legend ul {
-    list-style: none;
+	list-style: none;
 }
 
 #wbe-calendar-legend ul li {
-    padding: 0 20px;
-    position: relative;
-    display: inline-flex;
+	padding: 0 20px;
+	position: relative;
+	display: inline-flex;
 }
 
-#wbe-calendar-legend ul li:before {
-    content: "";
-    left: 0;
-    height: 16px;
-    width: 16px;
-    position: absolute;
-    border-radius: 3px;
+#wbe-calendar-legend .wbe-legend-item span {
+	width: 16px;
+	height: 16px;
+	border-radius: 3px;
+	margin-right: 3px;
+}
+
+.fc .fc-time-grid-container .fc-day-grid-event, .fc .fc-day-grid .fc-day-grid-event {
+	border-radius: 3px;
 }
 
 .wbe-status {
-    text-transform: capitalize;
+	text-transform: capitalize;
 }
 
 @keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
 }
 
 @-webkit-keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
 }
 
 .fc-day-grid-event .fc-content span+span:before {
-    content: "|";
+	content: "|";
 }

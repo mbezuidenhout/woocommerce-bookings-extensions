@@ -244,6 +244,9 @@ class WC_Bookings_Extensions {
 		$this->loader->add_action( 'manage_wc_booking_posts_custom_column', $plugin_admin, 'custom_columns', 20 );
 
 		$this->loader->add_action( 'personal_options', $plugin_admin, 'calendar_colour' );
+
+		$this->loader->add_action( 'personal_options_update', $plugin_admin, 'profile_update' );
+		$this->loader->add_action( 'edit_user_profile_update', $plugin_admin, 'profile_update' );
 	}
 
 	/**
