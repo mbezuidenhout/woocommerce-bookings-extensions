@@ -44,7 +44,10 @@ List of possible views:
 
 == Changelog ==
 
-= 1.7.16 =
+= 1.8.1 =
+* Add: Missing files in previous release.
+
+= 1.8.0 =
 * Add: User can now select their own calendar color in the user profile section.
 
 = 1.7.14 =

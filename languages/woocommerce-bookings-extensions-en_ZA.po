@@ -1,0 +1,4 @@
+
+#: template-parts/partials/user-personal-options.php:2
+msgid "Calendar Color"
+msgstr "Calendar Colour"
