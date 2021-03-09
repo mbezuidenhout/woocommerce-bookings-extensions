@@ -14,16 +14,16 @@
  * Plugin Name:          WooCommerce Bookings Extensions
  * Plugin URI:           https://github.com/mbezuidenhout/woocommerce-bookings-extensions
  * Description:          Adds or replaces functionality in the WooCommerce Bookings plugin.
- * Version:              1.8.1
+ * Version:              1.8.2
  * Requires at least:    4.9
- * Tested up to:         5.4
+ * Tested up to:         5.6.2
  * Author:               Marius Bezuidenhout
- * Author URI:           https://plus.google.com/+MariusBezuidenhout31337
+ * Author URI:           https://profiles.wordpress.org/mbezuidenhout
  * License:              GNU General Public License v3.0
  * License URI:          http://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain:          woocommerce-bookings-extensions
  * Domain Path:          /languages
- * WC tested up to:      4.0.0
+ * WC tested up to:      5.0.0
  * WC requires at least: 3.0
  */
 
@@ -37,7 +37,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION', '1.8.1' );
+define( 'WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION', '1.8.2' );
 
 /**
  * The code that runs during plugin activation.
