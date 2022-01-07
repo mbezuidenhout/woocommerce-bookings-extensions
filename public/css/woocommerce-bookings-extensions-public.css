@@ -31,10 +31,3 @@ td.wbe-date-booked {
 .fc-day-grid-event .fc-content span+span:before {
     content: "|";
 }
-
-.wbe-calendar-overview {
-    max-width: 1080px;
-    padding-left: 15px;
-    padding-right: 15px;
-    margin: auto;
-}
