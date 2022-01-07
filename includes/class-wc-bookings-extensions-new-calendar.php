@@ -51,10 +51,7 @@ class WC_Bookings_Extensions_New_Calendar {
 		return self::$instance;
 	}
 
-	/**
-	 * WC_Bookings_Extensions_New_Calendar constructor.
-	 */
-	public function __construct() {
+	public static function register_styles() {
 		wp_register_style(
 			'fullcalendar-core',
 			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/core/main.css',
@@ -79,7 +76,9 @@ class WC_Bookings_Extensions_New_Calendar {
 			null,
 			'4.4.2'
 		);
+	}
 
+	public static function register_scripts() {
 		wp_register_script(
 			'fullcalendar-core',
 			plugin_dir_url( __DIR__ ) . 'vendor/fullcalendar/fullcalendar-scheduler/packages/core/main.js',
@@ -136,12 +135,9 @@ class WC_Bookings_Extensions_New_Calendar {
 			'4.4.2',
 			true
 		);
+	}
 
-		wp_enqueue_style( 'fullcalendar-core' );
-		wp_enqueue_style( 'fullcalendar-daygrid' );
-		wp_enqueue_style( 'fullcalendar-timegrid' );
-		wp_enqueue_style( 'fullcalendar-list' );
-
+	public static function register_admin_scripts() {
 		wp_register_script(
 			'fullcalendar-admin-init',
 			plugin_dir_url( __DIR__ ) . 'admin/js/fullcalendar-init.js',
@@ -157,7 +153,9 @@ class WC_Bookings_Extensions_New_Calendar {
 			WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION,
 			true
 		);
+	}
 
+	public static function register_public_scripts() {
 		wp_register_script(
 			'fullcalendar-user-init',
 			plugin_dir_url( __DIR__ ) . 'public/js/fullcalendar-user-init.js',
@@ -172,8 +170,27 @@ class WC_Bookings_Extensions_New_Calendar {
 			WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION,
 			true
 		);
+	}
 
+	public static function enqueue_styles() {
+		self::register_styles();
+		wp_enqueue_style( 'fullcalendar-core' );
+		wp_enqueue_style( 'fullcalendar-daygrid' );
+		wp_enqueue_style( 'fullcalendar-timegrid' );
+		wp_enqueue_style( 'fullcalendar-list' );
+	}
+
+	public static function enqueue_scripts() {
+		self::register_scripts();
+		self::register_public_scripts();
+		self::register_admin_scripts();
 		wp_enqueue_script( 'jquery-blockui' );
+	}
+
+	/**
+	 * WC_Bookings_Extensions_New_Calendar constructor.
+	 */
+	public function __construct() {
 	}
 
 	/**
@@ -683,6 +700,7 @@ class WC_Bookings_Extensions_New_Calendar {
 		}
 
 		echo wp_json_encode( $events );
+		return false;
 	}
 
 	/**

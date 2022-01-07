@@ -84,7 +84,7 @@ class WC_Bookings_Extensions_Public {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/woocommerce-bookings-extensions-public' . $suffix . '.css', array(), $this->version, 'all' );
-
+		WC_Bookings_Extensions_New_Calendar::enqueue_styles();
 	}
 
 	/**
@@ -109,11 +109,7 @@ class WC_Bookings_Extensions_Public {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-public' . $suffix . '.js', array( 'jquery' ), $this->version, false );
-		if( version_compare( WC_BOOKINGS_VERSION, '1.14' ) >= 0 ) {
-			wp_register_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/dist/js/lib/moment-with-locales.js', array(), WC_BOOKINGS_VERSION, true );
-		} else {
-			wp_register_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales.js', array(), WC_BOOKINGS_VERSION, true );
-		}
+		wp_register_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WC_BOOKINGS_VERSION, true );
 	}
 
 	/**
@@ -698,6 +694,7 @@ class WC_Bookings_Extensions_Public {
 				'bookings' => $bookings,
 			);
 		}
+		return array();
 	}
 
 	private function get_bookings_text_v1( $bookings ) { // Remove complete function by 2019-07.

@@ -74,6 +74,7 @@ class WC_Bookings_Extensions_Admin {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/woocommerce-bookings-extensions-admin' . $suffix . '.css', [], $this->version, 'all' );
+		WC_Bookings_Extensions_New_Calendar::enqueue_styles();
 	}
 
 	/**
@@ -100,7 +101,7 @@ class WC_Bookings_Extensions_Admin {
 		wp_enqueue_style( 'wp-color-picker' );
 		wp_register_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/woocommerce-bookings-extensions-admin' . $suffix . '.js', [ 'jquery', 'wp-color-picker' ], $this->version, true );
 		wp_enqueue_script( $this->plugin_name );
-
+		WC_Bookings_Extensions_New_Calendar::enqueue_scripts();
 	}
 
 	/**
@@ -323,6 +324,7 @@ class WC_Bookings_Extensions_Admin {
 
 			$booking->save_meta_data();
 		}
+        return false;
 	}
 
 	/**

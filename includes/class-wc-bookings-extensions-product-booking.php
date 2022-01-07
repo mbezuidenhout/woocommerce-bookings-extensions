@@ -38,7 +38,7 @@ class WC_Bookings_Extensions_Product_Booking extends WC_Product_Booking {
 	 * @return array
 	 */
 
-	protected function get_bookable_minute_blocks_for_date( $check_date, $start_date, $end_date, $bookable_ranges, $intervals, $resource_id, $minutes_not_available, $get_past_times = false ) {
+	protected function get_bookable_minute_blocks_for_date( $check_date, $start_date, $end_date, $bookable_ranges, $intervals, $resource_id, $minutes_not_available ) {
 		switch ( $this->data['block_starts'] ) {
 			case 'on_the_hour':
 				$intervals[1] = 60;
