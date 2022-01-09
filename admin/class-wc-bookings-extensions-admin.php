@@ -331,16 +331,15 @@ class WC_Bookings_Extensions_Admin {
 	 * Removes old calendar menu page and add FullCalendar page.
 	 */
 	public function change_calendar() {
-		remove_submenu_page( 'edit.php?post_type=wc_booking', 'booking_calendar' );
-
 		$enable_calendar = get_option( 'woocommerce_bookings_extensions_fullcalendar', false );
 		if ( 'yes' === $enable_calendar ) {
+			remove_submenu_page( 'edit.php?post_type=wc_booking', 'booking_calendar' );
 			// This will replace the calendar above.
 			$calendar_page_screen = add_submenu_page(
 				'edit.php?post_type=wc_booking',
 				__( 'Full Calendar', 'woocommerce-booking-extensions' ),
 				__( 'Full Calendar', 'woocommerce-booking-extensions' ),
-				'manage_bookings',
+				'edit_wc_bookings',
 				'full_calendar',
 				[
 					$this,
