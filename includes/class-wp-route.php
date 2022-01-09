@@ -169,7 +169,7 @@ final class WP_Route {
 		$routes                = is_array($this->routes[ $method ]) ? array_merge( $this->routes[ $method ], $this->routes['ANY'] ) : null;
 		$request_uri           = $this->requestURI();
 		$tokenized_request_uri = $this->tokenize( $request_uri );
-		$request_uri_path      = explode( '?', $this->tokenize( $request_uri )[0] )[0];
+		$request_uri_path      = strpos( $request_uri, '?' ) === false ? "" : explode( '?', $this->tokenize( $request_uri )[0] )[0];
 
 		if ( is_array($routes) ) {
             foreach ( $routes as $key => $route ) {

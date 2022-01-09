@@ -2,7 +2,7 @@
 /**
  * Class dependencies
  */
-if ( ! class_exists( 'WC_Booking_Form_Picker' ) ) {
+if ( ! class_exists( 'WC_Bookings_Extensions_Bookings_Picker' ) ) {
 	include_once 'class-wc-bookings-extensions-picker.php';
 }
 
