@@ -151,8 +151,8 @@ class WC_Bookings_Extensions_Bookings_Search {
 			),
 		);
 
-		wp_enqueue_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-with-locales' . $suffix . '.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
-		wp_enqueue_script( 'wc-bookings-moment-timezone', WC_BOOKINGS_PLUGIN_URL . '/assets/js/lib/moment-timezone-with-data' . $suffix . '.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+		wp_enqueue_script( 'wc-bookings-moment', WC_BOOKINGS_PLUGIN_URL . '/dist/js/lib/moment-with-locales.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
+		wp_enqueue_script( 'wc-bookings-moment-timezone', WC_BOOKINGS_PLUGIN_URL . '/dist/js/lib/moment-timezone-with-data.js', array(), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
 
 		wp_enqueue_script( 'wc-bookings-booking-form', plugin_dir_url( __DIR__ ) . 'public/js/search-form' . $suffix . '.js', array( 'jquery', 'jquery-blockui' ), WOOCOMMERCE_BOOKINGS_EXTENSIONS_VERSION, true );
 		wp_localize_script( 'wc-bookings-booking-form', 'wc_bookings_booking_form', $wc_bookings_booking_form_args );

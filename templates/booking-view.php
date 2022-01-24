@@ -64,7 +64,7 @@ wp_enqueue_script( 'booking-view' );
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<title><?php echo esc_html( wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES ) ); ?> – <?php echo esc_html( $product->get_name() ); ?></title>
-	<style type="text/css">
+	<style>
 
 		html, body {
 			height: 100%;
