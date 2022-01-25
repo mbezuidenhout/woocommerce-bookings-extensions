@@ -564,7 +564,7 @@ class WC_Bookings_Extensions_New_Calendar {
 		$product_id = null;
 		if ( isset( $_REQUEST['product_id'] ) && ! empty( $_REQUEST['product_id'] ) ) {
 			$product_id = intval( $_REQUEST['product_id'] );
-		} elseif ( ! wp_get_current_user()->has_cap( 'manage_bookings' ) ) {
+		} elseif ( ! wp_get_current_user()->has_cap( 'edit_wc_bookings' ) ) {
 			http_response_code( 401 );
 			return wp_json_encode( array( array() ) );
 		}
@@ -611,7 +611,7 @@ class WC_Bookings_Extensions_New_Calendar {
 				}
 			}
 			try {
-				if ( wp_get_current_user()->has_cap( 'manage_bookings' ) ) {
+				if ( wp_get_current_user()->has_cap( 'edit_wc_bookings' ) ) {
 					$customer           = $booking->get_customer();
 					$guest_name         = $booking->get_meta( 'booking_guest_name' );
 					$persons            = $booking->get_persons();

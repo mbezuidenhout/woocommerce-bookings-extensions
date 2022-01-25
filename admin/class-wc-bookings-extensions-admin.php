@@ -355,7 +355,7 @@ class WC_Bookings_Extensions_Admin {
 				'edit.php?post_type=wc_booking',
 				__( 'Calendar', 'woocommerce-bookings' ),
 				__( 'Calendar', 'woocommerce-bookings' ),
-				'manage_bookings',
+				'edit_wc_bookings',
 				'new_booking_calendar',
 				[
 					$this,
