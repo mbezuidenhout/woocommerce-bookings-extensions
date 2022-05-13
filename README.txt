@@ -1,7 +1,7 @@
 === WooCommerce Bookings Extensions ===
 Contributors: mbezuidenhout
 Tags: bookings, booking, woocommerce, woo-booking-extensions, accommodation, search, calendar
-Requires PHP: 7.4
+Requires PHP: 8.0.2
 Tested up to PHP: 8.1.4
 Requires at least: 5.0
 Tested up to: 5.9.3

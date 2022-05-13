@@ -36,12 +36,12 @@
 	foreach ( $product_categories as $category ) {
 		$term_ids[] = $category->term_id;
 		$column_id  = 'wbe-category-' . esc_attr( $category->term_id );
-		echo '<div class="manage-column column-' . esc_attr( $column_id ) . ( in_array( $column_id, $hidden, true ) ? ' hidden' : '' ) . '" id="' . $column_id . '">';
+		echo '<div class="manage-column column-' . esc_attr( $column_id ) . ( is_array( $hidden ) && in_array( $column_id, $hidden, true ) ? ' hidden' : '' ) . '" id="' . $column_id . '">';
 		echo '</div>';
 	}
 
 	$column_id = 'wbe-uncategorized';
-	echo '<div class="manage-column column-' . $column_id . ( in_array( $column_id, $hidden, true ) ? ' hidden' : '' ) . '" id="' . $column_id . '">';
+	echo '<div class="manage-column column-' . $column_id . ( is_array( $hidden ) && in_array( $column_id, $hidden, true ) ? ' hidden' : '' ) . '" id="' . $column_id . '">';
 	echo '</div>';
 
 	?>
