@@ -34,7 +34,7 @@ foreach ( $bookings as $booking ) {
 	if ( $booking->get_start() < $unix_timestamp && $booking->get_end() > $unix_timestamp ) {
 		$current_status        = __( 'In-use', 'woocommerce-bookings-extensions' );
 		$product_title         = $booking->get_product()->get_name();
-		$current_booking_end   = date( get_option( 'date_format' ), $booking->get_end() ) . ' @ ' . date( get_option( 'time_format' ), $booking->get_end() );
+		$current_booking_end   = date( get_option( 'time_format' ), $booking->get_end() );
 		$current_booking_title = $customer['display_name'];
 		if ( is_a( $booking->get_order(), 'WC_Order' ) && strlen( $booking->get_order()->get_billing_company() ) > 0 ) {
 			$current_booking_title = $booking->get_order()->get_billing_company();

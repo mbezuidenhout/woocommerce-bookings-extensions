@@ -13,9 +13,9 @@ jQuery( function( $ ) {
 		currentTime.setTime( currentTime.getTime() + timeDiff );
 		$('#current-time').text( moment( currentTime.getTime() ).format( booking_view_params.time_format ) );
 		$('#current-date').text( moment( currentTime.getTime() ).format( booking_view_params.date_format ) );
-		debugger
-		if ( currentTime.getHours() === 2 && currentTime.getMinutes() === 0 ) {
-			setTimeout( reloadLocation, 1000 ); // Reload the window at 2am
+
+		if ( currentTime.getHours() === 0 && currentTime.getMinutes() === 0 ) {
+			setTimeout( reloadLocation, 1000 ); // Reload the window at midnight
 		}
 
 		if ( setRunInterval ) {
@@ -95,8 +95,8 @@ jQuery( function( $ ) {
 								displayObject.current_booking_title = customer.display_name
 							}
 							displayObject.current_status = booking_view_params.text.in_use;
-							let currentBookingEnd = moment.utc(data.bookings[i].unix_end_time * 1000);
-							displayObject.current_booking_end = currentBookingEnd.format(booking_view_params.date_format) + ' @ ' + currentBookingEnd.format(booking_view_params.time_format);
+							displayObject.product_title = data.bookings[i].product_name;
+							displayObject.current_booking_end = moment.utc(data.bookings[i].unix_end_time * 1000).format(booking_view_params.time_format);
 						} else if ( data.bookings[i].unix_start_time > unix_now_time ) {
 							displayObject.next_booking_container = true;
 							if(order !== null && order.hasOwnProperty('billing_company') && order.billing_company.length > 0) {

@@ -474,10 +474,8 @@ class WC_Bookings_Extensions_Public {
 			wp_send_json_error( 'Missing product ID' );
 			exit;
 		}
-		
-		$timezone_offset = array_key_exists( 'timezone_offset', $_GET) ? $_GET['timezone_offset'] : null;
 
-		$args = $this->find_booked_day_blocks( intval( $product_id ), $_GET['min_date'], $_GET['max_date'], $timezone_offset );
+		$args = $this->find_booked_day_blocks( intval( $product_id ), $_GET['min_date'], $_GET['max_date'], $_GET['timezone_offset'] );
 
 		$product                = wc_get_product( $product_id );
 		$dependent_products_ids = $product->get_meta( 'booking_dependencies' );

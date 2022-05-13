@@ -2,8 +2,9 @@
 Contributors: mbezuidenhout
 Tags: bookings, booking, woocommerce, woo-booking-extensions, accommodation, search, calendar
 Requires PHP: 7.4
+Tested up to PHP: 8.1.4
 Requires at least: 5.0
-Tested up to: 5.8.3
+Tested up to: 5.9.3
 Stable tag: trunk
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -43,6 +44,9 @@ List of possible views:
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 2.0.0 =
+* Fixed compatibility with PHP up to 8.1
 
 = 1.8.1 =
 * Add: Missing files in previous release.
