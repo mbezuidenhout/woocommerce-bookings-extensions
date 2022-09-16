@@ -45,6 +45,9 @@ List of possible views:
 
 == Changelog ==
 
+= 3.0.0 =
+* Compatible with version 1.15.62 of WooCommerce Bookings
+
 = 2.0.1 =
 * Fixed compatibility with PHP up to 8.1
 

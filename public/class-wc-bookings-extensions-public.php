@@ -292,7 +292,7 @@ class WC_Bookings_Extensions_Public {
 
 			foreach ( $available_blocks as $block => $quantity ) {
 				if ( $quantity['available'] > 0 ) {
-					$data = $this->get_end_times( $blocks, get_time_as_iso8601( $block ), $intervals, $resource_id, $from, $to, true );
+					$data = $this->get_end_times( $bookable_product, $blocks, get_time_as_iso8601( $block ), $intervals, $resource_id, $from, $to, true );
 
 					// If this block does not have any end times, skip rendering the time
 					if ( empty( $data ) ) {
