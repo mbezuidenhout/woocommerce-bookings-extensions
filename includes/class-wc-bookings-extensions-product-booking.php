@@ -9,7 +9,7 @@ class WC_Bookings_Extensions_Product_Booking extends WC_Product_Booking {
 	 */
 	public function __construct( $product = 0 ) {
 		$this->defaults['block_starts'] = 'on_the_half_hour';
-		if ( is_integer( intval( $product ) ) ) {
+		if ( is_integer( $product ) ) {
 			$product = wc_get_product( $product );
 		}
 		parent::__construct( $product );

@@ -45,7 +45,7 @@ List of possible views:
 
 == Changelog ==
 
-= 2.0.0 =
+= 2.0.1 =
 * Fixed compatibility with PHP up to 8.1
 
 = 1.8.1 =
