@@ -116,7 +116,6 @@ class WC_Bookings_Extensions_Public {
 	 * Get a list of time blocks available on a date.
 	 */
 	public function get_time_blocks_for_date() {
-
 		// clean posted data
 		$posted = array();
 		parse_str( $_POST['form'], $posted );
@@ -318,6 +317,31 @@ class WC_Bookings_Extensions_Public {
 	}
 
 	/**
+	 * Gets the end time html dropdown.
+	 *
+	 * @since 1.13.0
+	 * @return HTML
+	 */
+	public function get_end_time_html_ajax() {
+		$nonce = $_POST['security'];
+
+		if ( ! wp_verify_nonce( $nonce, 'get_end_time_html' ) ) {
+			// This nonce is not valid.
+			wp_die( esc_html__( 'Cheatin&#8217; huh?', 'woocommerce-bookings' ) );
+		}
+
+		$start_date_time      = wc_clean( $_POST['start_date_time'] );
+		$product_id           = intval( $_POST['product_id'] );
+		$blocks               = wc_clean( $_POST['blocks'] );
+		$bookable_product     = new WC_Bookings_Extensions_Product_Booking(wc_get_product( $product_id ));
+		$resource_id_to_check = absint( wc_clean( $_POST['resource_id'] ) );
+		$html                 = $this->get_end_time_html( $bookable_product, $blocks, $start_date_time, array(), $resource_id_to_check );
+
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput
+		exit;
+	}
+
+	/**
 	 * Renders the HTML to display the end time for hours/minutes.
 	 *
 	 * @since 1.13.0
@@ -408,7 +432,7 @@ class WC_Bookings_Extensions_Public {
 
 				// Check bookable against every resource.
 				foreach ( $bookable_product->get_resource_ids() as $auto_assigned_resource_id ) {
-					if ( WC_Product_Booking_Rule_Manager::check_availability_rules_against_time( $start_time, $end_time, $auto_assigned_resource_id, $this->product ) ) {
+					if ( WC_Product_Booking_Rule_Manager::check_availability_rules_against_time( $start_time, $end_time, $auto_assigned_resource_id, $bookable_product ) ) {
 						$auto_assigned_bookable = true;
 					}
 				}
@@ -417,7 +441,7 @@ class WC_Bookings_Extensions_Public {
 				if ( ! $auto_assigned_bookable ) {
 					continue;
 				}
-			} elseif ( ! WC_Product_Booking_Rule_Manager::check_availability_rules_against_time( $start_time, $end_time, $resource_id, $this->product ) ) {
+			} elseif ( ! WC_Product_Booking_Rule_Manager::check_availability_rules_against_time( $start_time, $end_time, $resource_id, $bookable_product ) ) {
 				// If product has no resources OR resource_id is specified.
 				// Assume "Customer selected" resources setup.
 				continue;
@@ -1024,13 +1048,13 @@ class WC_Bookings_Extensions_Public {
 
 		for ( $block = 0; $block < $blocks_booked; $block ++ ) {
 			$block_start_time_offset = $block * $block_duration;
-			$block_start_time        = $booking_form->get_formatted_times( strtotime( "+{$block_start_time_offset} {$block_unit}", $block_timestamp ) );
+			$block_start_time        = wc_bookings_get_formatted_times( strtotime( "+{$block_start_time_offset} {$block_unit}", $block_timestamp ) );
 			foreach ( $costs as $rule ) {
 				$type  = $rule[0];
 				$rules = $rule[1];
 				if ( isset( $rule['ext_override'] ) && true === $rule['ext_override'] && 'days' === $type ) {
 					$check_date    = $block_start_time['timestamp'];
-					$checking_date = $booking_form->get_formatted_times( $check_date );
+					$checking_date = wc_bookings_get_formatted_times( $check_date );
 					$date_key      = 'days' === $type ? 'day_of_week' : substr( $type, 0, -1 );
 					$rule          = $rules[ $checking_date[ $date_key ] ];
 					if ( is_array( $rule ) ) {

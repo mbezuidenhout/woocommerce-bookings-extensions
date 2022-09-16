@@ -271,6 +271,9 @@ class WC_Bookings_Extensions {
 		/** @see WC_Bookings_Extensions_Public::get_time_blocks_for_date */
 		$this->loader->add_action( 'wp_ajax_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
 		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_get_blocks', $plugin_public, 'get_time_blocks_for_date', 9 );
+		/** @see WC_Bookings_Extensions_Public::get_end_time_html_ajax */
+		$this->loader->add_action( 'wp_ajax_wc_bookings_get_end_time_html', $plugin_public, 'get_end_time_html_ajax', 9 );
+		$this->loader->add_action( 'wp_ajax_nopriv_wc_bookings_get_end_time_html', $plugin_public, 'get_end_time_html_ajax', 9 );
 		/** @see WC_Bookings_Extensions_Public::find_booked_day_blocks_ajax */
 		$this->loader->add_action( 'wc_ajax_wc_bookings_find_booked_day_blocks', $plugin_public, 'find_booked_day_blocks_ajax', 9 );
 
