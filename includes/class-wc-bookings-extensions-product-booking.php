@@ -156,4 +156,20 @@ class WC_Bookings_Extensions_Product_Booking extends WC_Product_Booking {
 	public function get_block_starts( $context = 'view' ) {
 		return $this->get_prop( 'block_starts', $context );
 	}
+
+	public function get_intervals( $intervals ) {
+		switch ( $this->data['block_starts'] ) {
+			case 'on_the_hour':
+				$intervals[1] = 60;
+				break;
+			case 'on_the_half_hour':
+				$intervals[1] = 30;
+				break;
+			case 'on_the_quarter':
+				$intervals[1] = 15;
+				break;
+		}
+
+		return $intervals;
+	}
 }

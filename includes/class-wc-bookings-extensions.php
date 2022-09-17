@@ -247,7 +247,7 @@ class WC_Bookings_Extensions {
 
 		$this->loader->add_action( 'personal_options_update', $plugin_admin, 'profile_update' );
 		$this->loader->add_action( 'edit_user_profile_update', $plugin_admin, 'profile_update' );
-	}
+    }
 
 	/**
 	 * Register all of the hooks related to the public-facing functionality
@@ -317,6 +317,10 @@ class WC_Bookings_Extensions {
 
 		$this->loader->add_action( 'pre_post_update', $plugin_audits, 'log_booking_update', 10, 2 );
 		$this->loader->add_action( 'woocommerce_new_booking', $plugin_audits, 'log_booking_created' );
+
+		$this->loader->add_action( 'woocommerce_delete_booking', $plugin_public, 'delete_dependent_transients' );
+		$this->loader->add_action( 'woocommerce_trash_booking', $plugin_public, 'delete_dependent_transients' );
+		$this->loader->add_action( 'woocommerce_new_booking', $plugin_public, 'delete_dependent_transients' );
 	}
 
 	/**

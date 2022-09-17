@@ -475,6 +475,7 @@ class WC_Bookings_Extensions_New_Calendar {
 			$timezone = new DateTimeZone( wc_timezone_string() );
 			$offset   = $timezone->getOffset( new DateTime() );
 			$booking  = new WC_Booking( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+			WC_Bookings_Extensions_Public::clear_booking_dependents_cache($booking->get_product());
 			if ( isset( $_REQUEST['order_id'] ) && $booking->get_order_id() !== $_REQUEST['order_id'] ) {
 				$booking->set_order_id( sanitize_text_field( wp_unslash( $_REQUEST['order_id'] ) ) );
 			}
@@ -522,6 +523,7 @@ class WC_Bookings_Extensions_New_Calendar {
 
 				if ( ! empty( $booking->get_changes() ) ) {
 					$booking_id = $booking->save();
+					WC_Bookings_Extensions_Public::clear_booking_dependents_cache($booking->get_product());
 				} else {
 					$booking_id = $booking->get_id();
 				}

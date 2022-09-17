@@ -398,6 +398,12 @@ class WC_Bookings_Extensions_Public {
 		$product_duration = ! empty( $bookable_product->get_duration() ) ? $bookable_product->get_duration() : 1;
 		$start_time       = ! empty( $start_date_time ) ? strtotime( substr( $start_date_time, 0, 19 ) ) : '';
 		$data             = array();
+		$dependent_product_ids = $bookable_product->get_meta( 'booking_dependencies' );
+
+		if ( empty( $intervals ) ) {
+			$base_interval = $product_duration * ( 'hour' === $bookable_product->get_duration_unit() ? 60 : 1 );
+			$intervals     = $bookable_product->get_intervals( array( $min_duration * $base_interval, $base_interval ) );
+		}
 
 		if ( empty( $start_time ) ) {
 			return $data;
@@ -411,10 +417,9 @@ class WC_Bookings_Extensions_Public {
 		}
 
 		$calc_avail    = true;
-		$base_interval = $product_duration * ( 'hour' === $bookable_product->get_duration_unit() ? 60 : 1 );
 
 		if ( $check ) {
-			$intervals        = array( $min_duration * $base_interval, $base_interval );
+			//$intervals        = $bookable_product->get_intervals( array( $min_duration * $base_interval, $base_interval ) );
 			$available_blocks = wc_bookings_get_total_available_bookings_for_range( $bookable_product, $start_time, $first_time_slot, $resource_id, 1, $intervals );
 
 			return ! is_wp_error( $available_blocks ) && $available_blocks && in_array( $start_time, $blocks );
@@ -449,8 +454,20 @@ class WC_Bookings_Extensions_Public {
 
 			// Just need to calculate availability for max duration. If that is available, anything below it will also be.
 			if ( $calc_avail ) {
-				$intervals        = array( $duration_index * $base_interval, $base_interval );
+				//$intervals        = array( $duration_index * $base_interval, $base_interval );
 				$available_blocks = wc_bookings_get_total_available_bookings_for_range( $bookable_product, $start_time, $end_time, $resource_id, 1, $intervals );
+
+				if ( is_array( $dependent_product_ids ) ) {
+					foreach ( $dependent_product_ids as $dependent_product_id ) {
+						$dependent_product = new WC_Bookings_Extensions_Product_Booking( wc_get_product( $dependent_product_id ) );
+						$dependent_product_intervals = $dependent_product->get_intervals( $intervals );
+						$available_blocks_dependent = wc_bookings_get_total_available_bookings_for_range( $dependent_product, $start_time, $end_time, 0, 1, $dependent_product_intervals );
+						// If there are no available blocks, skip this block
+						if ( is_wp_error( $available_blocks_dependent ) || ! $available_blocks_dependent ) {
+							continue 2;
+						}
+					}
+				}
 
 				// If there are no available blocks, skip this block
 				if ( is_wp_error( $available_blocks ) || ! $available_blocks ) {
@@ -1121,4 +1138,28 @@ class WC_Bookings_Extensions_Public {
 		return $new_cost;
 	}
 
+	/**
+	 * Delete dependent bookable products transients.
+	 *
+	 * @param int $id Booking id
+	 */
+	public function delete_dependent_transients( $id ) {
+		$booking = get_wc_booking( $id );
+		$bookable_product = new WC_Bookings_Extensions_Product_Booking( $booking->get_product() );
+		self::clear_booking_dependents_cache($bookable_product);
+	}
+
+	/**
+	 * Delete dependent bookable products transients.
+	 *
+	 * @param WC_Product_Booking $bookable_product Instance of WC_Bookings_Extensions_Product_Booking.
+	 **/
+	public static function clear_booking_dependents_cache( $bookable_product ) {
+		$dependent_product_ids = $bookable_product->get_meta( 'booking_dependencies' );
+		if ( is_array( $dependent_product_ids ) ) {
+			foreach ( $dependent_product_ids as $dependent_product_id ) {
+				WC_Bookings_Cache::delete_booking_slots_transient( intval( $dependent_product_id ) );
+			}
+		}
+	}
 }
