@@ -46,7 +46,7 @@
 
 .wbe-booking-data-row {
 	border-bottom: 1px solid #dfdfdf;
-	padding: 1.5em 0em !important;
+	padding: 1.5em 0 !important;
 }
 
 .wbe-booking-actions {
@@ -216,4 +216,8 @@ div.loading {
 
 .fc-day-grid-event .fc-content span+span:before {
 	content: "|";
+}
+
+th.fc-resource-cell {
+	writing-mode: vertical-lr;
 }

@@ -274,7 +274,7 @@ class WC_Bookings_Extensions_New_Calendar {
 					'sourceUrl'    => WC_Ajax::get_endpoint( 'wc_bookings_extensions_get_bookings' ),
 					'wctargetUrl'  => WC_Ajax::get_endpoint( 'wc_bookings_extensions_update_booking' ),
 					'wptargetUrl'  => admin_url( 'admin-ajax.php?action=wc_bookings_extensions_update_booking' ),
-					'eventPageUrl' => admin_url( 'admin-ajax.php?action=wc_bookings_extensions_event_page' ),
+					'eventPageUrl' => admin_url( 'admin-ajax.php?action=wc_bookings_extensions_event_page&width=650' ),
 					'nonce'        => wp_create_nonce( 'fullcalendar_options' ),
 				),
 			)
@@ -323,7 +323,7 @@ class WC_Bookings_Extensions_New_Calendar {
 				$end   = isset( $_REQUEST['end'] ) ? new DateTime( sanitize_text_field( wp_unslash( $_REQUEST['end'] ) ), $timezone ) : null;
 
 				$product = isset( $_REQUEST['resource'] ) && ! empty( $_REQUEST['resource'] ) ? sanitize_key( wp_unslash( $_REQUEST['resource'] ) ) : null;
-				$all_day = isset( $_REQUEST['allDay'] ) && 'true' === $_REQUEST['allDay'] ? true : false;
+				$all_day = isset( $_REQUEST['allDay'] ) && 'true' === $_REQUEST['allDay'];
 				if ( $all_day ) {
 					$end->sub( new DateInterval( 'PT1S' ) ); // Shift the time back with 1 second for full day events.
 				}
@@ -475,7 +475,8 @@ class WC_Bookings_Extensions_New_Calendar {
 			$timezone = new DateTimeZone( wc_timezone_string() );
 			$offset   = $timezone->getOffset( new DateTime() );
 			$booking  = new WC_Booking( sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-			WC_Bookings_Extensions_Public::clear_booking_dependents_cache($booking->get_product());
+			$bookable_product = new WC_Bookings_Extensions_Product_Booking( $booking->get_product() );
+			WC_Bookings_Extensions_Public::clear_booking_dependents_cache($bookable_product);
 			if ( isset( $_REQUEST['order_id'] ) && $booking->get_order_id() !== $_REQUEST['order_id'] ) {
 				$booking->set_order_id( sanitize_text_field( wp_unslash( $_REQUEST['order_id'] ) ) );
 			}
@@ -499,7 +500,7 @@ class WC_Bookings_Extensions_New_Calendar {
 				$booking->set_product_id( (int) $_REQUEST['resource'] );
 			}
 			if ( isset( $_REQUEST['persons'] ) ) {
-				$booking->set_person_counts( sanitize_text_field( wp_unslash( $_REQUEST['persons'] ) ) );
+				$booking->set_person_counts( wp_unslash( $_REQUEST['persons'] ) );
 			}
 			if ( isset( $_REQUEST['booking_status'] ) && $booking->get_status() !== $_REQUEST['booking_status'] ) {
 				$booking->set_status( sanitize_text_field( wp_unslash( $_REQUEST['booking_status'] ) ) );
@@ -523,7 +524,8 @@ class WC_Bookings_Extensions_New_Calendar {
 
 				if ( ! empty( $booking->get_changes() ) ) {
 					$booking_id = $booking->save();
-					WC_Bookings_Extensions_Public::clear_booking_dependents_cache($booking->get_product());
+					$bookable_product = new WC_Bookings_Extensions_Product_Booking( $booking->get_product() );
+					WC_Bookings_Extensions_Public::clear_booking_dependents_cache($bookable_product);
 				} else {
 					$booking_id = $booking->get_id();
 				}
