@@ -192,8 +192,9 @@ class WC_Bookings_Extensions_Admin {
 
 			// Remove vice-versa dependencies.
 			$old_dependencies    = $product->get_meta( 'booking_dependencies' );
-			$remove_depencendies = array_diff( $old_dependencies, $dependencies );
-			foreach ( $remove_depencendies as $dependency ) {
+			if(!is_array( $old_dependencies ) ) { $old_dependencies = []; }
+			$remove_dependencies = array_diff( $old_dependencies, $dependencies );
+			foreach ( $remove_dependencies as $dependency ) {
 				$dependent_product              = wc_get_product( $dependency );
 				$dependent_product_dependencies = $dependent_product->get_meta( 'booking_dependencies' );
 				if ( is_array( $dependent_product_dependencies ) ) {
@@ -636,7 +637,11 @@ class WC_Bookings_Extensions_Admin {
 				$the_order = $booking->get_order();
 				if ( $the_order instanceof \WC_Order ) {
 					$payment_method = wc_get_payment_gateway_by_order( $the_order );
-					echo esc_html( $payment_method->method_title );
+					if( $payment_method instanceof WC_Payment_Gateway ) {
+						echo esc_html( $payment_method->method_title );
+					} else {
+						echo esc_html( '-' );
+					}
 				} else {
 					echo esc_html( '-' );
 				}
